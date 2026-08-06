@@ -1,0 +1,31 @@
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/payroll
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+!.vscode/extensions.json
+*.log
+.DS_Store
+Thumbs.db
+
+# Personal data (employee PII) — generated locally from the tracker, never committed
+/data/REGION2 EMPLOYEES DIRECTORY.xlsx
+/database/data/employees_directory.json
+
