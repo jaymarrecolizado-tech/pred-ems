@@ -19,6 +19,7 @@ database/migrations/                    ← 21 migrations: RBAC → employees �
 database/seeders/                       ← roles, employment types, leave types, contribution rates, dev data, real directory
 database/data/README.md                 ← how to regenerate the personnel directory locally
 data/normalize_to_json.py               ← tracker xlsx → JSON converter (Python, run locally)
+data/cleanup_directory.py               ← dedupe + email hygiene pass on the JSON (Python, run locally)
 
 > 🔒 Employee personal data (tracker xlsx + generated `employees_directory.json`) is
 > **not committed** — generate it locally before seeding (see `database/data/README.md`).
@@ -41,9 +42,10 @@ scripts/setup.sh                        ← one-command XAMPP setup
 ## 📇 Real personnel directory (from the tracker)
 
 The employee module is pre-loaded with the **real DICT RO2 personnel directory**
-(130 employees: plantilla, co-terminus, COS, job order, and GIP) extracted from
-`data/REGION2 EMPLOYEES DIRECTORY.xlsx` by `data/normalize_to_json.py` and stored
-as clean JSON in `database/data/employees_directory.json`.
+(120 employees after deduplication: plantilla, co-terminus, COS, job order, and
+GIP) extracted from `data/REGION2 EMPLOYEES DIRECTORY.xlsx` by
+`data/normalize_to_json.py`, deduped/cleaned by `data/cleanup_directory.py`, and
+stored as clean JSON in `database/data/employees_directory.json`.
 
 It runs automatically with `php artisan migrate --seed`, or standalone:
 
@@ -62,6 +64,13 @@ with their plantilla grades, replacing the sample starter data.
 
 > ⚠️ Re-running `RealDirectorySeeder` refreshes imported records from the JSON —
 > the tracker is treated as the source of truth for imported data.
+
+> 🧹 **Data hygiene:** the extraction pipeline is `normalize_to_json.py` →
+> `cleanup_directory.py` → `RealDirectorySeeder`. The cleanup pass merges people
+> listed in both the directory and the Accession & Separation sheet (the
+> separation record wins), drops double-active duplicates, fixes malformed
+> emails, and adds convention emails (`first.last@dict.gov.ph`) for the few
+> active staff with no email on file — so every active employee has a login.
 
 ---
 
@@ -125,7 +134,7 @@ cd hris && php artisan serve   # → http://localhost:8000
 #### Employee accounts (auto-provisioned)
 
 `EmployeeUserSeeder` creates a login account for **every active employee that has
-an email on file** (97 accounts): username = their email, default password
+an email on file** (102 accounts): username = their email, default password
 `!Password123`. Roles are derived from position: Director IV → `admin`,
 Director III → `unit_head`, CAO / HRMO II / AO II (HRMO I) → `hr`, everyone else
 → `employee`. Employees without an email are skipped (reported during seeding).
