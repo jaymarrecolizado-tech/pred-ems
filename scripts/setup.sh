@@ -61,6 +61,9 @@ fi
 
 php artisan migrate --seed --force
 
+# Link the public storage disk so uploaded profile photos are served at /storage/*
+php artisan storage:link || echo "  (storage link exists or could not be created — run 'php artisan storage:link' manually)"
+
 echo "==> 5/5 Done!"
 echo ""
 echo "  Start the app:  cd $(pwd) && php artisan serve"

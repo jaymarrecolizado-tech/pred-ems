@@ -35,6 +35,13 @@ scripts/setup.sh                        ← one-command XAMPP setup
 
 **Phase 1 scope (implemented):** login, RBAC (admin/hr/payroll/unit_head/employee), dashboard with headcount stats, and full employee profile management — list with search + employment-type/status filters, add/edit, profile view with appointment history and leave balances, auto employee-number generation (`RO2-XXXX`).
 
+**Self-service (implemented):**
+
+- **My Profile** — every logged-in user gets a personal profile area (sidebar + topbar avatar). Employees linked to a 201-file record can **edit their own personal information** (name, birthdate, civil status, contact details, gov ID numbers). Employment data (position, salary, grade, status) stays HR-managed.
+- **Profile photos** — upload/remove your photo (JPG/PNG/WebP, max 2 MB) from the profile page; HR can also set photos on the employee edit form. Photos are stored on the public disk (`storage/app/public/photos/`) — run `php artisan storage:link` so they're served at `/storage/…` (the setup script does this automatically). Avatars appear everywhere: sidebar, topbar, employee list, dashboard, and profile headers.
+- **Change own password** — self-service password update with current-password verification (min 8 chars).
+- **Audit trail viewer** — every create/update/delete of an employee record, profile self-edit, photo change, and password change is appended to `audit_logs` with actor, IP, and old→new value diffs. Admin/HR can browse and filter the trail at `/audit-logs` (searchable by actor, record id, IP, and action type).
+
 > To install Phase 1 in one command, see **Quick start** below.
 
 ---
@@ -142,6 +149,7 @@ Director III → `unit_head`, CAO / HRMO II / AO II (HRMO I) → `hr`, everyone 
 RBAC is enforced on every route: staff roles (admin/hr/payroll/unit_head) see the
 employee directory; the `employee` role can only view their own profile; create/
 edit/delete is admin/HR only. Sidebar navigation adapts to the signed-in role.
+All roles can access **My Profile** (self-service); **Audit Trail** is admin/HR only.
 
 ---
 

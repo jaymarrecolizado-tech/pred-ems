@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="card card-pad">
-        <form method="POST" action="{{ route('employees.update', $employee) }}">
+        <form method="POST" action="{{ route('employees.update', $employee) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('employees.partials.form', ['employee' => $employee])

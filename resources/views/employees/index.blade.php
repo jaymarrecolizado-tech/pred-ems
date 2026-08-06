@@ -76,7 +76,7 @@
                         <tr>
                             <td>
                                 <div class="employee-cell">
-                                    <div class="avatar">{{ $employee->initials }}</div>
+                                    @include('partials.avatar', ['employee' => $employee, 'size' => 34])
                                     <div>
                                         <div class="name">
                                             <a href="{{ route('employees.show', $employee) }}">{{ $employee->full_name }}</a>

@@ -5,6 +5,18 @@
 @endphp
 
 <div class="form-section">
+    <div class="form-section-title">Profile Photo</div>
+    <div class="field" style="max-width:420px">
+        <label for="photo">Photo (JPG, PNG or WebP · max 2 MB)</label>
+        <div style="display:flex; align-items:center; gap:14px">
+            @include('partials.avatar', ['employee' => $emp, 'size' => 56])
+            <input type="file" id="photo" name="photo" accept="image/png,image/jpeg,image/webp" class="{{ $err('photo') ? 'input-error' : '' }}">
+        </div>
+        @if ($err('photo'))<div class="error">{{ $err('photo') }}</div>@endif
+    </div>
+</div>
+
+<div class="form-section">
     <div class="form-section-title">Employment Details</div>
     <div class="form-grid">
         <div class="field">

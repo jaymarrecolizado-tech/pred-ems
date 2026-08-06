@@ -4,41 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign in · DICT RO2 HRIS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="login-body">
-    <div class="login-card">
-        <div class="login-brand">
-            <div class="brand-mark">D</div>
-            <h1>DICT RO2 HRIS</h1>
-            <p>Employee Management System</p>
+    <div class="masthead">
+        <div class="masthead-inner">
+            <span class="masthead-text">Republic of the Philippines</span>
+            <span class="masthead-sep"></span>
+            <span class="masthead-text strong">Department of Information and Communications Technology</span>
+            <span class="masthead-sep"></span>
+            <span class="masthead-text optional">Regional Office 2</span>
         </div>
-
-        @if ($errors->any())
-            <div class="alert alert-error">
-                <strong>Unable to sign in:</strong>
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('login.attempt') }}">
-            @csrf
-            <div class="field" style="margin-bottom:14px">
-                <label for="email">Email address</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email">
-            </div>
-            <div class="field" style="margin-bottom:20px">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
-        </form>
-
-        <p class="login-hint">DICT Regional Office 2 · Internal use only</p>
     </div>
+
+    <div class="login-shell">
+        <div class="login-card">
+            <div class="login-brand">
+                <div class="brand-mark">D</div>
+                <h1>DICT Regional Office 2</h1>
+                <p>Human Resource Information System</p>
+            </div>
+
+            @if ($errors->any())
+                <div class="alert alert-error">
+                    <strong>Unable to sign in:</strong>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.attempt') }}">
+                @csrf
+                <div class="field" style="margin-bottom:14px">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email">
+                </div>
+                <div class="field" style="margin-bottom:20px">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+            </form>
+
+            <p class="login-hint">DICT Regional Office 2 · Internal use only</p>
+        </div>
+    </div>
+
+    <p class="login-foot">An official website of the Republic of the Philippines</p>
 </body>
 </html>

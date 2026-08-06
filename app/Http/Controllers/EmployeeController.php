@@ -6,8 +6,10 @@ use App\Models\Division;
 use App\Models\Employee;
 use App\Models\EmploymentType;
 use App\Models\Position;
+use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -60,6 +62,9 @@ class EmployeeController extends Controller
         $data['employee_number'] = $data['employee_number'] ?: $this->nextEmployeeNumber();
 
         $employee = Employee::create($data);
+        $this->storePhoto($request, $employee);
+
+        Audit::record('created', $employee, [], $employee->toArray());
 
         return redirect()
             ->route('employees.show', $employee)
@@ -92,7 +97,11 @@ class EmployeeController extends Controller
     {
         $data = $this->validateEmployee($request, $employee);
 
+        $old = $employee->toArray();
         $employee->update($data);
+        $this->storePhoto($request, $employee);
+
+        Audit::record('updated', $employee, $old, $employee->toArray());
 
         return redirect()
             ->route('employees.show', $employee)
@@ -103,6 +112,12 @@ class EmployeeController extends Controller
     {
         if ($employee->appointments()->exists()) {
             return back()->with('error', 'Cannot delete: this employee has appointment records. Mark as separated instead.');
+        }
+
+        Audit::record('deleted', $employee, $employee->toArray(), []);
+
+        if ($employee->profile_photo_path) {
+            Storage::disk('public')->delete($employee->profile_photo_path);
         }
 
         $employee->delete();
@@ -132,6 +147,7 @@ class EmployeeController extends Controller
             ->ignore($employee?->id);
 
         $validated = $request->validate([
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'employee_number' => ['nullable', 'string', 'max:30', $uniqueRule],
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
@@ -167,6 +183,24 @@ class EmployeeController extends Controller
         ]);
 
         return $validated;
+    }
+
+    /**
+     * Persist an uploaded profile photo (admin/HR side) and clean up any
+     * previous file. Runs only when a file was actually submitted.
+     */
+    private function storePhoto(Request $request, Employee $employee): void
+    {
+        if (! $request->hasFile('photo')) {
+            return;
+        }
+
+        if ($employee->profile_photo_path) {
+            Storage::disk('public')->delete($employee->profile_photo_path);
+        }
+
+        $path = $request->file('photo')->store('photos', 'public');
+        $employee->update(['profile_photo_path' => $path]);
     }
 
     private function nextEmployeeNumber(): string

@@ -10,13 +10,14 @@ class Employee extends Model
         'employee_number', 'user_id',
         'first_name', 'middle_name', 'last_name', 'suffix',
         'birth_date', 'birth_place', 'gender', 'civil_status', 'citizenship',
+        'profile_photo_path',
         'blood_type', 'residential_address', 'contact_number', 'personal_email',
         'gov_email', 'gsis_no', 'philhealth_no', 'pagibig_no', 'tin_no', 'sss_no',
         'employment_type_id', 'division_id', 'position_id',
         'plantilla_item_no', 'bp_number', 'source_of_fund',
         'salary_grade', 'step', 'monthly_salary',
-        'date_original_appointment', 'date_last_promotion',
-        'status', 'profile_photo_path', 'remarks',
+    'date_original_appointment', 'date_last_promotion',
+    'status', 'remarks',
     ];
 
     protected function casts(): array
@@ -99,6 +100,18 @@ class Employee extends Model
         $initials = mb_substr($this->first_name, 0, 1) . mb_substr($this->last_name, 0, 1);
 
         return strtoupper($initials);
+    }
+
+    /**
+     * Public URL for the profile photo, or null when none is uploaded.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->profile_photo_path) {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($this->profile_photo_path, '/'));
     }
 
     public function getStatusLabelAttribute(): string

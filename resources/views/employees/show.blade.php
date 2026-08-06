@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="profile-header">
-        <div class="avatar">{{ $employee->initials }}</div>
+        @include('partials.avatar', ['employee' => $employee, 'size' => 76])
         <div>
             <h2>{{ $employee->full_name }}</h2>
             <div class="meta">{{ $employee->employee_number }} · {{ $employee->position?->title ?? 'No position' }} · <strong>{{ $employee->years_of_service }}</strong> in service</div>

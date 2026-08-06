@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +25,20 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // My Profile — self-service (personal info, photo, password)
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto'])->name('profile.photo.upload');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
+    Route::get('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // Audit trail viewer — admin/HR only
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])
+        ->middleware('role:admin,hr')
+        ->name('audit-logs.index');
 
     // Employee profiles — RBAC enforcement per the permission model.
     // Read access (directory + own profile) for staff roles; write access admin/HR only.
