@@ -594,10 +594,182 @@ table.table { width: 100%; border-collapse: collapse; }
 .progress { height: 7px; background: #e2e6ee; border-radius: 0; overflow: hidden; margin-top: 3px; }
 .progress > i { display: block; height: 100%; background: var(--blue-600); }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 900px) {
-    .masthead-inner { justify-content: center; gap: 8px; padding: 7px 14px; }
+/* ============================================================
+   Modern UI & Mobile Responsive (Pass I)
+   ============================================================ */
+
+/* ---------- A11y & base ---------- */
+:focus-visible { outline: 2px solid var(--blue-600); outline-offset: 2px; }
+.sidebar :focus-visible, .masthead :focus-visible { outline-color: var(--flag-gold); }
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--navy-900);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 0 0 4px 0;
+}
+.skip-link:focus { left: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* Subtle scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: #c4ccd9;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: #a3adc0; }
+
+/* Touch-friendly minimum sizes (small buttons stay compact on desktop) */
+.btn:not(.btn-sm) { min-height: 38px; }
+.nav-link { min-height: 38px; }
+
+/* ---------- Topbar title row + hamburger ---------- */
+.topbar-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--navy-800);
+    cursor: pointer;
+    transition: background .12s, border-color .12s;
+}
+.btn-icon:hover { background: var(--paper-2); border-color: var(--blue-600); }
+.btn-icon-svg { width: 20px; height: 20px; }
+#sidebar-toggle { display: none; }
+
+/* ---------- Mobile sidebar drawer ---------- */
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 1023px) {
+    #sidebar-toggle { display: inline-flex; }
+    /* Long page titles (e.g. employee names) ellipsize on smaller screens */
+    .topbar-title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Keep the masthead from clipping on tablets: drop the trailing items */
     .masthead-text.optional { display: none; }
-    .content, .topbar { padding-left: 16px; padding-right: 16px; }
-    .sidebar { width: 220px; }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        height: 100vh;
+        height: 100dvh; /* iOS Safari safe-area viewport */
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+        box-shadow: 4px 0 24px rgba(10, 28, 58, .35);
+    }
+    .sidebar-open .sidebar { transform: translateX(0); }
+    .sidebar-open { overflow: hidden; }
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 28, 58, .55);
+        z-index: 40;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s ease;
+    }
+    .sidebar-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+
+    .masthead-inner { justify-content: center; gap: 8px; padding: 7px 14px; }
+    .content, .topbar { padding-left: 18px; padding-right: 18px; }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 767px) {
+    .masthead-text { font-size: 9px; letter-spacing: 1px; }
+    .masthead-inner { gap: 7px; }
+    .masthead-sep { width: 4px; height: 4px; }
+
+    .topbar { padding: 10px 14px; }
+    .topbar h1 { font-size: 12.5px; }
+    .topbar h1::before { width: 7px; height: 7px; margin-right: 8px; }
+    .user-name { display: none; }
+    .topbar-user { gap: 8px; }
+
+    .content { padding: 18px 14px; }
+    .card-pad { padding: 16px; }
+
+    .btn:not(.btn-sm) { min-height: 44px; }
+    .nav-link { min-height: 42px; font-size: 14px; }
+
+    /* Prevent iOS zoom on inputs */
+    .field input, .field select, .field textarea { font-size: 16px; }
+
+    .stat { padding: 14px; }
+    .stat .stat-value { font-size: 24px; }
+
+    .form-actions { flex-wrap: wrap; }
+    .form-actions .btn { flex: 1 1 auto; justify-content: center; }
+
+    .filter-bar .field { flex: 1 1 100%; min-width: 0; }
+    .filter-bar .form-actions { width: 100%; }
+    .filter-bar .form-actions .btn { flex: 1; }
+    .filter-bar > a.btn { margin-left: 0 !important; width: 100%; justify-content: center; }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 20px 18px;
+    }
+    .profile-header > div:last-child { margin-left: 0 !important; width: 100%; flex-wrap: wrap; }
+    .profile-header .meta { font-size: 12px; }
+    .info-list { grid-template-columns: 1fr; gap: 8px 0; }
+    .card-header { flex-wrap: wrap; gap: 8px; }
+
+    .table th, .table td { padding: 8px 10px; }
+    .table-wrap { -webkit-overflow-scrolling: touch; }
+    .table-wrap.has-more::after {
+        content: "Swipe to see more →";
+        display: block;
+        padding: 6px 12px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .pagination { justify-content: center; }
+    .login-shell { padding: 28px 16px 20px; }
+    .login-card { padding: 28px 22px; }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 480px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .grow-list li { flex-wrap: wrap; gap: 6px; }
+    .brand { padding: 16px 14px; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Print (201 files, records) ---------- */
+@media print {
+    .masthead, .sidebar, .topbar, .filter-bar, .pagination,
+    .sidebar-backdrop, .skip-link, .btn-icon { display: none !important; }
+    .layout { display: block; }
+    .main, .content { display: block; max-width: 100%; padding: 0; }
+    body { background: #fff; }
+    .card { break-inside: avoid; border-color: #999; }
+    .profile-header { background: #fff !important; color: #000; border: 1px solid #999; }
+    .profile-header h2, .profile-header .meta { color: #000 !important; }
+    a { color: #000; text-decoration: none; }
 }

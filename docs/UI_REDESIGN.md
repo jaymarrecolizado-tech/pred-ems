@@ -78,3 +78,19 @@ Variable names are **preserved** (`--blue-600`, `--border`, `--text-muted`, `--g
 
 **Out of scope:** no markup restructuring, no backend changes, no routes. Pure
 `app.css` + Blade class work. Zero build step maintained.
+
+---
+
+## 5. Pass I — Mobile responsive & modern app UX (implemented)
+
+- **Off-canvas sidebar drawer** (< 1024px): hamburger toggle in the topbar,
+  slide-in drawer, dimmed backdrop, Escape/backdrop/nav-click close,
+  auto-close on desktop resize — `public/js/app.js` (vanilla, no deps).
+- **Responsive breakpoints:** 1023px (tablet: drawer + centered masthead),
+  767px (phone: stacked grids, full-width form actions, 16px inputs to stop
+  iOS zoom, stacked profile header, 1-col info lists), 480px (stat grid 1 col).
+- **Modern app details:** 44px touch targets on mobile, `:focus-visible` rings,
+  skip-to-content link, `aria-current`/`aria-expanded`/`aria-controls`,
+  theme-color meta, styled scrollbars, `prefers-reduced-motion`, print
+  stylesheet (hide chrome, clean 201-file prints), table "swipe to see more"
+  hint shown only when a table overflows.

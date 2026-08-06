@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0038a8">
     <title>Sign in · DICT RO2 HRIS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +15,7 @@
         <div class="masthead-inner">
             <span class="masthead-text">Republic of the Philippines</span>
             <span class="masthead-sep"></span>
-            <span class="masthead-text strong">Department of Information and Communications Technology</span>
+            <span class="masthead-text strong optional">Department of Information and Communications Technology</span>
             <span class="masthead-sep"></span>
             <span class="masthead-text optional">Regional Office 2</span>
         </div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0038a8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') · DICT RO2 HRIS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,17 +12,19 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 <div class="masthead">
     <div class="masthead-inner">
         <span class="masthead-text">Republic of the Philippines</span>
         <span class="masthead-sep"></span>
-        <span class="masthead-text strong">Department of Information and Communications Technology</span>
+        <span class="masthead-text strong optional">Department of Information and Communications Technology</span>
         <span class="masthead-sep"></span>
         <span class="masthead-text optional">Regional Office 2</span>
     </div>
 </div>
 <div class="layout">
-    <aside class="sidebar">
+    <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+    <aside id="sidebar" class="sidebar">
         <div class="brand">
             <div class="brand-mark">D</div>
             <div class="brand-text">
@@ -36,22 +39,22 @@
             $myRole = auth()->user()->roles()->first()?->name ?? 'user';
         @endphp
         <nav class="nav">
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" {!! request()->routeIs('dashboard') ? 'aria-current="page"' : '' !!}>
                 @include('partials.icon', ['name' => 'dashboard'])
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" {!! request()->routeIs('profile.*') ? 'aria-current="page"' : '' !!}>
                 @include('partials.icon', ['name' => 'profile'])
                 <span>My Profile</span>
             </a>
             @if ($canViewDirectory)
-                <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.index') ? 'active' : '' }}">
+                <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.index') ? 'active' : '' }}" {!! request()->routeIs('employees.index') ? 'aria-current="page"' : '' !!}>
                     @include('partials.icon', ['name' => 'employees'])
                     <span>Employee Profiles</span>
                 </a>
             @endif
             @if (auth()->user()->hasAnyRole(['admin', 'hr']))
-                <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}">
+                <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" {!! request()->routeIs('audit-logs.*') ? 'aria-current="page"' : '' !!}>
                     @include('partials.icon', ['name' => 'audit'])
                     <span>Audit Trail</span>
                 </a>
@@ -79,6 +82,11 @@
     <main class="main">
         <header class="topbar">
             <div class="topbar-title">
+                <button type="button" id="sidebar-toggle" class="btn-icon" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+                    <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
                 <h1>@yield('title', 'Dashboard')</h1>
             </div>
             <div class="topbar-user">
@@ -93,7 +101,7 @@
             </div>
         </header>
 
-        <div class="content">
+        <div class="content" id="main-content">
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -115,5 +123,6 @@
         </div>
     </main>
 </div>
+<script src="{{ asset('js/app.js') }}" defer></script>
 </body>
 </html>
