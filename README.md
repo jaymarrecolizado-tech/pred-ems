@@ -42,6 +42,11 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Change own password** — self-service password update with current-password verification (min 8 chars).
 - **Audit trail viewer** — every create/update/delete of an employee record, profile self-edit, photo change, and password change is appended to `audit_logs` with actor, IP, and old→new value diffs. Admin/HR can browse and filter the trail at `/audit-logs` (searchable by actor, record id, IP, and action type).
 
+**UI & UX (implemented):**
+
+- **GOV.PH Institutional redesign** — flat, dense, rule-bound government design language: Philippine-flag palette (royal blue `#0038A8` / red `#CE1126` / gold `#FCD116`), squared corners, official grid tables, stamped badges, IBM Plex Sans + Mono typography, GOV.PH masthead, and zero emoji/gradients/pills. See [`docs/UI_REDESIGN.md`](docs/UI_REDESIGN.md).
+- **Mobile responsive + modern app UX** — off-canvas sidebar drawer (hamburger toggle, backdrop, Escape close) via `public/js/app.js`, breakpoints for tablet/phone/small-phone, 44px touch targets, 16px mobile inputs (no iOS zoom), `:focus-visible` rings, skip-link, `aria-current`/`aria-expanded`, `theme-color`, styled scrollbars, `prefers-reduced-motion`, a print stylesheet, and "swipe to see more" hints on overflowing tables.
+
 > To install Phase 1 in one command, see **Quick start** below.
 
 ---
@@ -195,11 +200,12 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 
 ## 🗺️ Roadmap
 
-1. **Phase 1 — Foundation:** auth/RBAC, employee profiles, employment types (this data layer)
-2. **Phase 2 — Leave:** accruals, applications, approvals, leave cards
-3. **Phase 3 — Documents:** Service Record, COE (PDF via dompdf)
-4. **Phase 4 — Payroll:** salary scales, contribution engine, payslips
-5. **Phase 5 — Reports & Audit:** dashboards, headcount/remittance reports, audit viewer
-6. **Phase 6 — Extras:** attendance/DTR, spreadsheet imports, notifications
+1. **Phase 1 — Foundation:** ✅ auth/RBAC, employee profiles, self-service, audit trail, GOV.PH UI + mobile responsive
+2. **Pass G — Page sweep (pending):** align remaining inline styles on show/edit/profile/audit pages with the new design
+3. **Phase 2 — Leave (next):** accruals, applications, approvals, leave cards
+4. **Phase 3 — Documents:** Service Record, COE (PDF via dompdf)
+5. **Phase 4 — Payroll:** salary scales, contribution engine, payslips
+6. **Phase 5 — Reports & Audit:** reporting suite (audit viewer ✅ done)
+7. **Phase 6 — Extras:** attendance/DTR, spreadsheet imports, notifications
 
 See `docs/PLAN.md` for details.

@@ -172,11 +172,12 @@ erDiagram
 
 | Phase | Scope | Deliverables |
 |---|---|---|
-| **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type |
+| **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type ✅ + self-service profile/photos/password ✅ + audit trail viewer ✅ |
+| **1.5. UI Redesign** | GOV.PH Institutional design language + mobile responsiveness | Flat flag-palette UI, no emoji/gradients/pills, off-canvas mobile drawer, modern a11y/UX ✅ |
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end + forced-leave report |
 | **3. Documents** | Service Record, COE, certifications | PDF generation, reference numbers |
 | **4. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports |
-| **5. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite |
+| **5. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite (audit viewer ✅ — shipped early with Phase 1 self-service) |
 | **6. Extras** | Attendance/DTR, imports from spreadsheets, notifications | Stretch features |
 
 ---
@@ -193,6 +194,15 @@ erDiagram
 
 ---
 
-## 9. Immediate next step
+## 9. Status & immediate next step
 
-**Phase 1 – Foundation:** scaffold project → run migrations/seeders → build login + RBAC → employee profile module (list, create, edit, filter by employment type).
+**Phase 1 – Foundation: ✅ complete.** Auth/RBAC, employee 201-file module with real DICT RO2 directory,
+self-service (My Profile, photos, password), audit trail viewer, the **GOV.PH Institutional UI redesign**
+(see `docs/UI_REDESIGN.md`), and the **mobile-responsive modern UX pass** (off-canvas drawer, touch
+targets, a11y, print) are all shipped, tested (19/19), and pushed to `origin/main`.
+
+**Immediate next step — Phase 2 – Leave:** the data layer already exists (`leave_types`,
+`leave_credit_ledger`, `leave_applications`). Build filing + approval workflow, monthly VL/SL
+accruals (1.25 days/month cron), leave cards, and the forced-leave report. Before that, a small
+**Pass G page sweep** remains: align a few remaining inline styles on the employee/show/edit,
+profile, and audit-log pages with the new responsive design.
