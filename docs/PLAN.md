@@ -176,7 +176,7 @@ erDiagram
 | **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
-| **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite (audit viewer ✅ — shipped early with Phase 1 self-service) 🚧 IN PROGRESS |
+| **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
 | **5. Extras** | Attendance/DTR, imports from spreadsheets, notifications | Stretch features |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports — **scheduled last** by decision (Aug 2026) so the data backbone (appointments, leave ledger, documents) is solid first |
 
@@ -219,6 +219,13 @@ timeline drives the **CSC Service Record (CS Form 212)** and the **Certificate o
 both rendered as dompdf-safe PDFs (table-only layout, no flexbox/transforms) with sequential
 reference numbers (`SR-2026-0001`, `COE-2026-0001`) recorded in `documents`.
 
-**Immediate next step — Phase 4 – Reports & Audit: 🚧 next.** Headcount, leave, and
-document-issuance reporting suite (audit viewer already shipped). Payroll is deliberately
-**last** so the appointment/leave/document data backbone is complete and trustworthy first.
+**Phase 4 – Reports & Audit: ✅ complete.** A `/reports` hub (admin/HR) with five
+reports over the live data — headcount (groupable by employment type / division / status /
+source of fund, with a status filter), VL/SL leave balances (single grouped ledger query),
+leave utilization (approved days per type per year), documents issued (Service Records &
+COEs with reference numbers), and attrition & onboarding (separations/new hires per year)
+— each streaming a CSV via `?format=csv` (UTF-8 BOM, `fputcsv` quoting, formula-injection
+guard). Known limitation: separation dates derive from `updated_at` (no dedicated column yet).
+
+**Immediate next step — Phase 5 – Extras: 🚧 next.** Attendance/DTR, spreadsheet imports,
+and notifications. Payroll remains deliberately **last** per the August 2026 decision.

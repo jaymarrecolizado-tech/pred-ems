@@ -22,4 +22,9 @@ class LeaveType extends Model
             'is_active' => 'boolean',
         ];
     }
+
+    public function applications()
+    {
+        return $this->hasMany(LeaveApplication::class);
+    }
 }

@@ -70,10 +70,16 @@
                 <span>My Leave</span>
             </a>
 
+            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" {!! request()->routeIs('reports.*') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'reports'])
+                    <span>Reports</span>
+                </a>
+            @endif
+
             <div class="nav-section">Modules (upcoming)</div>
-            <span class="nav-link disabled">@include('partials.icon', ['name' => 'documents'])<span>Documents</span><em class="phase">(P3)</em></span>
-            <span class="nav-link disabled">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P4)</em></span>
-            <span class="nav-link disabled">@include('partials.icon', ['name' => 'reports'])<span>Reports</span><em class="phase">(P5)</em></span>
+            <span class="nav-link disabled">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P6)</em></span>
+            <span class="nav-link disabled">@include('partials.icon', ['name' => 'audit'])<span>Attendance / DTR</span><em class="phase">(P5)</em></span>
         </nav>
 
         <div class="sidebar-footer">
@@ -84,7 +90,7 @@
                     <div class="sidebar-user-role">{{ str_replace('_', ' ', ucfirst($myRole)) }}</div>
                 </div>
             </div>
-            <span class="version">Phase 1 · Foundation</span>
+            <span class="version">Phases 1–4 · Foundation → Reports</span>
         </div>
     </aside>
 

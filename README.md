@@ -49,6 +49,15 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Certificate of Employment (COE)** — letter-style PDF/HTML preview (`COE` button on any profile) certifying employment period, position, and division, with `COE-2026-XXXX` reference numbers.
 - **Issuance ledger** — every generated document is recorded in the `documents` table (employee, type, reference no., issued by, timestamp) for a clean audit trail; PDFs are dompdf-safe (table-only layout).
 
+**Reports & Audit — Phase 4 (implemented):**
+
+- **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus five reports, each with **CSV export** (`?format=csv`, UTF-8 BOM, formula-injection safe):
+  - **Headcount** — employees grouped by employment type, division, status, or source of fund, with a status filter and percentage bars
+  - **Leave balances** — VL/SL balances for every active employee (one grouped ledger query)
+  - **Leave utilization** — approved applications, employees, and days taken per leave type per year
+  - **Documents issued** — every Service Record / COE with reference number, issuer, and timestamp
+  - **Attrition & onboarding** — separations and new hires per year
+
 **Leave management — Phase 2 (implemented):**
 
 - **My Leave** — every employee linked to a 201-file record gets a personal leave page (`/leave`): a live **leave card** of balances (VL/SL and all CSC types, derived from the append-only ledger), plus their full application history.
@@ -219,8 +228,8 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 2. **UI Redesign:** ✅ eGovPay-style design system + mobile responsive — on branch `ui-improvements`
 3. **Phase 2 — Leave:** ✅ accruals (`leave:accrue`), filing, approvals, leave cards
 4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
-5. **Phase 4 — Reports & Audit (next):** headcount/leave/document reporting suite (audit viewer ✅ done)
-6. **Phase 5 — Extras:** attendance/DTR, spreadsheet imports, notifications
+5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
+6. **Phase 5 — Extras (next):** attendance/DTR, spreadsheet imports, notifications
 7. **Phase 6 — Payroll (last by decision):** salary scales, contribution engine, payslips — deferred until the appointment/leave/document backbone is complete
 
 See `docs/PLAN.md` for details.

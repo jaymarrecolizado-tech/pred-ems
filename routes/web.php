@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRecordController;
 use Illuminate\Support\Facades\Route;
 
@@ -92,4 +93,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/employees/{employee}/service-record/pdf', [ServiceRecordController::class, 'download'])->name('employees.service-record.pdf');
     Route::get('/employees/{employee}/coe', [CoeController::class, 'show'])->name('employees.coe');
     Route::get('/employees/{employee}/coe/pdf', [CoeController::class, 'download'])->name('employees.coe.pdf');
+
+    // Reports & Audit (Phase 4) — admin/HR only
+    Route::middleware('role:admin,hr')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/headcount', [ReportController::class, 'headcount'])->name('reports.headcount');
+        Route::get('/reports/leave-balances', [ReportController::class, 'leaveBalances'])->name('reports.leave-balances');
+        Route::get('/reports/leave-utilization', [ReportController::class, 'leaveUtilization'])->name('reports.leave-utilization');
+        Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
+        Route::get('/reports/attrition', [ReportController::class, 'attrition'])->name('reports.attrition');
+    });
 });
