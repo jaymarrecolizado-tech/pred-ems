@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\DocumentRequest;
+use App\Notifications\DocumentRequestIssuedNotification;
+use App\Notifications\DocumentRequestRejectedNotification;
+use App\Notifications\DocumentRequestSubmittedNotification;
 use App\Support\Audit;
 use App\Support\DocumentIssuer;
 use App\Support\Dtr;
+use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -85,6 +89,9 @@ class DocumentRequestController extends Controller
         ]);
 
         Audit::record('document_requested', $documentRequest, [], $documentRequest->toArray());
+
+        // Alert the HR queue reviewers.
+        Notifier::send(Notifier::hrUsers(), new DocumentRequestSubmittedNotification($documentRequest));
 
         return redirect()->route('documents.requests')
             ->with('success', 'Document request submitted for HR processing.');
@@ -182,6 +189,11 @@ class DocumentRequestController extends Controller
             'reference_no' => $referenceNo,
         ]);
 
+        // Notify the requesting employee (in-system + email + SMS when on file).
+        if ($employee->user) {
+            Notifier::send($employee->user, new DocumentRequestIssuedNotification($documentRequest));
+        }
+
         return back()->with('success', $documentRequest->type_label . " issued — Ref. {$referenceNo}.");
     }
 
@@ -201,6 +213,10 @@ class DocumentRequestController extends Controller
         ]);
 
         Audit::record('document_request_rejected', $documentRequest, [], $documentRequest->toArray());
+
+        if ($documentRequest->employee->user) {
+            Notifier::send($documentRequest->employee->user, new DocumentRequestRejectedNotification($documentRequest));
+        }
 
         return back()->with('success', 'Document request rejected.');
     }

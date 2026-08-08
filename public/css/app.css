@@ -958,6 +958,55 @@ table.table { width: 100%; border-collapse: collapse; }
     .brand { padding: 16px 14px; }
 }
 
+/* ---------- Notification bell + inbox ---------- */
+.notif-dd { position: relative; }
+.notif-summary { list-style: none; position: relative; }
+.notif-summary::-webkit-details-marker { display: none; }
+.notif-badge {
+    position: absolute; top: -4px; right: -6px;
+    min-width: 17px; height: 17px; padding: 0 4px;
+    border-radius: 999px;
+    background: #dc2626; color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 17px;
+    text-align: center;
+}
+.notif-dd-panel {
+    position: absolute; right: 0; top: calc(100% + 10px);
+    width: 340px; max-width: calc(100vw - 24px);
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 12px; box-shadow: 0 18px 44px rgba(15, 23, 42, .16);
+    z-index: 60; overflow: hidden;
+}
+.notif-dd-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+}
+.notif-dd-item {
+    display: block; padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none; color: inherit;
+    transition: background .12s;
+}
+.notif-dd-item:hover { background: var(--paper-2); text-decoration: none; }
+.notif-dd-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.notif-dd-item.is-read .notif-dd-title { font-weight: 500; color: var(--ink-500); }
+.notif-dd-body { font-size: 12px; color: var(--ink-500); margin-top: 2px; line-height: 1.4; }
+.notif-dd-time { font-size: 10.5px; color: var(--ink-400); margin-top: 3px; }
+.notif-dd-empty { padding: 22px 14px; text-align: center; color: var(--ink-400); font-size: 13px; }
+.notif-dd-all {
+    display: block; text-align: center; padding: 10px;
+    font-size: 12.5px; font-weight: 600; color: var(--brand-600);
+    background: var(--paper-2);
+}
+.notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-600); flex-shrink: 0; }
+.notif-row { transition: background .12s; }
+.notif-row.unread { background: var(--brand-50); }
+
+@media (max-width: 640px) {
+    .notif-dd-panel { right: -64px; }
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -76,6 +76,14 @@ scripts/setup.sh                        ← one-command XAMPP setup
 
 > ⚠️ Known limits: honoraria/overtime/LWOP lines exist in the schema and engine but have no per-item entry UI yet; `salary_scales` holds sample placeholder amounts until the official SSL table is imported.
 
+**Notifications — in-system + email + SMS (implemented):**
+
+- **In-system inbox** — the topbar bell shows an unread badge; every employee gets a notification inbox (`/notifications`) with read/unread state, mark-as-read, and mark-all-read.
+- **Email** — every notification also goes out as mail (uses Laravel's configured mailer; `MAIL_MAILER=log` in dev writes to the log instead of sending).
+- **SMS via the Android gateway** (`Reference/sms.md`) — notifications with an SMS text are queued (`sms_queue`) and delivered asynchronously by `php artisan sms:send` (scheduled every minute, retries up to 3 attempts). Never blocks or fails a business action.
+- **What fires** — document request submitted (HR/admin alerted) · document issued (employee) · document rejected (employee) · leave filed (HR/admin) · leave approved/rejected (employee).
+- **Soft-fail by design** — a broken SMTP or SMS gateway never breaks the request/approval flow; failures are logged.
+
 **Reports & Audit — Phase 4 (implemented):**
 
 - **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus five reports, each with **CSV export** (`?format=csv`, UTF-8 BOM, formula-injection safe):
@@ -175,8 +183,27 @@ cd hris && php artisan serve   # → http://localhost:8000
    cp -r database ../hris/database
    cp -r docs ../hris/docs
    ```
-3. **Configure `.env`**: `APP_NAME="DICT RO2 HRIS"`, `DB_DATABASE=hris` (create the `hris` database in phpMyAdmin).
+3. **Configure `.env`**: `APP_NAME="DICT RO2 HRIS"`, `DB_DATABASE=hris` (create the `hris` database in phpMyAdmin). Optional notification channels:
+   ```
+   # Email (Laravel standard) — dev: MAIL_MAILER=log keeps it in storage/logs/laravel.log
+   MAIL_MAILER=smtp            MAIL_HOST=…   MAIL_PORT=587
+   MAIL_USERNAME=…             MAIL_PASSWORD=…   MAIL_FROM_ADDRESS=…
+
+   # SMS via Android SMS gateway (see Reference/sms.md) — leave disabled until a gateway is live
+   SMS_ENABLED=false
+   SMS_GATEWAY_URL=https://api.sms-gate.app
+   SMS_GATEWAY_USERNAME=
+   SMS_GATEWAY_PASSWORD=
+   SMS_API_PATH=/3rdparty/v1/messages
+   SMS_DEFAULT_COUNTRY_CODE=63
+   SMS_TIMEOUT_SECONDS=15
+   SMS_MAX_MESSAGE_LENGTH=320
+   ```
+   Enable SMS on the **employee's 201-file** (contact number) — `SmsChannel` only sends when `SMS_ENABLED=true` and the employee has a contact number.
 4. **Migrate & seed**:
+   ```
+   php artisan migrate && php artisan db:seed   # tables: notifications, sms_queue
+   ```
    ```bash
    composer install && php artisan key:generate
    php artisan migrate --seed
@@ -258,6 +285,7 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
 6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs, and flexible AOM 2026-020 work scheduling (CWW + holidays + CSC Friday-revert rule, CTO-ready punches) — imports/notifications still stretch
 6.5. **Phase 3.5 — Document Requests:** ✅ self-service request workflow (COE, Service Record, Leave Balances, No Pending Case, DTR) with an HR fulfillment queue — issue mints references + ledger entries, reject with reason, status tracking, official PDF downloads
+6.6. **Notifications:** ✅ in-system inbox + email + SMS (Android gateway) — document/leave lifecycle alerts, async SMS queue, soft-fail delivery
 7. **Phase 6 — Payroll:** ✅ config-driven contribution/tax engine, payroll periods (create → compute → finalize), dompdf payslips with computation traces, remittance register, and employee self-service payslips — built last so the appointment/leave/document backbone was solid first (honoraria/overtime entry UI + official SSL table still open)
 
 See `docs/PLAN.md` for details.

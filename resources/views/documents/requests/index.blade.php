@@ -7,13 +7,6 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">{{ $errors->first() }}</div>
-    @endif
-
     <div class="card card-pad" style="margin-bottom:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap">
         <div style="min-width:0; flex:1">
             <div class="overline" style="margin-bottom:6px">Document request self-service</div>

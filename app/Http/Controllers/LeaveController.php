@@ -6,7 +6,11 @@ use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
+use App\Notifications\LeaveApprovedNotification;
+use App\Notifications\LeaveFiledNotification;
+use App\Notifications\LeaveRejectedNotification;
 use App\Support\Audit;
+use App\Support\Notifier;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -91,6 +95,9 @@ class LeaveController extends Controller
 
         Audit::record('created', $application, [], $application->toArray());
 
+        // Alert the approval reviewers.
+        Notifier::send(Notifier::hrUsers(), new LeaveFiledNotification($application));
+
         return redirect()
             ->route('leave.index')
             ->with('success', "Leave application filed: {$this->fmt($days)} day(s) of {$type->name} ({$from->format('M d')} – {$to->format('M d, Y')}).");
@@ -167,6 +174,10 @@ class LeaveController extends Controller
 
         Audit::record('approved', $application, $old, $application->toArray());
 
+        if ($application->employee->user) {
+            Notifier::send($application->employee->user, new LeaveApprovedNotification($application));
+        }
+
         return back()->with('success', "Leave approved for {$application->employee->full_name}.");
     }
 
@@ -186,6 +197,10 @@ class LeaveController extends Controller
         ]);
 
         Audit::record('rejected', $application, $old, $application->toArray());
+
+        if ($application->employee->user) {
+            Notifier::send($application->employee->user, new LeaveRejectedNotification($application));
+        }
 
         return back()->with('success', "Leave application rejected for {$application->employee->full_name}.");
     }

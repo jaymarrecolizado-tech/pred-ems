@@ -192,6 +192,7 @@
                 <h1>@yield('title', 'Dashboard')</h1>
             </div>
             <div class="topbar-user">
+                @include('partials.notification-bell')
                 <a href="{{ route('profile.show') }}" class="topbar-user-link">
                     @include('partials.avatar', ['employee' => $myEmployee, 'size' => 30])
                     <span class="user-name">{{ auth()->user()->name }}</span>

@@ -18,3 +18,9 @@ Artisan::command('inspire', function () {
 Schedule::command('leave:accrue')
     ->monthlyOn(1, '00:05')
     ->withoutOverlapping();
+
+// Outbound SMS queue -> Android SMS gateway (capcom6). Every minute; the
+// gateway is an Android phone with a SIM, so delivery is async + soft-fail.
+Schedule::command('sms:send --limit=50')
+    ->everyMinute()
+    ->withoutOverlapping();

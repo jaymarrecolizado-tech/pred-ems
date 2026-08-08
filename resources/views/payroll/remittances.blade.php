@@ -7,13 +7,6 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">{{ $errors->first() }}</div>
-    @endif
-
     <div class="card card-pad" style="margin-bottom:18px">
         <div class="overline" style="margin-bottom:6px">Statutory contributions</div>
         <div class="hint">Summaries are generated automatically when a payroll period is finalized. Mark each agency batch as <strong>remitted</strong> once the payment/report has been submitted, and record the reference number.</div>

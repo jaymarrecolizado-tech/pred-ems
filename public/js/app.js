@@ -131,6 +131,27 @@
     markTableHints();
     window.addEventListener('resize', markTableHints);
 
+    /* ---------------- Notifications: click marks read, then navigates ---------------- */
+
+    document.addEventListener('click', function (event) {
+        var item = event.target.closest('.notif-dd-item[data-id]');
+        if (!item) return;
+
+        event.preventDefault();
+        var id = item.getAttribute('data-id');
+        var url = item.getAttribute('data-url') || '/notifications';
+        var token = document.querySelector('meta[name="csrf-token"]');
+
+        function go() { window.location.href = url; }
+
+        if (!id || !token) { go(); return; }
+
+        fetch('/notifications/' + id + '/read', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': token.getAttribute('content'), 'Accept': 'application/json' }
+        }).catch(function () { /* soft-fail: still navigate */ }).finally(go);
+    });
+
     /* ---------------- Dashboard chart ---------------- */
 
     var chartHost = document.getElementById('headcount-chart');

@@ -7,13 +7,6 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">{{ $errors->first() }}</div>
-    @endif
-
     <div class="info-grid" style="grid-template-columns:1fr 1fr; align-items:start; margin-bottom:18px">
         {{-- Create period --}}
         <div class="card">
