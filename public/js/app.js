@@ -51,6 +51,30 @@
         if (window.innerWidth >= 1024) closeSidebar();
     });
 
+    /* ---------------- Collapsible nav groups ----------------
+       The CSS hides panels via `[aria-expanded="false"] + .nav-group-panel`,
+       so JS only manages the aria-expanded state + localStorage. */
+
+    document.querySelectorAll('.nav-group-toggle').forEach(function (toggle) {
+        var panel = document.getElementById(toggle.getAttribute('aria-controls'));
+        if (!panel) return;
+        var key = 'hris-nav:' + toggle.getAttribute('aria-controls');
+        var saved = null;
+        try { saved = localStorage.getItem(key); } catch (e) { /* storage unavailable */ }
+
+        // The group containing the active link always stays open (and overrides
+        // any saved preference); otherwise honor the saved state (default open).
+        var hasActive = panel.querySelector('.nav-link.active');
+        var expanded = hasActive ? true : (saved === null ? true : saved === '1');
+        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+
+        toggle.addEventListener('click', function () {
+            var next = toggle.getAttribute('aria-expanded') !== 'true';
+            toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
+            try { localStorage.setItem(key, next ? '1' : '0'); } catch (e) { /* ignore */ }
+        });
+    });
+
     /* ---------------- Table overflow hints ---------------- */
 
     function markTableHints() {

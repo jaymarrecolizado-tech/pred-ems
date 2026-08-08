@@ -171,6 +171,42 @@ a:hover { text-decoration: underline; }
     font-weight: 600;
 }
 
+/* ---------- Collapsible nav groups ---------- */
+.nav-group { margin-bottom: 4px; }
+.nav-group-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px 6px;
+    margin-top: 10px;
+    background: none;
+    border: 0;
+    border-radius: var(--radius-control);
+    color: #6b7fa3;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+    transition: color .12s, background .12s;
+}
+.nav-group-toggle:hover { color: #a9b8d2; background: rgba(148, 163, 184, .08); }
+.nav-group-toggle:focus-visible { outline-color: var(--brand-400); }
+.nav-group-chevron {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    transition: transform .16s ease;
+    opacity: .85;
+}
+.nav-group-toggle[aria-expanded="false"] .nav-group-chevron { transform: rotate(-90deg); }
+.nav-group-panel { overflow: hidden; }
+.nav-group-toggle[aria-expanded="false"] + .nav-group-panel { display: none; }
+
 .nav-link {
     display: flex;
     align-items: center;
