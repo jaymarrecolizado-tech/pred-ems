@@ -57,6 +57,7 @@ class AttendanceController extends Controller
                 ->take(10)
                 ->get(),
             'officeHours' => Setting::officeHours(),
+            'todaySchedule' => \App\Support\Schedule::day(now()),
         ]);
     }
 

@@ -177,7 +177,7 @@ erDiagram
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
-| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · office-hours settings 🚧 Imports/notifications pending |
+| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · 🚧 Imports/notifications pending |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports — **scheduled last** by decision (Aug 2026) so the data backbone (appointments, leave ledger, documents) is solid first |
 
 ---
@@ -233,7 +233,21 @@ Time Records (auto-generated monthly grid — hours, late, undertime — as HTML
 `DTR-2026-XXXX` reference numbers), and a corrections workflow where every punch alteration
 is an employee request approved/rejected by HR (logs stay append-only; HR also has a manual
 entry path for field duty/forgotten punches). Seeded checkpoints cover HQ + the 5 provincial
-offices; office hours are configurable in Settings.
+offices.
+
+**Phase 5.2 – Flexible work scheduling: ✅ complete (AOM No. 2026-020).** Attendance
+Settings grew from a single flat office-hours block into an **effective-dated work-schedule
+registry** (`work_schedules` + `holidays`): HR defines named schedules with per-day-of-week
+work/rest flags and AM/PM times, effective from/to dates, and a revert target. Seeded from
+the AOM: the **4-Day Compressed Workweek** (Mon–Thu 7:00 AM–6:00 PM, Friday rest day,
+effective 03 Aug 2026) and the **Standard 8-Hour** Mon–Fri schedule it reverts to. The
+**CSC Resolution No. 2600838 rules** in the memo are enforced: a holiday/work suspension on
+a weekday rest day (Friday) reverts that whole week to the standard 8-hour schedule, while
+a holiday on a working day is flagged as deemed-complied. The DTR resolves the schedule per
+day, marks rest days and holidays, and still counts hours rendered on them as
+**overtime (CTO-eligible)** — punches are never blocked because rest-day/holiday timelogs
+are the evidence for CTO credit claims. Fixed-date national holidays (recurring yearly) are
+seeded; HR manages the calendar in Settings.
 
 **Remaining in Phase 5:** spreadsheet imports and notifications (stretch). Payroll remains
 deliberately **last** per the August 2026 decision.

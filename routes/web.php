@@ -125,7 +125,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendance/logs', [AttendanceAdminController::class, 'logs'])->name('attendance.logs');
         Route::post('/attendance/logs', [AttendanceAdminController::class, 'storeManualPunch'])->name('attendance.logs.store');
         Route::get('/attendance/settings', [AttendanceAdminController::class, 'settings'])->name('attendance.settings');
-        Route::put('/attendance/settings', [AttendanceAdminController::class, 'updateSettings'])->name('attendance.settings.update');
+        Route::get('/attendance/schedules/{schedule}/edit', [AttendanceAdminController::class, 'editSchedule'])->name('attendance.schedules.edit');
+        Route::post('/attendance/schedules', [AttendanceAdminController::class, 'storeSchedule'])->name('attendance.schedules.store');
+        Route::put('/attendance/schedules/{schedule}', [AttendanceAdminController::class, 'updateSchedule'])->name('attendance.schedules.update');
+        Route::delete('/attendance/schedules/{schedule}', [AttendanceAdminController::class, 'destroySchedule'])->name('attendance.schedules.destroy');
+        Route::post('/attendance/holidays', [AttendanceAdminController::class, 'storeHoliday'])->name('attendance.holidays.store');
+        Route::delete('/attendance/holidays/{holiday}', [AttendanceAdminController::class, 'destroyHoliday'])->name('attendance.holidays.destroy');
         Route::get('/attendance/employees/{employee}/dtr', [AttendanceAdminController::class, 'employeeDtr'])->name('attendance.employees.dtr');
         Route::get('/attendance/employees/{employee}/dtr/pdf', [AttendanceAdminController::class, 'employeeDtrPdf'])->name('attendance.employees.dtr.pdf');
     });

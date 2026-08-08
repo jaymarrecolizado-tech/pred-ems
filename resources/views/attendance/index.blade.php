@@ -25,7 +25,18 @@
                 </button>
                 <div id="punch-status" class="alert" style="display:none; margin-top:14px"></div>
                 <div class="hint" style="margin-top:12px; font-size:12px">
-                    Your GPS position is verified against the nearest active checkpoint before the punch is accepted. Work hours: {{ $officeHours['am_start'] }}–{{ $officeHours['am_end'] }} / {{ $officeHours['pm_start'] }}–{{ $officeHours['pm_end'] }}.
+                    Your GPS position is verified against the nearest active checkpoint before the punch is accepted.
+                    @if (isset($todaySchedule))
+                        @if ($todaySchedule['holiday_name'])
+                            <strong>Today: {{ $todaySchedule['holiday_name'] }}</strong> (punch if reporting for duty — hours render as overtime).
+                        @elseif (! $todaySchedule['work'])
+                            <strong>Today is a rest day.</strong> Punches still log and count toward CTO credit.
+                        @else
+                            Schedule: {{ $todaySchedule['am_start'] }}–{{ $todaySchedule['am_end'] }} / {{ $todaySchedule['pm_start'] }}–{{ $todaySchedule['pm_end'] }}.
+                        @endif
+                    @else
+                        Work hours: {{ $officeHours['am_start'] }}–{{ $officeHours['am_end'] }} / {{ $officeHours['pm_start'] }}–{{ $officeHours['pm_end'] }}.
+                    @endif
                 </div>
             </div>
         </div>

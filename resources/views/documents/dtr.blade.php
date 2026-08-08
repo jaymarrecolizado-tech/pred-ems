@@ -51,6 +51,8 @@
         table.dtr th, table.dtr td { border: 1px solid #000; padding: 2.5px 3px; text-align: center; font-size: 8.5px; }
         table.dtr thead th { background: #f2f2f2; font-weight: 700; }
         table.dtr .weekend { background: #f9f9f9; }
+        table.dtr .rest-day { background: #f6f8fb; }
+        table.dtr .holiday { background: #fbf4f2; }
         table.dtr .totals-row td { font-weight: 700; background: #f2f2f2; }
         table.dtr .num { font-variant-numeric: tabular-nums; }
         .col-day { width: 7%; }
@@ -128,15 +130,23 @@
         </thead>
         <tbody>
             @foreach ($days as $row)
-                <tr class="day-row {{ $row['is_weekend'] ? 'weekend' : '' }}">
+                @php
+                    $rowClass = $row['is_holiday'] ? 'holiday' : ($row['is_rest_day'] ? 'rest-day' : '');
+                @endphp
+                <tr class="day-row {{ $rowClass }}">
                     <td class="num">{{ $row['day'] }}</td>
                     <td class="num">{{ $row['am_in']?->format('h:i A') ?? '·' }}</td>
                     <td class="num">{{ $row['am_out']?->format('h:i A') ?? '·' }}</td>
                     <td class="num">{{ $row['pm_in']?->format('h:i A') ?? '·' }}</td>
                     <td class="num">{{ $row['pm_out']?->format('h:i A') ?? '·' }}</td>
                     <td class="num">{{ $row['hours'] > 0 ? number_format($row['hours'], 2) : '' }}</td>
-                    <td>
-                        @if ($row['late'] > 0 || $row['undertime'] > 0)
+                    <td style="text-align:left">
+                        @if ($row['is_holiday'])
+                            <strong>Holiday: {{ $row['holiday_name'] }}</strong>
+                            @if ($row['hours'] > 0)· OT (CTO)@endif
+                        @elseif ($row['is_rest_day'])
+                            @if ($row['hours'] > 0)OT (CTO)@else Rest day @endif
+                        @else
                             @if ($row['late'] > 0) Late {{ $row['late'] }}m;@endif
                             @if ($row['undertime'] > 0) Under {{ $row['undertime'] }}m;@endif
                         @endif
@@ -152,10 +162,10 @@
         </tbody>
     </table>
 
-    {{-- Summary / office hours --}}
+    {{-- Summary / schedule --}}
     <div class="summary">
-        Office hours: {{ $hours['am_start'] }}–{{ $hours['am_end'] }} and {{ $hours['pm_start'] }}–{{ $hours['pm_end'] }}.
-        This record is generated from the geofenced attendance system. Alterations require an approved HR correction request.
+        Schedule: {{ $dtr['scheduleLabel'] }}.
+        This record is generated from the geofenced attendance system. Rest days, weekends, and holidays with rendered hours are overtime (CTO-eligible) timelogs; alterations require an approved HR correction request.
     </div>
 
     {{-- Signatures --}}

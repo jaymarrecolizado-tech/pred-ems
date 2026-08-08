@@ -7,8 +7,12 @@ use App\Models\AttendanceCorrection;
 use App\Models\AttendanceLog;
 use App\Models\Document;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\WorkSchedule;
+use App\Support\Dtr;
+use App\Support\Schedule;
 use Tests\TestCase;
 
 class AttendanceTest extends TestCase
@@ -41,6 +45,11 @@ class AttendanceTest extends TestCase
             AttendanceCorrection::whereIn('id', $corrIds)->delete();
         }
 
+        $holidayIds = $this->createdHolidayIds ?? [];
+        if ($holidayIds) {
+            Holiday::whereIn('id', $holidayIds)->delete();
+        }
+
         Document::where('document_type', 'dtr')
             ->where('generated_by', $this->adminUser()->id)
             ->where('generated_at', '>=', $this->testStartedAt)
@@ -52,6 +61,7 @@ class AttendanceTest extends TestCase
     private \DateTimeInterface $testStartedAt;
     private array $createdLogIds = [];
     private array $createdCorrectionIds = [];
+    private array $createdHolidayIds = [];
 
     private function adminUser(): User
     {
@@ -314,22 +324,204 @@ class AttendanceTest extends TestCase
         $cp->delete();
     }
 
-    public function test_office_hours_setting_updates(): void
+    /* ------------------------------------------------------------------ */
+    /*  Work schedules + holidays (AOM 2026-020)                           */
+    /* ------------------------------------------------------------------ */
+
+    public function test_admin_manages_work_schedule(): void
     {
+        // Store a new schedule.
         $this->actingAs($this->adminUser())
-            ->put('/attendance/settings', [
-                'am_start' => '07:30',
-                'am_end' => '12:00',
-                'pm_start' => '13:00',
-                'pm_end' => '16:30',
+            ->post('/attendance/schedules', [
+                'name' => 'Test CWW',
+                'description' => 'Mon–Thu 7–6',
+                'starts_on' => '2026-08-03',
+                'is_active' => 1,
+                'days' => [
+                    '1' => ['work' => 1, 'am_start' => '07:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '18:00'],
+                    '2' => ['work' => 1, 'am_start' => '07:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '18:00'],
+                    '3' => ['work' => 1, 'am_start' => '07:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '18:00'],
+                    '4' => ['work' => 1, 'am_start' => '07:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '18:00'],
+                    '5' => [],
+                    '6' => [],
+                    '7' => [],
+                ],
             ])
             ->assertRedirect();
 
-        $this->assertSame('07:30', Setting::officeHours()['am_start']);
+        $schedule = WorkSchedule::where('name', 'Test CWW')->firstOrFail();
+        $this->assertSame('07:00', $schedule->days['1']['am_start']);
+        $this->assertArrayNotHasKey('am_start', $schedule->days['5']);
 
-        // Restore defaults.
-        Setting::set('office_hours', [
-            'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00',
+        // Update it.
+        $this->actingAs($this->adminUser())
+            ->put("/attendance/schedules/{$schedule->id}", [
+                'name' => 'Test CWW v2',
+                'is_active' => 1,
+                'days' => $schedule->days,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('Test CWW v2', $schedule->refresh()->name);
+
+        // Reject schedules with no working days.
+        $this->actingAs($this->adminUser())
+            ->post('/attendance/schedules', [
+                'name' => 'All Rest',
+                'days' => ['1' => [], '2' => [], '3' => [], '4' => [], '5' => [], '6' => [], '7' => []],
+            ])
+            ->assertSessionHasErrors('days');
+
+        $schedule->delete();
+    }
+
+    public function test_schedule_resolution_follows_effective_dates(): void
+    {
+        // A schedule effective only before the CWW started.
+        $legacy = WorkSchedule::create([
+            'name' => 'Pre-CWW Temp',
+            'days' => [
+                '1' => ['work' => true, 'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00'],
+                '2' => ['work' => true, 'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00'],
+                '3' => ['work' => true, 'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00'],
+                '4' => ['work' => true, 'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00'],
+                '5' => ['work' => true, 'am_start' => '08:00', 'am_end' => '12:00', 'pm_start' => '13:00', 'pm_end' => '17:00'],
+                '6' => ['work' => false],
+                '7' => ['work' => false],
+            ],
+            'starts_on' => '2026-07-01',
+            'ends_on' => '2026-08-02',
+            'is_active' => true,
         ]);
+
+        // Aug 3 onward → the CWW (Mon–Thu) applies.
+        $mon = \Illuminate\Support\Carbon::parse('2026-08-03'); // Monday
+        $fri = \Illuminate\Support\Carbon::parse('2026-08-07');
+
+        $this->assertTrue(Schedule::day($mon)['work']);
+        $this->assertSame('07:00', Schedule::day($mon)['am_start']);
+        $this->assertFalse(Schedule::day($fri)['work']); // Friday = rest day
+        $this->assertTrue(Schedule::day($fri)['rest_day']);
+
+        $legacy->delete();
+    }
+
+    public function test_holiday_on_rest_day_reverts_week_to_standard(): void
+    {
+        // Friday 2026-08-14: a holiday on the CWW rest day → whole week reverts.
+        $holiday = Holiday::create([
+            'name' => 'Test Holiday (Fri)',
+            'date' => '2026-08-14',
+            'type' => 'regular_holiday',
+        ]);
+
+        $monday = \Illuminate\Support\Carbon::parse('2026-08-10');
+        $friday = \Illuminate\Support\Carbon::parse('2026-08-14');
+
+        // The whole week reverts to standard: Friday is now a working day…
+        $this->assertTrue(Schedule::day($friday)['work']);
+        $this->assertSame('08:00', Schedule::day($friday)['am_start']);
+        $this->assertTrue(Schedule::day($friday)['reverted']);
+        // …and Monday is still a working day (standard 8AM start, not 7AM).
+        $this->assertSame('08:00', Schedule::day($monday)['am_start']);
+        $this->assertSame('Test Holiday (Fri)', Schedule::day($friday)['holiday_name']);
+
+        $this->createdHolidayIds[] = $holiday->id;
+    }
+
+    public function test_weekend_holiday_does_not_revert_the_week(): void
+    {
+        // Saturday 2026-08-15 is already a weekend under every schedule — it is
+        // not the CWW's designated rest day, so the week must NOT revert.
+        $holiday = Holiday::create([
+            'name' => 'Test Holiday (Sat)',
+            'date' => '2026-08-15',
+            'type' => 'regular_holiday',
+        ]);
+        $this->createdHolidayIds[] = $holiday->id;
+
+        $monday = \Illuminate\Support\Carbon::parse('2026-08-10');
+        $tuesday = \Illuminate\Support\Carbon::parse('2026-08-11');
+
+        // Monday stays on the CWW (7AM start, no revert), Tuesday not reverted.
+        $this->assertSame('07:00', Schedule::day($monday)['am_start']);
+        $this->assertFalse(Schedule::day($tuesday)['reverted']);
+        $this->assertSame('Test Holiday (Sat)', Schedule::day($holiday->date)['holiday_name']);
+    }
+
+    public function test_holiday_on_working_day_is_flagged_no_revert(): void
+    {
+        // Tuesday 2026-08-11 is a CWW working day → flagged, not reverted.
+        $holiday = Holiday::create([
+            'name' => 'Test Holiday (Tue)',
+            'date' => '2026-08-11',
+            'type' => 'special_nonworking',
+        ]);
+
+        $tuesday = \Illuminate\Support\Carbon::parse('2026-08-11');
+        $this->assertTrue(Schedule::day($tuesday)['work']);
+        $this->assertSame('07:00', Schedule::day($tuesday)['am_start']);
+        $this->assertSame('Test Holiday (Tue)', Schedule::day($tuesday)['holiday_name']);
+        $this->assertFalse(Schedule::day($tuesday)['reverted']);
+
+        $this->createdHolidayIds[] = $holiday->id;
+    }
+
+    public function test_admin_manages_holidays(): void
+    {
+        $this->actingAs($this->adminUser())
+            ->post('/attendance/holidays', [
+                'name' => 'Test Holiday',
+                'date' => '2026-12-24',
+                'type' => 'special_nonworking',
+                'is_repeating' => 1,
+            ])
+            ->assertRedirect();
+
+        $holiday = Holiday::where('name', 'Test Holiday')->firstOrFail();
+        $this->assertTrue($holiday->is_repeating);
+        $this->assertSame('special_nonworking', $holiday->type);
+
+        // A repeating Dec 24 matches any year.
+        $this->assertTrue($holiday->occursOn(\Illuminate\Support\Carbon::parse('2030-12-24')));
+
+        $holiday->delete();
+    }
+
+    public function test_dtr_flags_holidays_and_rest_day_overtime(): void
+    {
+        $employee = $this->employeeUser()->employee;
+
+        // Rest-day punch (Friday 2026-08-14 would revert; use a normal rest day,
+        // e.g. Saturday) plus a normal working-day punch.
+        $sat = '2026-08-08'; // Saturday
+
+        foreach ([['am_in', '08:00:00'], ['am_out', '12:00:00'], ['pm_in', '13:00:00'], ['pm_out', '17:00:00']] as [$type, $time]) {
+            AttendanceLog::create([
+                'employee_id' => $employee->id,
+                'log_date' => $sat,
+                'punch_type' => $type,
+                'punched_at' => $sat . ' ' . $time,
+                'source' => 'geofence',
+            ]);
+            $this->createdLogIds[] = AttendanceLog::where('employee_id', $employee->id)
+                ->where('log_date', $sat)->where('punch_type', $type)->first()->id;
+        }
+
+        $dtr = Dtr::build($employee, 8, 2026);
+
+        $satRow = collect($dtr['days'])->first(fn ($r) => $r['date']->toDateString() === $sat);
+
+        $this->assertTrue($satRow['is_rest_day']);
+        $this->assertSame(0, $satRow['late']); // no late on rest days
+        $this->assertGreaterThan(0, $satRow['hours']); // OT hours still count
+
+        $holiday = Holiday::create(['name' => 'Test Holiday Aug', 'date' => '2026-08-19', 'type' => 'regular_holiday']);
+        $this->createdHolidayIds[] = $holiday->id;
+
+        $dtr2 = Dtr::build($employee, 8, 2026);
+        $holRow = collect($dtr2['days'])->first(fn ($r) => $r['date']->toDateString() === '2026-08-19');
+        $this->assertTrue($holRow['is_holiday']);
+        $this->assertSame('Test Holiday Aug', $holRow['holiday_name']);
     }
 }

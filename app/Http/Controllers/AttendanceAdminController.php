@@ -7,7 +7,9 @@ use App\Models\AttendanceCorrection;
 use App\Models\AttendanceLog;
 use App\Models\Document;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\Setting;
+use App\Models\WorkSchedule;
 use App\Support\Audit;
 use App\Support\DocumentIssuer;
 use App\Support\Dtr;
@@ -16,6 +18,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -306,32 +309,148 @@ class AttendanceAdminController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Settings                                                           */
+    /*  Work schedules + holidays (AOM 2026-020 flexible scheduling)       */
     /* ------------------------------------------------------------------ */
 
     public function settings(): View
     {
         return view('attendance.settings', [
-            'officeHours' => Setting::officeHours(),
+            'schedules' => WorkSchedule::with('revertSchedule')->orderBy('starts_on')->orderBy('id')->get(),
+            'holidays' => Holiday::orderBy('date')->get(),
+            'editingSchedule' => null,
         ]);
     }
 
-    public function updateSettings(Request $request): RedirectResponse
+    public function editSchedule(WorkSchedule $schedule): View
+    {
+        return view('attendance.settings', [
+            'schedules' => WorkSchedule::with('revertSchedule')->orderBy('starts_on')->orderBy('id')->get(),
+            'holidays' => Holiday::orderBy('date')->get(),
+            'editingSchedule' => $schedule,
+        ]);
+    }
+
+    private function validateSchedule(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
+            'is_active' => ['nullable', 'boolean'],
+            'revert_schedule_id' => ['nullable', 'exists:work_schedules,id'],
+            'days' => ['required', 'array'],
+            'days.*.work' => ['nullable', 'boolean'],
+            'days.*.am_start' => ['nullable', 'date_format:H:i'],
+            'days.*.am_end' => ['nullable', 'date_format:H:i'],
+            'days.*.pm_start' => ['nullable', 'date_format:H:i'],
+            'days.*.pm_end' => ['nullable', 'date_format:H:i'],
+        ]);
+
+        // Normalise the per-day-of-week JSON (1 = Mon … 7 = Sun).
+        $days = [];
+        foreach (range(1, 7) as $iso) {
+            $d = $data['days'][(string) $iso] ?? [];
+            $working = ! empty($d['work']);
+
+            $days[(string) $iso] = ['work' => $working];
+            if ($working) {
+                $days[(string) $iso] += [
+                    'am_start' => $d['am_start'] ?? '08:00',
+                    'am_end' => $d['am_end'] ?? '12:00',
+                    'pm_start' => $d['pm_start'] ?? '13:00',
+                    'pm_end' => $d['pm_end'] ?? '17:00',
+                ];
+            }
+        }
+
+        if (! collect($days)->contains('work', true)) {
+            throw ValidationException::withMessages(['days' => 'At least one working day is required.']);
+        }
+
+        return [
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'starts_on' => $data['starts_on'] ?? null,
+            'ends_on' => $data['ends_on'] ?? null,
+            'is_active' => $request->boolean('is_active'),
+            'revert_schedule_id' => $data['revert_schedule_id'] ?? null,
+            'days' => $days,
+        ];
+    }
+
+    public function storeSchedule(Request $request): RedirectResponse
+    {
+        $data = $this->validateSchedule($request);
+
+        $schedule = WorkSchedule::create([
+            ...$data,
+            'created_by' => auth()->id(),
+        ]);
+
+        Audit::record('work_schedule_created', $schedule, [], $schedule->toArray());
+
+        return redirect()->route('attendance.settings')
+            ->with('success', "Work schedule \"{$schedule->name}\" created.");
+    }
+
+    public function updateSchedule(Request $request, WorkSchedule $schedule): RedirectResponse
+    {
+        $data = $this->validateSchedule($request);
+
+        // A schedule cannot revert to itself.
+        if ($data['revert_schedule_id'] == $schedule->id) {
+            throw ValidationException::withMessages(['revert_schedule_id' => 'A schedule cannot revert to itself.']);
+        }
+
+        $old = $schedule->toArray();
+        $schedule->update($data);
+
+        Audit::record('work_schedule_updated', $schedule, $old, $schedule->toArray());
+
+        return redirect()->route('attendance.settings')
+            ->with('success', "Work schedule \"{$schedule->name}\" updated.");
+    }
+
+    public function destroySchedule(WorkSchedule $schedule): RedirectResponse
+    {
+        Audit::record('work_schedule_deleted', $schedule, $schedule->toArray(), []);
+        $schedule->delete();
+
+        return redirect()->route('attendance.settings')->with('success', 'Work schedule deleted.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Holidays                                                           */
+    /* ------------------------------------------------------------------ */
+
+    public function storeHoliday(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'am_start' => ['required', 'date_format:H:i'],
-            'am_end' => ['required', 'date_format:H:i'],
-            'pm_start' => ['required', 'date_format:H:i'],
-            'pm_end' => ['required', 'date_format:H:i'],
+            'name' => ['required', 'string', 'max:200'],
+            'date' => ['required', 'date'],
+            'type' => ['required', 'in:regular_holiday,special_nonworking,work_suspension'],
+            'is_repeating' => ['nullable', 'boolean'],
         ]);
 
-        Setting::set('office_hours', [
-            'am_start' => $validated['am_start'],
-            'am_end' => $validated['am_end'],
-            'pm_start' => $validated['pm_start'],
-            'pm_end' => $validated['pm_end'],
+        $holiday = Holiday::create([
+            'name' => $validated['name'],
+            'date' => $validated['date'],
+            'type' => $validated['type'],
+            'is_repeating' => $request->boolean('is_repeating'),
+            'created_by' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Office hours updated.');
+        Audit::record('holiday_created', $holiday, [], $holiday->toArray());
+
+        return back()->with('success', "Holiday \"{$holiday->name}\" added.");
+    }
+
+    public function destroyHoliday(Holiday $holiday): RedirectResponse
+    {
+        Audit::record('holiday_deleted', $holiday, $holiday->toArray(), []);
+        $holiday->delete();
+
+        return back()->with('success', 'Holiday removed.');
     }
 }

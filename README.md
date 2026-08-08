@@ -54,8 +54,9 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Geofenced time logging** — admin/HR plot attendance **checkpoints** on a Leaflet + OpenStreetMap map (HQ + the 5 provincial offices seeded), each with a punch radius. Employees punch via their phone/desktop browser; the system verifies the device GPS position **server-side** against the nearest checkpoint and rejects punches outside the radius (with a friendly message naming the checkpoint).
 - **AM/PM in/out** — the punch button follows the physical bundy-clock sequence (AM in → AM out → PM in → PM out) and even skips to PM in when someone arrives after lunch.
 - **Corrections must go to HR** — timelogs are **append-only**; any alteration is submitted as a correction request and approved/rejected by HR (the only path that changes a punch). HR can also enter **manual punches** for field duty, forgotten punches, or GPS failure.
-- **CSC Form 48 DTR** — auto-generated monthly Daily Time Record: full day grid with AM/PM in-out times, hours rendered, late/undertime vs. configurable office hours, and totals. HTML preview + dompdf PDF with `DTR-2026-XXXX` reference numbers tracked in `documents`.
-- **Audited** — punches, corrections, approvals, checkpoint changes, and manual entries all land in `audit_logs`.
+- **CSC Form 48 DTR** — auto-generated monthly Daily Time Record: full day grid with AM/PM in-out times, hours rendered, late/undertime vs. the schedule in effect for each day, and totals. HTML preview + dompdf PDF with `DTR-2026-XXXX` reference numbers tracked in `documents`.
+- **Flexible scheduling (AOM No. 2026-020)** — Attendance Settings is now an effective-dated **work-schedule registry** + **holiday calendar**: named schedules with per-day-of-week work/rest and AM/PM times (seeded: **4-Day Compressed Workweek** Mon–Thu 7AM–6PM / Friday rest, and **Standard 8-Hour** Mon–Fri 8AM–5PM). The **CSC Res. 2600838 Friday-revert rule** is enforced — a holiday on a weekday rest day reverts the whole week to standard hours; holidays on working days are flagged deemed-complied. Rest-day/holiday/weekend punches are **never blocked** and their hours count as **overtime (CTO-eligible)** — the timelog evidence employees need to claim Compensatory Time-Off.
+- **Audited** — punches, corrections, approvals, checkpoint changes, schedule/holiday changes, and manual entries all land in `audit_logs`.
 
 **Reports & Audit — Phase 4 (implemented):**
 
@@ -237,7 +238,7 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 3. **Phase 2 — Leave:** ✅ accruals (`leave:accrue`), filing, approvals, leave cards
 4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
 5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
-6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs (imports/notifications stretch)
+6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs, and flexible AOM 2026-020 work scheduling (CWW + holidays + CSC Friday-revert rule, CTO-ready punches) — imports/notifications still stretch
 7. **Phase 6 — Payroll (last by decision):** salary scales, contribution engine, payslips — deferred until the appointment/leave/document backbone is complete
 
 See `docs/PLAN.md` for details.
