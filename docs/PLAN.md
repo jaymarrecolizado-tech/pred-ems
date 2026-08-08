@@ -140,6 +140,7 @@ erDiagram
 ### Documents
 - **Service Record**: generated chronologically from `appointments` (CSC format) — critical for retirement/GSIS/transfers.
 - **COE**, **Certificate of Leave Balances**, **Certification of No Pending Case** — templated PDFs with reference numbers.
+- **Document requests** (`document_requests` table): employees request any requestable document (COE, Service Record, Leave Balances, No Pending Case, DTR); HR fulfills from a queue — issue mints a reference + records the issuance, reject carries a reason. Statuses pending → issued | rejected | canceled.
 
 ---
 
@@ -248,6 +249,18 @@ day, marks rest days and holidays, and still counts hours rendered on them as
 **overtime (CTO-eligible)** — punches are never blocked because rest-day/holiday timelogs
 are the evidence for CTO credit claims. Fixed-date national holidays (recurring yearly) are
 seeded; HR manages the calendar in Settings.
+
+**Phase 3.5 – Document requests: ✅ complete.** Employees request official documents
+from **My Documents** (`/documents/requests`): Certificate of Employment, Service Record,
+Certificate of Leave Balances (live ledger balances as of issuance),
+Certification of No Pending Case, or DTR (per month). HR works a **fulfillment
+queue** (`/documents/requests/queue`, admin/HR) with status filters — **Issue**
+mints the reference number (`COE-`/`SR-`/`LB-`/`NPC-`/`DTR-YYYY-NNNN`),
+generates the PDF, and records the issuance in `documents`; **Reject** requires
+a reason. Employees track status (pending/issued/rejected/canceled), cancel
+pending requests, and download issued PDFs (regenerated deterministically with
+their reference). Duplicate pending requests are blocked; every step is audited.
+The documents-issued report now filters all document types.
 
 **Phase 6 – Payroll: ✅ complete.** A `Payroll` computation engine
 (`app/Support/Payroll.php`) turns each employee's monthly salary + active PERA

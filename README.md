@@ -49,6 +49,12 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Certificate of Employment (COE)** — letter-style PDF/HTML preview (`COE` button on any profile) certifying employment period, position, and division, with `COE-2026-XXXX` reference numbers.
 - **Issuance ledger** — every generated document is recorded in the `documents` table (employee, type, reference no., issued by, timestamp) for a clean audit trail; PDFs are dompdf-safe (table-only layout).
 
+**Document requests — Phase 3.5 (implemented):**
+
+- **My Documents** (`/documents/requests`) — every employee with a 201-file can request an official document: **Certificate of Employment**, **Service Record (CSC Form 212)**, **Certificate of Leave Balances** (live VL/SL/other balances as of issuance), **Certification of No Pending Case**, or **Daily Time Record (CSC Form 48)** (per month). A purpose is required; duplicate pending requests are blocked.
+- **HR fulfillment queue** (`/documents/requests/queue`, admin/HR) — review pending requests, **Issue** (mints the reference number — `COE-`/`SR-`/`LB-`/`NPC-`/`DTR-` — generates the PDF, and records the issuance in the `documents` ledger) or **Reject** with a reason. Status filter across pending / issued / rejected / canceled.
+- **Official copies** — once issued, the employee downloads the PDF with its reference number (regenerated deterministically); the documents-issued report now filters all document types.
+
 **Attendance & DTR — Phase 5 (implemented):**
 
 - **Geofenced time logging** — admin/HR plot attendance **checkpoints** on a Leaflet + OpenStreetMap map (HQ + the 5 provincial offices seeded), each with a punch radius. Employees punch via their phone/desktop browser; the system verifies the device GPS position **server-side** against the nearest checkpoint and rejects punches outside the radius (with a friendly message naming the checkpoint).
@@ -251,6 +257,7 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
 5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
 6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs, and flexible AOM 2026-020 work scheduling (CWW + holidays + CSC Friday-revert rule, CTO-ready punches) — imports/notifications still stretch
+6.5. **Phase 3.5 — Document Requests:** ✅ self-service request workflow (COE, Service Record, Leave Balances, No Pending Case, DTR) with an HR fulfillment queue — issue mints references + ledger entries, reject with reason, status tracking, official PDF downloads
 7. **Phase 6 — Payroll:** ✅ config-driven contribution/tax engine, payroll periods (create → compute → finalize), dompdf payslips with computation traces, remittance register, and employee self-service payslips — built last so the appointment/leave/document backbone was solid first (honoraria/overtime entry UI + official SSL table still open)
 
 See `docs/PLAN.md` for details.

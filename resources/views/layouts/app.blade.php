@@ -58,6 +58,12 @@
                         @include('partials.icon', ['name' => 'payroll'])
                         <span>My Payslips</span>
                     </a>
+                    @if ($myEmployee)
+                    <a href="{{ route('documents.requests') }}" class="nav-link {{ request()->routeIs('documents.requests*') ? 'active' : '' }}" title="My Documents" {!! request()->routeIs('documents.requests*') ? 'aria-current="page"' : '' !!}>
+                        @include('partials.icon', ['name' => 'documents'])
+                        <span>My Documents</span>
+                    </a>
+                    @endif
                 </div>
             </div>
 
@@ -149,6 +155,10 @@
                         <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" title="Reports" {!! request()->routeIs('reports.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'reports'])
                             <span>Reports</span>
+                        </a>
+                        <a href="{{ route('documents.requests.queue') }}" class="nav-link {{ request()->routeIs('documents.requests.queue') ? 'active' : '' }}" title="Document Requests" {!! request()->routeIs('documents.requests.queue') ? 'aria-current="page"' : '' !!}>
+                            @include('partials.icon', ['name' => 'documents'])
+                            <span>Document Requests</span>
                         </a>
                         @endif
                         <a href="{{ route('payroll.index') }}" class="nav-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}" title="Payroll" {!! request()->routeIs('payroll.*') ? 'aria-current="page"' : '' !!}>

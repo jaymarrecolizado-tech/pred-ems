@@ -219,7 +219,14 @@ class ReportController extends Controller
         return view('reports.documents', [
             'documents' => $documents,
             'type' => $type,
-            'types' => ['all' => 'All documents', 'service_record' => 'Service Record', 'certificate_of_employment' => 'Certificate of Employment'],
+            'types' => [
+                'all' => 'All documents',
+                'service_record' => 'Service Record',
+                'certificate_of_employment' => 'Certificate of Employment',
+                'leave_balances' => 'Certificate of Leave Balances',
+                'no_pending_case' => 'Certification of No Pending Case',
+                'dtr' => 'Daily Time Record',
+            ],
         ]);
     }
 

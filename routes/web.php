@@ -7,6 +7,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CoeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentRequestController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PayrollController;
@@ -96,6 +97,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/employees/{employee}/service-record/pdf', [ServiceRecordController::class, 'download'])->name('employees.service-record.pdf');
     Route::get('/employees/{employee}/coe', [CoeController::class, 'show'])->name('employees.coe');
     Route::get('/employees/{employee}/coe/pdf', [CoeController::class, 'download'])->name('employees.coe.pdf');
+
+    // Document requests (Phase 3.5) — self-service request + HR fulfillment queue
+    // Note: 'create'/'queue' must be registered before '/{documentRequest}'.
+    Route::get('/documents/requests', [DocumentRequestController::class, 'index'])->name('documents.requests');
+    Route::get('/documents/requests/create', [DocumentRequestController::class, 'create'])->name('documents.requests.create');
+    Route::post('/documents/requests', [DocumentRequestController::class, 'store'])->name('documents.requests.store');
+    Route::get('/documents/requests/queue', [DocumentRequestController::class, 'queue'])
+        ->middleware('role:admin,hr')
+        ->name('documents.requests.queue');
+    Route::post('/documents/requests/{documentRequest}/cancel', [DocumentRequestController::class, 'cancel'])->name('documents.requests.cancel');
+    Route::get('/documents/requests/{documentRequest}/download', [DocumentRequestController::class, 'download'])->name('documents.requests.download');
+    Route::post('/documents/requests/{documentRequest}/issue', [DocumentRequestController::class, 'issue'])
+        ->middleware('role:admin,hr')
+        ->name('documents.requests.issue');
+    Route::post('/documents/requests/{documentRequest}/reject', [DocumentRequestController::class, 'reject'])
+        ->middleware('role:admin,hr')
+        ->name('documents.requests.reject');
 
     // Payroll (Phase 6) — admin/HR/payroll manage runs; every role opens their own payslip
     Route::get('/my/payslips', [PayrollController::class, 'myPayslips'])->name('payroll.my');
