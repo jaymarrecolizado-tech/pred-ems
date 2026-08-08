@@ -3,15 +3,15 @@
 @section('title', 'Attendance Checkpoints')
 
 @section('content')
-    <div class="info-grid" style="grid-template-columns:1fr 1fr; align-items:start; margin-bottom:18px">
+    <div class="cp-layout">
         {{-- Map + form --}}
-        <div class="card">
+        <div class="card cp-map-card">
             <div class="card-header">
                 <h2>{{ isset($editing) ? 'Edit Checkpoint' : 'Add Checkpoint' }}</h2>
             </div>
             <div class="card-pad">
-                <div id="map" style="height:320px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
-                <div class="hint" style="margin:8px 0 14px; font-size:12px">Drag the marker to plot the zone center; the circle shows the punch radius. Employees must be inside this radius to time log.</div>
+                <div id="map" style="height:360px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
+                <div class="hint" style="margin:8px 0 14px; font-size:12px">Drag the marker to plot the zone center; the circle shows the punch radius. Employees must be inside this radius to time log. Click a checkpoint in the list to zoom to it on the map.</div>
 
                 <form method="POST" action="{{ isset($editing) ? route('attendance.checkpoints.update', $editing) : route('attendance.checkpoints.store') }}" class="form-grid">
                     @csrf
@@ -52,36 +52,49 @@
         </div>
 
         {{-- List --}}
-        <div class="card">
+        <div class="card cp-list-card">
             <div class="card-header">
                 <h2>Checkpoints <span class="hint">({{ $checkpoints->count() }})</span></h2>
             </div>
-            <div class="grow-list">
-                @forelse ($checkpoints as $checkpoint)
-                    <li>
-                        <div>
-                            <div style="font-weight:600">
-                                {{ $checkpoint->name }}
-                                <span class="badge {{ $checkpoint->is_active ? 'badge-green' : 'badge-gray' }}">{{ $checkpoint->is_active ? 'Active' : 'Off' }}</span>
+            <div class="cp-list-scroll">
+                <ul class="grow-list">
+                    @forelse ($checkpoints as $checkpoint)
+                        <li class="cp-row {{ isset($editing) && $editing->id === $checkpoint->id ? 'is-selected' : '' }}"
+                            data-id="{{ $checkpoint->id }}"
+                            data-lat="{{ $checkpoint->latitude }}"
+                            data-lng="{{ $checkpoint->longitude }}"
+                            role="button" tabindex="0"
+                            aria-label="Show {{ $checkpoint->name }} on the map">
+                            <div class="cp-row-main">
+                                <div style="font-weight:600">
+                                    {{ $checkpoint->name }}
+                                    <span class="badge {{ $checkpoint->is_active ? 'badge-green' : 'badge-gray' }}">{{ $checkpoint->is_active ? 'Active' : 'Off' }}</span>
+                                </div>
+                                <div class="num" style="font-size:11.5px; color:var(--ink-400)">
+                                    {{ $checkpoint->latitude }}, {{ $checkpoint->longitude }} · {{ $checkpoint->radius_meters }} m
+                                    @if ($checkpoint->address) · {{ $checkpoint->address }} @endif
+                                </div>
                             </div>
-                            <div class="num" style="font-size:11.5px; color:var(--ink-400)">
-                                {{ $checkpoint->latitude }}, {{ $checkpoint->longitude }} · {{ $checkpoint->radius_meters }} m
-                                @if ($checkpoint->address) · {{ $checkpoint->address }} @endif
+                            <div class="cp-row-actions">
+                                <button type="button" class="btn btn-outline btn-sm cp-locate" title="Zoom to this checkpoint on the map">
+                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                                    </svg>
+                                    Locate
+                                </button>
+                                <a href="{{ route('attendance.checkpoints.edit', $checkpoint) }}" class="btn btn-outline btn-sm">Edit</a>
+                                <form method="POST" action="{{ route('attendance.checkpoints.destroy', $checkpoint) }}" class="inline"
+                                      onsubmit="return confirm('Delete this checkpoint?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
+                                </form>
                             </div>
-                        </div>
-                        <div style="display:flex; gap:6px">
-                            <a href="{{ route('attendance.checkpoints.edit', $checkpoint) }}" class="btn btn-outline btn-sm">Edit</a>
-                            <form method="POST" action="{{ route('attendance.checkpoints.destroy', $checkpoint) }}" class="inline"
-                                  onsubmit="return confirm('Delete this checkpoint?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
-                            </form>
-                        </div>
-                    </li>
-                @empty
-                    <li class="text-muted">No checkpoints yet. Plot the first zone on the map.</li>
-                @endforelse
+                        </li>
+                    @empty
+                        <li class="text-muted">No checkpoints yet. Plot the first zone on the map.</li>
+                    @endforelse
+                </ul>
             </div>
         </div>
     </div>
@@ -161,10 +174,16 @@
                 map.setView(REGION2_CENTER, 8);
             });
 
-        // --- All existing checkpoints (marker + radius circle) ---
+        // --- All existing checkpoints (marker + radius circle + popup) ---
         const checkpointData = @json($checkpointData);
 
         const activeCheckpoint = '{{ isset($editing) ? $editing->id : '' }}';
+
+        const checkpointMarkers = {};
+
+        function escHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
 
         checkpointData.forEach((cp) => {
             const pos = [cp.lat, cp.lng];
@@ -178,19 +197,66 @@
                 fillOpacity: 0.12
             }).addTo(map);
 
-            L.marker(pos, {
+            // bubblingMouseEvents:false so clicking a dot on the map locates that
+            // checkpoint instead of moving the form's draggable marker.
+            const dot = L.marker(pos, {
                 icon: L.divIcon({
                     className: 'checkpoint-div-icon',
-                    html: `<div class="cp-dot ${cp.active ? 'is-active' : 'is-off'}" title="${cp.name}"></div>`,
+                    html: `<div class="cp-dot ${cp.active ? 'is-active' : 'is-off'}" title="${escHtml(cp.name)}"></div>`,
                     iconSize: [14, 14],
                     iconAnchor: [7, 7]
-                })
+                }),
+                bubblingMouseEvents: false
             }).addTo(map).bindTooltip(cp.name, { sticky: true });
 
+            dot.bindPopup(
+                `<strong>${escHtml(cp.name)}</strong><br>` +
+                `Radius: ${cp.radius} m · ${cp.active ? 'Active' : 'Disabled'}`
+            );
+            dot.on('click', () => locateCheckpoint(cp.id));
+
+            checkpointMarkers[cp.id] = dot;
+        });
+
+        // --- Click a checkpoint (row, Locate button, or map dot) →
+        //     fly to + zoom + highlight + popup ---
+        function locateCheckpoint(id) {
+            const cp = checkpointData.find((c) => String(c.id) === String(id));
+            if (!cp) return;
+
+            map.flyTo([cp.lat, cp.lng], Math.max(map.getZoom(), 15), { duration: 0.7 });
+            const marker = checkpointMarkers[cp.id];
+            if (marker) marker.openPopup();
+
+            document.querySelectorAll('.cp-row').forEach((row) => {
+                row.classList.toggle('is-selected', row.dataset.id === String(id));
+            });
+        }
+
+        document.querySelectorAll('.cp-row').forEach((row) => {
+            const id = row.dataset.id;
+
+            row.addEventListener('click', (e) => {
+                // Ignore clicks on the action buttons / delete form.
+                if (e.target.closest('a, button, form')) return;
+                locateCheckpoint(id);
+            });
+
+            row.querySelector('.cp-locate')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                locateCheckpoint(id);
+            });
+
+            row.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    locateCheckpoint(id);
+                }
+            });
         });
 
         // --- Draggable marker for the form (new / editing checkpoint) ---
-        const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+        const marker = L.marker([initialLat, initialLng], { draggable: true, bubblingMouseEvents: false }).addTo(map);
         const circle = L.circle([initialLat, initialLng], { radius: initialRadius }).addTo(map);
 
         function syncCircle() {
@@ -226,6 +292,45 @@
     });
 </script>
 <style>
+    /* ---------- Checkpoints page layout ---------- */
+    .cp-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: stretch;
+        margin-bottom: 18px;
+    }
+    .cp-map-card { display: flex; flex-direction: column; min-width: 0; }
+    .cp-map-card .card-pad { flex: 1; }
+    .cp-list-card { display: flex; flex-direction: column; min-width: 0; }
+    .cp-list-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2px 18px 12px;
+        max-height: 640px;
+    }
+    .cp-list-scroll .grow-list li { border-bottom: 1px solid var(--line); }
+
+    .cp-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 8px;
+        border-radius: var(--radius-control);
+        cursor: pointer;
+        transition: background .12s, box-shadow .12s;
+    }
+    .cp-row:hover { background: var(--paper-2); }
+    .cp-row:focus-visible { outline: 2px solid var(--brand-600); outline-offset: -2px; }
+    .cp-row.is-selected {
+        background: var(--brand-50);
+        box-shadow: inset 3px 0 0 var(--brand-600);
+    }
+    .cp-row.is-selected:hover { background: var(--brand-50); }
+    .cp-row-main { min-width: 0; }
+    .cp-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
     .checkpoint-div-icon { background: transparent; border: none; }
     .cp-dot {
         width: 12px;
@@ -236,4 +341,9 @@
     }
     .cp-dot.is-active { background: #059669; }
     .cp-dot.is-off { background: #9ca3af; }
+
+    @media (max-width: 1023px) {
+        .cp-layout { grid-template-columns: 1fr; }
+        .cp-list-scroll { max-height: none; }
+    }
 </style>
