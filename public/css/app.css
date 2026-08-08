@@ -806,7 +806,7 @@ table.table { width: 100%; border-collapse: collapse; }
 .btn:not(.btn-sm) { min-height: 38px; }
 .nav-link { min-height: 38px; }
 
-/* ---------- Topbar title row + hamburger ---------- */
+/* ---------- Topbar title row + hamburger (app-drawer sidebar) ---------- */
 .topbar-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .btn-icon {
     display: inline-flex;
@@ -823,7 +823,31 @@ table.table { width: 100%; border-collapse: collapse; }
 }
 .btn-icon:hover { background: var(--paper-2); border-color: var(--brand-600); }
 .btn-icon-svg { width: 20px; height: 20px; }
-#sidebar-toggle { display: none; }
+#sidebar-toggle { display: inline-flex; }
+
+/* ---------- Collapsible app-drawer rail (desktop only) ----------
+   Scoped to >= 1024px so the sidebar-collapsed class is inert on mobile
+   (where the drawer already slides in/out) — no fragile override needed. */
+.sidebar { transition: width .22s ease; }
+
+@media (min-width: 1024px) {
+    body.sidebar-collapsed .sidebar { width: 76px; }
+    body.sidebar-collapsed .brand { justify-content: center; padding: 18px 8px; }
+    body.sidebar-collapsed .brand-text,
+    body.sidebar-collapsed .sidebar-user .sidebar-user-text,
+    body.sidebar-collapsed .version { display: none; }
+    body.sidebar-collapsed .nav { padding: 12px 8px 16px; }
+    body.sidebar-collapsed .nav-group-toggle { justify-content: center; padding: 10px 0; gap: 0; }
+    body.sidebar-collapsed .nav-group-toggle > span,
+    body.sidebar-collapsed .nav-group-chevron { display: none; }
+    body.sidebar-collapsed .nav-group-toggle .nav-svg { width: 20px; height: 20px; }
+    body.sidebar-collapsed .nav-link { justify-content: center; padding: 10px 0; gap: 0; }
+    body.sidebar-collapsed .nav-link > span,
+    body.sidebar-collapsed .nav-link .phase { display: none; }
+    body.sidebar-collapsed .nav-link .nav-svg { width: 19px; height: 19px; }
+    body.sidebar-collapsed .sidebar-footer { padding: 12px 8px; }
+    body.sidebar-collapsed .sidebar-user { justify-content: center; padding: 8px 0; }
+}
 
 /* ---------- Mobile sidebar drawer ---------- */
 .sidebar-backdrop { display: none; }

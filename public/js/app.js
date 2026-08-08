@@ -10,8 +10,9 @@
     var toggle = document.getElementById('sidebar-toggle');
     var backdrop = document.getElementById('sidebar-backdrop');
     var nav = document.querySelector('.nav');
+    var COLLAPSE_KEY = 'hris-nav:sidebar-collapsed';
 
-    /* ---------------- Sidebar drawer ---------------- */
+    /* ---------------- Sidebar drawer (mobile) ---------------- */
 
     function openSidebar() {
         body.classList.add('sidebar-open');
@@ -23,14 +24,28 @@
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
     }
 
+    /* ---------------- App-drawer rail (desktop) ---------------- */
+
+    function isDesktop() { return window.innerWidth >= 1024; }
+
+    function setCollapsed(collapsed) {
+        body.classList.toggle('sidebar-collapsed', collapsed);
+        try { localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) { /* storage unavailable */ }
+        if (toggle) toggle.setAttribute('aria-expanded', String(!collapsed));
+    }
+
+    function toggleSidebar() {
+        if (isDesktop()) {
+            setCollapsed(!body.classList.contains('sidebar-collapsed'));
+        } else if (body.classList.contains('sidebar-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+
     if (toggle) {
-        toggle.addEventListener('click', function () {
-            if (body.classList.contains('sidebar-open')) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
-        });
+        toggle.addEventListener('click', toggleSidebar);
     }
 
     if (backdrop) {
@@ -38,18 +53,41 @@
     }
 
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') closeSidebar();
+        if (event.key !== 'Escape') return;
+        if (isDesktop() && body.classList.contains('sidebar-collapsed')) {
+            setCollapsed(false);
+        } else {
+            closeSidebar();
+        }
     });
 
     if (nav) {
         nav.addEventListener('click', function (event) {
-            if (event.target.closest('a.nav-link')) closeSidebar();
+            var linkClick = event.target.closest('a.nav-link');
+            if (!linkClick) return;
+            // Navigating from the collapsed rail always expands the drawer so
+            // the destination is visible in context on the next page.
+            if (isDesktop()) {
+                if (body.classList.contains('sidebar-collapsed')) setCollapsed(false);
+            } else {
+                closeSidebar(); // mobile drawer hides on navigation
+            }
         });
     }
 
     window.addEventListener('resize', function () {
         if (window.innerWidth >= 1024) closeSidebar();
     });
+
+    // Restore the persisted desktop rail state and keep the hamburger's
+    // aria-expanded truthful (collapsed rail => 'false', else 'true').
+    if (isDesktop()) {
+        var savedCollapsed = null;
+        try { savedCollapsed = localStorage.getItem(COLLAPSE_KEY); } catch (e) { /* ignore */ }
+        var collapsed = savedCollapsed === '1';
+        body.classList.toggle('sidebar-collapsed', collapsed);
+        if (toggle) toggle.setAttribute('aria-expanded', String(!collapsed));
+    }
 
     /* ---------------- Collapsible nav groups ----------------
        The CSS hides panels via `[aria-expanded="false"] + .nav-group-panel`,
@@ -69,6 +107,11 @@
         toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
 
         toggle.addEventListener('click', function () {
+            // Expanding a group from the collapsed rail first restores the full
+            // drawer so the group's items are actually visible.
+            if (isDesktop() && body.classList.contains('sidebar-collapsed')) {
+                setCollapsed(false);
+            }
             var next = toggle.getAttribute('aria-expanded') !== 'true';
             toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
             try { localStorage.setItem(key, next ? '1' : '0'); } catch (e) { /* ignore */ }

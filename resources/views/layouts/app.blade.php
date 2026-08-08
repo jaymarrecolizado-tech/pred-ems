@@ -40,16 +40,17 @@
         <nav class="nav">
             {{-- Overview --}}
             <div class="nav-group" data-nav-group="overview">
-                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-overview">
+                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-overview" title="Overview">
+                    @include('partials.icon', ['name' => 'dashboard'])
                     <span>Overview</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
                 <div class="nav-group-panel" id="nav-group-overview">
-                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" {!! request()->routeIs('dashboard') ? 'aria-current="page"' : '' !!}>
+                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard" {!! request()->routeIs('dashboard') ? 'aria-current="page"' : '' !!}>
                         @include('partials.icon', ['name' => 'dashboard'])
                         <span>Dashboard</span>
                     </a>
-                    <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" {!! request()->routeIs('profile.*') ? 'aria-current="page"' : '' !!}>
+                    <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="My Profile" {!! request()->routeIs('profile.*') ? 'aria-current="page"' : '' !!}>
                         @include('partials.icon', ['name' => 'profile'])
                         <span>My Profile</span>
                     </a>
@@ -59,12 +60,13 @@
             @if ($canViewDirectory)
                 {{-- Staffing --}}
                 <div class="nav-group" data-nav-group="staffing">
-                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-staffing">
+                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-staffing" title="Staffing">
+                        @include('partials.icon', ['name' => 'employees'])
                         <span>Staffing</span>
                         @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                     </button>
                     <div class="nav-group-panel" id="nav-group-staffing">
-                        <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.index') ? 'active' : '' }}" {!! request()->routeIs('employees.index') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.index') ? 'active' : '' }}" title="Employee Profiles" {!! request()->routeIs('employees.index') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'employees'])
                             <span>Employee Profiles</span>
                         </a>
@@ -74,17 +76,18 @@
 
             {{-- Leave --}}
             <div class="nav-group" data-nav-group="leave">
-                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-leave">
+                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-leave" title="Leave">
+                    @include('partials.icon', ['name' => 'leave'])
                     <span>Leave</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
                 <div class="nav-group-panel" id="nav-group-leave">
-                    <a href="{{ route('leave.index') }}" class="nav-link {{ request()->routeIs('leave.index', 'leave.create') ? 'active' : '' }}" {!! request()->routeIs('leave.index', 'leave.create') ? 'aria-current="page"' : '' !!}>
+                    <a href="{{ route('leave.index') }}" class="nav-link {{ request()->routeIs('leave.index', 'leave.create') ? 'active' : '' }}" title="My Leave" {!! request()->routeIs('leave.index', 'leave.create') ? 'aria-current="page"' : '' !!}>
                         @include('partials.icon', ['name' => 'leave'])
                         <span>My Leave</span>
                     </a>
                     @if (auth()->user()->hasAnyRole(['admin', 'hr']))
-                        <a href="{{ route('leave.approvals') }}" class="nav-link {{ request()->routeIs('leave.approvals') ? 'active' : '' }}" {!! request()->routeIs('leave.approvals') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('leave.approvals') }}" class="nav-link {{ request()->routeIs('leave.approvals') ? 'active' : '' }}" title="Leave Approvals" {!! request()->routeIs('leave.approvals') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Leave Approvals</span>
                         </a>
@@ -94,29 +97,30 @@
 
             {{-- Attendance --}}
             <div class="nav-group" data-nav-group="attendance">
-                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-attendance">
+                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-attendance" title="Attendance">
+                    @include('partials.icon', ['name' => 'clock'])
                     <span>Attendance</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
                 <div class="nav-group-panel" id="nav-group-attendance">
-                    <a href="{{ route('attendance.index') }}" class="nav-link {{ request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'active' : '' }}" {!! request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'aria-current="page"' : '' !!}>
+                    <a href="{{ route('attendance.index') }}" class="nav-link {{ request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'active' : '' }}" title="My Attendance" {!! request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'aria-current="page"' : '' !!}>
                         @include('partials.icon', ['name' => 'clock'])
                         <span>My Attendance</span>
                     </a>
                     @if (auth()->user()->hasAnyRole(['admin', 'hr']))
-                        <a href="{{ route('attendance.checkpoints') }}" class="nav-link {{ request()->routeIs('attendance.checkpoints*') ? 'active' : '' }}" {!! request()->routeIs('attendance.checkpoints*') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('attendance.checkpoints') }}" class="nav-link {{ request()->routeIs('attendance.checkpoints*') ? 'active' : '' }}" title="Checkpoints" {!! request()->routeIs('attendance.checkpoints*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'map'])
                             <span>Checkpoints</span>
                         </a>
-                        <a href="{{ route('attendance.corrections') }}" class="nav-link {{ request()->routeIs('attendance.corrections') ? 'active' : '' }}" {!! request()->routeIs('attendance.corrections') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('attendance.corrections') }}" class="nav-link {{ request()->routeIs('attendance.corrections') ? 'active' : '' }}" title="Correction Requests" {!! request()->routeIs('attendance.corrections') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Correction Requests</span>
                         </a>
-                        <a href="{{ route('attendance.logs') }}" class="nav-link {{ request()->routeIs('attendance.logs') ? 'active' : '' }}" {!! request()->routeIs('attendance.logs') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('attendance.logs') }}" class="nav-link {{ request()->routeIs('attendance.logs') ? 'active' : '' }}" title="Timelogs" {!! request()->routeIs('attendance.logs') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'documents'])
                             <span>Timelogs</span>
                         </a>
-                        <a href="{{ route('attendance.settings') }}" class="nav-link {{ request()->routeIs('attendance.settings') ? 'active' : '' }}" {!! request()->routeIs('attendance.settings') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('attendance.settings') }}" class="nav-link {{ request()->routeIs('attendance.settings') ? 'active' : '' }}" title="Office Hours" {!! request()->routeIs('attendance.settings') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Office Hours</span>
                         </a>
@@ -127,20 +131,21 @@
             @if (auth()->user()->hasAnyRole(['admin', 'hr']))
                 {{-- Administration --}}
                 <div class="nav-group" data-nav-group="admin">
-                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-admin">
+                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-admin" title="Administration">
+                        @include('partials.icon', ['name' => 'audit'])
                         <span>Administration</span>
                         @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                     </button>
                     <div class="nav-group-panel" id="nav-group-admin">
-                        <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" {!! request()->routeIs('audit-logs.*') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" title="Audit Trail" {!! request()->routeIs('audit-logs.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Audit Trail</span>
                         </a>
-                        <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" {!! request()->routeIs('reports.*') ? 'aria-current="page"' : '' !!}>
+                        <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" title="Reports" {!! request()->routeIs('reports.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'reports'])
                             <span>Reports</span>
                         </a>
-                        <span class="nav-link disabled">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P6)</em></span>
+                        <span class="nav-link disabled" title="Payroll (Phase 6)">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P6)</em></span>
                     </div>
                 </div>
             @endif
@@ -149,7 +154,7 @@
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 @include('partials.avatar', ['employee' => $myEmployee, 'size' => 34])
-                <div style="min-width:0">
+                <div class="sidebar-user-text" style="min-width:0">
                     <div class="sidebar-user-name">{{ auth()->user()->name }}</div>
                     <div class="sidebar-user-role">{{ str_replace('_', ' ', ucfirst($myRole)) }}</div>
                 </div>
