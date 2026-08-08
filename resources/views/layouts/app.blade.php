@@ -59,8 +59,18 @@
                 </a>
             @endif
 
+            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                <a href="{{ route('leave.approvals') }}" class="nav-link {{ request()->routeIs('leave.approvals') ? 'active' : '' }}" {!! request()->routeIs('leave.approvals') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'audit'])
+                    <span>Leave Approvals</span>
+                </a>
+            @endif
+            <a href="{{ route('leave.index') }}" class="nav-link {{ request()->routeIs('leave.index', 'leave.create') ? 'active' : '' }}" {!! request()->routeIs('leave.index', 'leave.create') ? 'aria-current="page"' : '' !!}>
+                @include('partials.icon', ['name' => 'leave'])
+                <span>My Leave</span>
+            </a>
+
             <div class="nav-section">Modules (upcoming)</div>
-            <span class="nav-link disabled">@include('partials.icon', ['name' => 'leave'])<span>Leave Management</span><em class="phase">(P2)</em></span>
             <span class="nav-link disabled">@include('partials.icon', ['name' => 'documents'])<span>Documents</span><em class="phase">(P3)</em></span>
             <span class="nav-link disabled">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P4)</em></span>
             <span class="nav-link disabled">@include('partials.icon', ['name' => 'reports'])<span>Reports</span><em class="phase">(P5)</em></span>

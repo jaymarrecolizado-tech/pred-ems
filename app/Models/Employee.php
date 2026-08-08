@@ -180,17 +180,23 @@ class Employee extends Model
             ->orderBy('code')
             ->get()
             ->map(function (LeaveType $type) {
-                $balance = (float) LeaveCreditLedger::query()
-                    ->where('employee_id', $this->id)
-                    ->where('leave_type_id', $type->id)
-                    ->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')
-                    ->value('balance');
-
                 return (object) [
                     'leave_type' => $type,
-                    'balance' => $balance,
+                    'balance' => $this->leaveBalanceFor($type),
                 ];
             })
             ->reject(fn ($row) => $row->balance == 0 && $row->leave_type->code !== 'VL' && $row->leave_type->code !== 'SL');
+    }
+
+    /**
+     * Current balance for a single leave type, derived from the ledger.
+     */
+    public function leaveBalanceFor(LeaveType $type): float
+    {
+        return (float) LeaveCreditLedger::query()
+            ->where('employee_id', $this->id)
+            ->where('leave_type_id', $type->id)
+            ->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')
+            ->value('balance');
     }
 }

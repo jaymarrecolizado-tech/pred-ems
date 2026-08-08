@@ -173,8 +173,8 @@ erDiagram
 | Phase | Scope | Deliverables |
 |---|---|---|
 | **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type ✅ + self-service profile/photos/password ✅ + audit trail viewer ✅ |
-| **1.5. UI Redesign** | GOV.PH Institutional design language + mobile responsiveness | Flat flag-palette UI, no emoji/gradients/pills, off-canvas mobile drawer, modern a11y/UX ✅ |
-| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end + forced-leave report |
+| **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
+| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end + forced-leave report 🚧 IN PROGRESS |
 | **3. Documents** | Service Record, COE, certifications | PDF generation, reference numbers |
 | **4. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports |
 | **5. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite (audit viewer ✅ — shipped early with Phase 1 self-service) |
@@ -197,12 +197,16 @@ erDiagram
 ## 9. Status & immediate next step
 
 **Phase 1 – Foundation: ✅ complete.** Auth/RBAC, employee 201-file module with real DICT RO2 directory,
-self-service (My Profile, photos, password), audit trail viewer, the **GOV.PH Institutional UI redesign**
-(see `docs/UI_REDESIGN.md`), and the **mobile-responsive modern UX pass** (off-canvas drawer, touch
-targets, a11y, print) are all shipped, tested (19/19), and pushed to `origin/main`.
+self-service (My Profile, photos, password), audit trail viewer — shipped, tested (19/19).
 
-**Immediate next step — Phase 2 – Leave:** the data layer already exists (`leave_types`,
-`leave_credit_ledger`, `leave_applications`). Build filing + approval workflow, monthly VL/SL
-accruals (1.25 days/month cron), leave cards, and the forced-leave report. Before that, a small
-**Pass G page sweep** remains: align a few remaining inline styles on the employee/show/edit,
-profile, and audit-log pages with the new responsive design.
+**UI redesign: ✅ complete — on branch `ui-improvements`.** The earlier GOV.PH Institutional pass was
+replaced by an **eGovPay-style design system** (see `docs/UI_REDESIGN.md`): dark navy sidebar
+(`#1B2A4A`), blue-600 primary actions, light-gray canvas, white rounded cards, pill badges,
+tracked uppercase table headers, Inter + Be Vietnam Pro type, circular deterministic avatars, a
+rebuilt dashboard (hero banner, stat-row panel, vanilla-SVG headcount chart with table/area/bar
+view toggle), and a lighter navy than the original kit — all implemented in plain CSS + vanilla
+JS (no build step) and pushed to `origin/ui-improvements`.
+
+**Immediate next step — Phase 2 – Leave: 🚧 in progress.** The data layer already exists
+(`leave_types`, `leave_credit_ledger`, `leave_applications`). Build the filing + approval
+workflow, leave cards (balances per employee), and the forced-leave report.

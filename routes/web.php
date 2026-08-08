@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/audit-logs', [AuditLogController::class, 'index'])
         ->middleware('role:admin,hr')
         ->name('audit-logs.index');
+
+    // Leave module — self-service filing + approval workflow (Phase 2)
+    Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
+    Route::get('/leave/create', [LeaveController::class, 'create'])->name('leave.create');
+    Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
+    Route::post('/leave/{application}/cancel', [LeaveController::class, 'cancel'])->name('leave.cancel');
+
+    Route::middleware('role:admin,hr')->group(function () {
+        Route::get('/leave/approvals', [LeaveController::class, 'approvals'])->name('leave.approvals');
+        Route::post('/leave/{application}/approve', [LeaveController::class, 'approve'])->name('leave.approve');
+        Route::post('/leave/{application}/reject', [LeaveController::class, 'reject'])->name('leave.reject');
+    });
 
     // Employee profiles — RBAC enforcement per the permission model.
     // Read access (directory + own profile) for staff roles; write access admin/HR only.
