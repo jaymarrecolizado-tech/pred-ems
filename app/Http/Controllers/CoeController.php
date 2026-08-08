@@ -10,42 +10,43 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
-class ServiceRecordController extends Controller
+/**
+ * Certificate of Employment (COE) — the second Phase 3 official document.
+ * Issued with a COE-YYYY-NNNN reference number and tracked in `documents`.
+ */
+class CoeController extends Controller
 {
     /**
-     * On-screen preview of the CSC Service Record (CS Form 212).
+     * On-screen preview of the COE letter.
      */
     public function show(Employee $employee): View
     {
         $this->authorizeAccess($employee);
 
-        return view('documents.service-record', [
-            'employee' => $employee->load(['employmentType', 'position', 'appointments.position', 'appointments.employmentType']),
+        return view('documents.coe', [
+            'employee' => $employee->load(['employmentType', 'position', 'division', 'appointments']),
             'preparer' => DocumentIssuer::preparer(),
             'certifier' => DocumentIssuer::certifier(),
         ]);
     }
 
     /**
-     * Generate and download the Service Record PDF (dompdf), recording the
-     * issued document in the `documents` table with a reference number.
-     *
-     * The PDF is rendered before the issuance is recorded so a rendering
-     * failure never leaves an orphan document row; concurrent duplicate
-     * reference numbers are retried with a fresh number.
+     * Generate and download the COE PDF, recording the issuance in the
+     * `documents` table. Rendered before recording, retried on duplicate
+     * reference numbers — same pattern as the Service Record.
      */
     public function download(Employee $employee): Response
     {
         $this->authorizeAccess($employee);
 
-        $employee->load(['employmentType', 'position', 'appointments.position', 'appointments.employmentType']);
+        $employee->load(['employmentType', 'position', 'division', 'appointments']);
 
-        $filename = 'Service_Record_' . str_replace([' ', '.'], '_', $employee->full_name) . '.pdf';
+        $filename = 'Certificate_of_Employment_' . str_replace([' ', '.'], '_', $employee->full_name) . '.pdf';
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
-            $referenceNo = DocumentIssuer::nextReferenceNo('SR');
+            $referenceNo = DocumentIssuer::nextReferenceNo('COE');
 
-            $pdf = Pdf::loadView('documents.service-record', [
+            $pdf = Pdf::loadView('documents.coe', [
                 'employee' => $employee,
                 'preparer' => DocumentIssuer::preparer(),
                 'certifier' => DocumentIssuer::certifier(),
@@ -57,15 +58,13 @@ class ServiceRecordController extends Controller
             try {
                 Document::create([
                     'employee_id' => $employee->id,
-                    'document_type' => 'service_record',
+                    'document_type' => 'certificate_of_employment',
                     'reference_no' => $referenceNo,
-                    'remarks' => 'Service Record (CS Form 212)',
+                    'remarks' => 'Certificate of Employment',
                     'generated_by' => auth()->id(),
                     'generated_at' => now(),
                 ]);
             } catch (QueryException $e) {
-                // 1062 = MySQL duplicate entry: another request took this
-                // reference number concurrently — allocate a fresh one.
                 if ((int) $e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
@@ -77,16 +76,11 @@ class ServiceRecordController extends Controller
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         }
 
-        abort(500, 'Unable to issue a Service Record at this time.');
+        abort(500, 'Unable to issue a Certificate of Employment at this time.');
     }
 
-    /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
-    /* ------------------------------------------------------------------ */
-
     /**
-     * Admin/HR may view any employee's record; the `employee` role may only
-     * view their own.
+     * Admin/HR may issue for any employee; the `employee` role only for self.
      */
     private function authorizeAccess(Employee $employee): void
     {
@@ -95,9 +89,4 @@ class ServiceRecordController extends Controller
             abort(403, 'You do not have permission to access this document.');
         }
     }
-
-    /**
-     * "Prepared by" — the HRMO / administrative officer handling HR, falling
-     * back to the signed-in user.
-     */
 }

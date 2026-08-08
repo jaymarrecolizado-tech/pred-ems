@@ -174,11 +174,11 @@ erDiagram
 |---|---|---|
 | **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type ✅ + self-service profile/photos/password ✅ + audit trail viewer ✅ |
 | **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
-| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end + forced-leave report 🚧 IN PROGRESS |
-| **3. Documents** | Service Record, COE, certifications | PDF generation, reference numbers |
-| **4. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports |
-| **5. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite (audit viewer ✅ — shipped early with Phase 1 self-service) |
-| **6. Extras** | Attendance/DTR, imports from spreadsheets, notifications | Stretch features |
+| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
+| **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
+| **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite (audit viewer ✅ — shipped early with Phase 1 self-service) 🚧 IN PROGRESS |
+| **5. Extras** | Attendance/DTR, imports from spreadsheets, notifications | Stretch features |
+| **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports — **scheduled last** by decision (Aug 2026) so the data backbone (appointments, leave ledger, documents) is solid first |
 
 ---
 
@@ -207,6 +207,18 @@ rebuilt dashboard (hero banner, stat-row panel, vanilla-SVG headcount chart with
 view toggle), and a lighter navy than the original kit — all implemented in plain CSS + vanilla
 JS (no build step) and pushed to `origin/ui-improvements`.
 
-**Immediate next step — Phase 2 – Leave: 🚧 in progress.** The data layer already exists
-(`leave_types`, `leave_credit_ledger`, `leave_applications`). Build the filing + approval
-workflow, leave cards (balances per employee), and the forced-leave report.
+**Phase 2 – Leave: ✅ complete.** Accruals (`leave:accrue`, idempotent month-keyed),
+filing with working-day computation and insufficient-balance guard, approval workflow
+(ledger debit on approve, reason on reject), leave cards, full audit trail.
+
+**Phase 3 – Documents: ✅ complete.** The **Appointment Manager** (`/employees/{id}/appointments`
+create · `/appointments/{id}` edit/delete, admin/HR only) lets HR grow each employee's
+chronological, effective-dated appointment history — promotions, transfers, re-appointments,
+step increments — and every change re-syncs the employee's current-position snapshot. That
+timeline drives the **CSC Service Record (CS Form 212)** and the **Certificate of Employment**,
+both rendered as dompdf-safe PDFs (table-only layout, no flexbox/transforms) with sequential
+reference numbers (`SR-2026-0001`, `COE-2026-0001`) recorded in `documents`.
+
+**Immediate next step — Phase 4 – Reports & Audit: 🚧 next.** Headcount, leave, and
+document-issuance reporting suite (audit viewer already shipped). Payroll is deliberately
+**last** so the appointment/leave/document data backbone is complete and trustworthy first.

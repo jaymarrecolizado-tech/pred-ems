@@ -26,6 +26,7 @@
         <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap">
             @if (auth()->user()->hasAnyRole(['admin', 'hr']))
                 <a href="{{ route('employees.service-record', $employee) }}" class="btn btn-sm" style="background:#fff; color:var(--navy-900)" title="CSC Service Record (CS Form 212)">Service Record</a>
+                <a href="{{ route('employees.coe', $employee) }}" class="btn btn-sm" style="background:#fff; color:var(--navy-900)" title="Certificate of Employment">COE</a>
                 <a href="{{ route('employees.edit', $employee) }}" class="btn btn-outline btn-sm" style="color:#fff; border-color:rgba(255,255,255,.35)">Edit</a>
                 <form method="POST" action="{{ route('employees.destroy', $employee) }}"
                       onsubmit="return confirm('Delete this employee record? This cannot be undone.')">
@@ -76,7 +77,10 @@
 
     <div class="card" style="margin-top:18px">
         <div class="card-header">
-            <h2>Appointment History <span class="hint">(source of the future Service Record)</span></h2>
+            <h2>Appointment History <span class="hint">(drives the Service Record)</span></h2>
+            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                <a href="{{ route('appointments.create', $employee) }}" class="btn btn-primary btn-sm">+ Add Appointment</a>
+            @endif
         </div>
         <div class="table-wrap">
             <table class="table">
@@ -88,6 +92,9 @@
                         <th class="num">Monthly Salary</th>
                         <th>Effective From</th>
                         <th>Effective To</th>
+                        @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                            <th class="num">Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -99,9 +106,20 @@
                             <td class="num">{{ $appointment->monthly_salary ? '₱' . number_format((float) $appointment->monthly_salary, 2) : '—' }}</td>
                             <td>{{ $appointment->effective_from->format('F d, Y') }}</td>
                             <td>{{ $appointment->effective_to?->format('F d, Y') ?? 'Present' }}</td>
+                            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                                <td class="num">
+                                    <a href="{{ route('appointments.edit', $appointment) }}" class="btn btn-outline btn-sm">Edit</a>
+                                    <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="inline"
+                                          onsubmit="return confirm('Remove this appointment from the service history?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
+                                    </form>
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-muted">No appointment records yet.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->hasAnyRole(['admin', 'hr']) ? 7 : 6 }}" class="text-muted">No appointment records yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

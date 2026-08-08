@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CoeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
@@ -75,7 +77,19 @@ Route::middleware('auth')->group(function () {
         Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
 
-    // Service Record (Phase 3 — CSC Form 212)
+    // Appointment Manager (Phase 3) — admin/HR maintain the service history
+    // that drives the CSC Service Record. Employees never touch these.
+    Route::middleware('role:admin,hr')->group(function () {
+        Route::get('/employees/{employee}/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
+        Route::post('/employees/{employee}/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+        Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
+        Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
+        Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
+    });
+
+    // Official documents (Phase 3 — CSC Form 212 + COE)
     Route::get('/employees/{employee}/service-record', [ServiceRecordController::class, 'show'])->name('employees.service-record');
     Route::get('/employees/{employee}/service-record/pdf', [ServiceRecordController::class, 'download'])->name('employees.service-record.pdf');
+    Route::get('/employees/{employee}/coe', [CoeController::class, 'show'])->name('employees.coe');
+    Route::get('/employees/{employee}/coe/pdf', [CoeController::class, 'download'])->name('employees.coe.pdf');
 });

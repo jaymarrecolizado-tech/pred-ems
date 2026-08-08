@@ -42,6 +42,13 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Change own password** — self-service password update with current-password verification (min 8 chars).
 - **Audit trail viewer** — every create/update/delete of an employee record, profile self-edit, photo change, and password change is appended to `audit_logs` with actor, IP, and old→new value diffs. Admin/HR can browse and filter the trail at `/audit-logs` (searchable by actor, record id, IP, and action type).
 
+**Documents & service history — Phase 3 (implemented):**
+
+- **Appointment Manager** — admin/HR maintain each employee's chronological, effective-dated appointment history (`/employees/{id}/appointments/create`): original appointment, promotions, transfers, re-appointments, step increments. Every change re-syncs the employee's current-position snapshot; the timeline is the source of truth for the Service Record.
+- **Service Record (CS Form 212)** — official CSC-format PDF/HTML preview (`Service Record` button on any profile): DICT letterhead + seal, personal info grid (incl. maiden name + birth date/place), certification paragraph, appointment table (service / record of appointment / separation / remarks), "Nothing Follows" row, EO 54 footer, and prepared-by/certifier signature blocks resolved from the actual plantilla. Sequential `SR-2026-XXXX` reference numbers.
+- **Certificate of Employment (COE)** — letter-style PDF/HTML preview (`COE` button on any profile) certifying employment period, position, and division, with `COE-2026-XXXX` reference numbers.
+- **Issuance ledger** — every generated document is recorded in the `documents` table (employee, type, reference no., issued by, timestamp) for a clean audit trail; PDFs are dompdf-safe (table-only layout).
+
 **Leave management — Phase 2 (implemented):**
 
 - **My Leave** — every employee linked to a 201-file record gets a personal leave page (`/leave`): a live **leave card** of balances (VL/SL and all CSC types, derived from the append-only ledger), plus their full application history.
@@ -211,9 +218,9 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 1. **Phase 1 — Foundation:** ✅ auth/RBAC, employee profiles, self-service, audit trail
 2. **UI Redesign:** ✅ eGovPay-style design system + mobile responsive — on branch `ui-improvements`
 3. **Phase 2 — Leave:** ✅ accruals (`leave:accrue`), filing, approvals, leave cards
-4. **Phase 3 — Documents (next):** Service Record, COE (PDF via dompdf)
-5. **Phase 4 — Payroll:** salary scales, contribution engine, payslips
-6. **Phase 5 — Reports & Audit:** reporting suite (audit viewer ✅ done)
-7. **Phase 6 — Extras:** attendance/DTR, spreadsheet imports, notifications
+4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
+5. **Phase 4 — Reports & Audit (next):** headcount/leave/document reporting suite (audit viewer ✅ done)
+6. **Phase 5 — Extras:** attendance/DTR, spreadsheet imports, notifications
+7. **Phase 6 — Payroll (last by decision):** salary scales, contribution engine, payslips — deferred until the appointment/leave/document backbone is complete
 
 See `docs/PLAN.md` for details.
