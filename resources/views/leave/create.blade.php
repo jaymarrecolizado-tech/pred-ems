@@ -2,6 +2,10 @@
 
 @section('title', 'File Leave')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Leave', route('leave.index')], ['File Leave']]])
+@endsection
+
 @section('content')
     <div class="card card-pad" style="max-width:640px">
         <div class="card-header" style="padding:0 0 14px; border-bottom:1px solid var(--line)">

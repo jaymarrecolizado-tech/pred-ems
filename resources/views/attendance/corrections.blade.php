@@ -2,6 +2,10 @@
 
 @section('title', 'Attendance Corrections')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Correction Requests']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('attendance.corrections') }}" class="filter-bar">
         <div class="field" style="flex:0 0 200px">

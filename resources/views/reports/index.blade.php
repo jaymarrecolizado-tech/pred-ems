@@ -2,6 +2,10 @@
 
 @section('title', 'Reports')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Reports']]])
+@endsection
+
 @section('content')
     <div class="overline">Reporting suite</div>
 

@@ -2,6 +2,10 @@
 
 @section('title', 'My Leave')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Leave']]])
+@endsection
+
 @section('content')
     @if (! $employee)
         <div class="card card-pad">

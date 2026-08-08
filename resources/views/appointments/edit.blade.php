@@ -2,6 +2,10 @@
 
 @section('title', 'Edit Appointment')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Employee Profiles', route('employees.index')], [$employee->full_name, route('employees.show', $employee)], ['Edit Appointment']]])
+@endsection
+
 @section('content')
     <div class="profile-header" style="margin-bottom:18px">
         @include('partials.avatar', ['employee' => $employee, 'size' => 52])

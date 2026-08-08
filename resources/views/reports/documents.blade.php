@@ -2,6 +2,10 @@
 
 @section('title', 'Documents Issued Report')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Reports', route('reports.index')], ['Documents Issued']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('reports.documents') }}" class="filter-bar">
         <div class="field" style="flex:0 0 220px">

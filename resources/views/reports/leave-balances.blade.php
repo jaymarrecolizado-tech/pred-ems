@@ -2,6 +2,10 @@
 
 @section('title', 'Leave Balances Report')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Reports', route('reports.index')], ['Leave Balances']]])
+@endsection
+
 @section('content')
     <div class="filter-bar" style="justify-content:flex-end">
         <div class="form-actions" style="margin:0">

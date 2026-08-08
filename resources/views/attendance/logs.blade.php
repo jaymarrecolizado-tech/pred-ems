@@ -2,6 +2,10 @@
 
 @section('title', 'Attendance Timelogs')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Timelogs']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('attendance.logs') }}" class="filter-bar">
         <div class="field">

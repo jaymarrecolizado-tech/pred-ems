@@ -25,7 +25,18 @@ class LeaveModuleTest extends TestCase
 
     private function employeeUser(): User
     {
-        $employee = Employee::whereHas('user.roles', fn ($q) => $q->where('name', 'employee'))->firstOrFail();
+        // Pick the lowest-id employee-role account that actually has a positive
+        // VL balance, so the filing/approval tests assert against a genuinely
+        // credit-entitled employee regardless of seed data or row order.
+        $employee = Employee::whereHas('user.roles', fn ($q) => $q->where('name', 'employee'))
+            ->whereHas('leaveCredits', function ($q) {
+                $q->whereHas('leaveType', fn ($t) => $t->where('code', 'VL'))
+                    ->selectRaw('1')
+                    ->havingRaw('COALESCE(SUM(credit - debit), 0) > 0')
+                    ->groupBy('employee_id');
+            })
+            ->orderBy('id')
+            ->firstOrFail();
 
         return $employee->user;
     }

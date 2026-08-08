@@ -2,6 +2,10 @@
 
 @section('title', 'Dashboard')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard']]])
+@endsection
+
 @section('content')
     {{-- Hero banner (eGovPay style) --}}
     <section class="hero-banner" aria-label="Welcome">

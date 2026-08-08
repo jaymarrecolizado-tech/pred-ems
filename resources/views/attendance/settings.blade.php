@@ -2,6 +2,10 @@
 
 @section('title', 'Attendance Settings')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Attendance Settings']]])
+@endsection
+
 @section('content')
     {{-- Today's schedule status --}}
     @php

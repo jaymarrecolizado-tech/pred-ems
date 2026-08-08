@@ -2,6 +2,10 @@
 
 @section('title', 'Edit My Profile')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Profile', route('profile.show')], ['Edit']]])
+@endsection
+
 @section('content')
     <div class="card card-pad">
         <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">

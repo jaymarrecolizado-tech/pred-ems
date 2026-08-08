@@ -2,6 +2,10 @@
 
 @section('title', 'Employee Profiles')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Employee Profiles']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('employees.index') }}" class="filter-bar">
         <div class="field">

@@ -2,6 +2,10 @@
 
 @section('title', 'Change Password')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Profile', route('profile.show')], ['Change Password']]])
+@endsection
+
 @section('content')
     <div class="card card-pad" style="max-width:520px">
         <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">

@@ -2,6 +2,10 @@
 
 @section('title', 'My Attendance')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Attendance']]])
+@endsection
+
 @section('content')
     <div class="info-grid" style="grid-template-columns:1fr 1fr; align-items:start; margin-bottom:18px">
         {{-- Punch card --}}

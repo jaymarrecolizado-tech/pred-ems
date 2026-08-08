@@ -2,6 +2,10 @@
 
 @section('title', 'Leave Utilization Report')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Reports', route('reports.index')], ['Leave Utilization']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('reports.leave-utilization') }}" class="filter-bar">
         <div class="field" style="flex:0 0 180px">

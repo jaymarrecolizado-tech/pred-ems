@@ -2,6 +2,10 @@
 
 @section('title', 'Attendance Checkpoints')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Checkpoints']]])
+@endsection
+
 @section('content')
     <div class="cp-layout">
         {{-- Map + form --}}

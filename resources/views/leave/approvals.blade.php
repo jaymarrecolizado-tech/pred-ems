@@ -2,6 +2,10 @@
 
 @section('title', 'Leave Approvals')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['Leave Approvals']]])
+@endsection
+
 @section('content')
     <form method="GET" action="{{ route('leave.approvals') }}" class="filter-bar">
         <div class="field">

@@ -2,6 +2,10 @@
 
 @section('title', 'My Profile')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['crumbs' => [['Dashboard', route('dashboard')], ['My Profile']]])
+@endsection
+
 @section('content')
     <div class="profile-header">
         @include('partials.avatar', ['employee' => $employee, 'size' => 76])

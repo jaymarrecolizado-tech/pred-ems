@@ -181,6 +181,10 @@
         </header>
 
         <div class="content" id="main-content">
+            @hasSection('breadcrumbs')
+                @yield('breadcrumbs')
+            @endif
+
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
