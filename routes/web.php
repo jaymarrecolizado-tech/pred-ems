@@ -41,6 +41,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
+    // Notification channel switches (admin only). Segment counts differ from
+    // /{notification}/read so ordering is safe either way; grouped here for clarity.
+    Route::get('/notifications/settings', [NotificationController::class, 'settings'])
+        ->middleware('role:admin')
+        ->name('notifications.settings');
+    Route::post('/notifications/settings', [NotificationController::class, 'updateSettings'])
+        ->middleware('role:admin')
+        ->name('notifications.settings.update');
+
     // My Profile — self-service (personal info, photo, password)
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');

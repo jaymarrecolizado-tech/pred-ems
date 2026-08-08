@@ -84,6 +84,7 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Email** — every notification also goes out as mail (uses Laravel's configured mailer; `MAIL_MAILER=log` in dev writes to the log instead of sending).
 - **SMS via the Android gateway** (`Reference/sms.md`) — notifications with an SMS text are queued (`sms_queue`) and delivered asynchronously by `php artisan sms:send` (scheduled every minute, retries up to 3 attempts). Never blocks or fails a business action.
 - **What fires** — document request submitted (HR/admin alerted) · document issued (employee) · document rejected (employee) · leave filed (HR/admin) · leave approved/rejected (employee).
+- **Admin-controlled channels** — **Notification Settings** (`/notifications/settings`, admin only) has switches to turn **email** and **SMS** delivery on/off office-wide (stored in the `settings` table). The in-system inbox is always on; SMS also needs the gateway configured (`SMS_ENABLED=true`) and the recipient's contact number. Every toggle is audited.
 - **Soft-fail by design** — a broken SMTP or SMS gateway never breaks the request/approval flow; failures are logged.
 
 **Reports & Audit — Phase 4 (implemented):**
@@ -201,7 +202,7 @@ cd hris && php artisan serve   # → http://localhost:8000
    SMS_TIMEOUT_SECONDS=15
    SMS_MAX_MESSAGE_LENGTH=320
    ```
-   Enable SMS on the **employee's 201-file** (contact number) — `SmsChannel` only sends when `SMS_ENABLED=true` and the employee has a contact number.
+   Enable SMS on the **employee's 201-file** (contact number) — `SmsChannel` only sends when `SMS_ENABLED=true`, the **admin's Notification Settings toggle** is on, and the employee has a contact number.
 4. **Migrate & seed**:
    ```
    php artisan migrate && php artisan db:seed   # tables: notifications, sms_queue

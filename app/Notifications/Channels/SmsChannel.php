@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Channels;
 
+use App\Models\Setting;
 use App\Notifications\HrisNotification;
 use App\Support\Sms;
 use Illuminate\Notifications\Notification;
@@ -9,13 +10,14 @@ use Illuminate\Notifications\Notification;
 /**
  * Custom Laravel notification channel: enqueues the SMS body to the
  * `sms_queue` table for the async gateway worker. No-op when SMS is disabled
- * or the recipient has no phone on file — never throws.
+ * (env or the admin's SMS toggle), or the recipient has no phone on file —
+ * never throws.
  */
 class SmsChannel
 {
     public function send(mixed $notifiable, Notification $notification): void
     {
-        if (! Sms::enabled()) {
+        if (! Setting::smsNotificationsEnabled() || ! Sms::enabled()) {
             return;
         }
 

@@ -7,6 +7,7 @@ use App\Models\DocumentRequest;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveType;
+use App\Models\Setting;
 use App\Models\SmsQueue;
 use App\Models\User;
 use App\Notifications\DocumentRequestIssuedNotification;
@@ -131,6 +132,106 @@ class NotificationsTest extends TestCase
             $request->delete();
         } finally {
             $employee->forceFill(['contact_number' => $originalPhone])->save();
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Admin channel switches                                             */
+    /* ------------------------------------------------------------------ */
+
+    public function test_admin_can_toggle_email_and_sms_channels(): void
+    {
+        $admin = $this->admin();
+
+        try {
+            // Page renders with the current switches.
+            $this->actingAs($admin)->get('/notifications/settings')->assertOk()->assertSee('Email notifications');
+
+            // Turn both off.
+            $this->actingAs($admin)->post('/notifications/settings', [
+                'email' => '0',
+                'sms' => '0',
+            ])->assertRedirect();
+
+            $this->assertFalse(Setting::emailNotificationsEnabled());
+            $this->assertFalse(Setting::smsNotificationsEnabled());
+
+            // Turn both back on.
+            $this->actingAs($admin)->post('/notifications/settings', [
+                'email' => '1',
+                'sms' => '1',
+            ])->assertRedirect();
+
+            $this->assertTrue(Setting::emailNotificationsEnabled());
+            $this->assertTrue(Setting::smsNotificationsEnabled());
+        } finally {
+            // Reset to a clean state so later tests see defaults (deleting the
+            // keys makes sms fall back to the gateway config again).
+            Setting::where('key', 'notifications.email_enabled')->delete();
+            Setting::where('key', 'notifications.sms_enabled')->delete();
+        }
+    }
+
+    public function test_employee_cannot_access_notification_settings(): void
+    {
+        $this->actingAs($this->employeeUser())
+            ->get('/notifications/settings')
+            ->assertStatus(403);
+
+        $this->actingAs($this->employeeUser())
+            ->post('/notifications/settings', ['email' => '0', 'sms' => '0'])
+            ->assertStatus(403);
+    }
+
+    public function test_email_channel_omitted_when_disabled(): void
+    {
+        $employee = $this->employeeUser()->employee;
+        $request = DocumentRequest::create([
+            'employee_id' => $employee->id,
+            'document_type' => 'certificate_of_employment',
+            'purpose' => 'Channel toggle test',
+            'status' => DocumentRequest::STATUS_ISSUED,
+        ]);
+
+        try {
+            Setting::set('notifications.email_enabled', false);
+            $notification = new DocumentRequestIssuedNotification($request);
+            $this->assertNotContains('mail', $notification->via($this->employeeUser()));
+
+            Setting::set('notifications.email_enabled', true);
+            $this->assertContains('mail', $notification->via($this->employeeUser()));
+        } finally {
+            Setting::where('key', 'notifications.email_enabled')->delete();
+            $request->delete();
+        }
+    }
+
+    public function test_sms_not_enqueued_when_admin_toggle_off(): void
+    {
+        $employee = $this->employeeUser()->employee;
+        $originalPhone = $employee->contact_number;
+
+        try {
+            $employee->forceFill(['contact_number' => '09171234567'])->save();
+            config(['services.sms.enabled' => true]);
+            Setting::set('notifications.sms_enabled', false);
+
+            $request = DocumentRequest::create([
+                'employee_id' => $employee->id,
+                'document_type' => 'certificate_of_employment',
+                'purpose' => 'Toggle-off test',
+                'status' => DocumentRequest::STATUS_ISSUED,
+            ]);
+
+            Notifier::send($this->employeeUser(), new DocumentRequestIssuedNotification($request));
+
+            $this->assertSame(0, SmsQueue::where('phone', 'like', '%9171234567')->count());
+
+            $request->delete();
+        } finally {
+            $employee->forceFill(['contact_number' => $originalPhone])->save();
+            config(['services.sms.enabled' => false]);
+            Setting::where('key', 'notifications.sms_enabled')->delete();
         }
     }
 

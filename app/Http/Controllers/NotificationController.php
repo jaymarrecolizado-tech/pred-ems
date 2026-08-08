@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
+use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\View\View;
 
 /**
- * In-system notification inbox + read/unread actions for the bell.
+ * In-system notification inbox + read/unread actions for the bell, and the
+ * admin-controlled email/SMS channel switches.
  */
 class NotificationController extends Controller
 {
+    /* ------------------------------------------------------------------ */
+    /*  Inbox                                                              */
+    /* ------------------------------------------------------------------ */
+
     public function index(Request $request): View
     {
         $filter = $request->string('filter', 'all');
@@ -42,5 +49,39 @@ class NotificationController extends Controller
         auth()->user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'All notifications marked as read.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Channel switches (admin)                                           */
+    /* ------------------------------------------------------------------ */
+
+    public function settings(): View
+    {
+        return view('notifications.settings', [
+            'channels' => Setting::notificationChannels(),
+        ]);
+    }
+
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['sometimes', 'boolean'],
+            'sms' => ['sometimes', 'boolean'],
+        ]);
+
+        $old = Setting::notificationChannels();
+        $new = [
+            'email' => (bool) ($validated['email'] ?? false),
+            'sms' => (bool) ($validated['sms'] ?? false),
+        ];
+
+        Setting::set('notifications.email_enabled', $new['email']);
+        Setting::set('notifications.sms_enabled', $new['sms']);
+
+        Audit::record('updated', null, $old, $new);
+
+        return back()->with('success', 'Notification channels updated — ' .
+            ($new['email'] ? 'email on' : 'email off') . ', ' .
+            ($new['sms'] ? 'SMS on' : 'SMS off') . '.');
     }
 }

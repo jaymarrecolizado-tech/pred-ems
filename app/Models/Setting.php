@@ -47,4 +47,55 @@ class Setting extends Model
             'pm_end' => '17:00',
         ]);
     }
+
+    /**
+     * Coerce a stored setting to a strict boolean. Setting values are stored
+     * as JSON, so real booleans arrive as booleans — but this also guards
+     * against string forms ('false', '0') ever being written.
+     */
+    private static function asBool(mixed $value, bool $default): bool
+    {
+        if ($value === null) {
+            return $default;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Whether email notifications are switched on for the office
+     * (admin-controlled; default ON).
+     */
+    public static function emailNotificationsEnabled(): bool
+    {
+        return self::asBool(static::get('notifications.email_enabled', null), true);
+    }
+
+    /**
+     * Whether SMS notifications are switched on for the office
+     * (admin-controlled). When unset, falls back to the SMS gateway state
+     * (SMS_ENABLED) so it stays authoritative until an admin decides.
+     */
+    public static function smsNotificationsEnabled(): bool
+    {
+        $stored = static::get('notifications.sms_enabled', null);
+
+        if ($stored !== null) {
+            return self::asBool($stored, false);
+        }
+
+        return \App\Support\Sms::enabled();
+    }
+
+    /**
+     * The set of notification channels currently switched on — used by the
+     * settings page and by notification dispatch.
+     */
+    public static function notificationChannels(): array
+    {
+        return [
+            'email' => self::emailNotificationsEnabled(),
+            'sms' => self::smsNotificationsEnabled(),
+        ];
+    }
 }

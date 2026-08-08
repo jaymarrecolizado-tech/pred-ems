@@ -164,6 +164,12 @@
                         <a href="{{ route('payroll.index') }}" class="nav-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}" title="Payroll" {!! request()->routeIs('payroll.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'payroll'])<span>Payroll</span>
                         </a>
+                        @if (auth()->user()->hasAnyRole(['admin']))
+                            <a href="{{ route('notifications.settings') }}" class="nav-link {{ request()->routeIs('notifications.settings*') ? 'active' : '' }}" title="Notification Settings" {!! request()->routeIs('notifications.settings*') ? 'aria-current="page"' : '' !!}>
+                                @include('partials.icon', ['name' => 'clock'])
+                                <span>Notification Settings</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endif
