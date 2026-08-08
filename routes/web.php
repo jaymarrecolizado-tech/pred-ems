@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ServiceRecordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -73,4 +74,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
         Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
+
+    // Service Record (Phase 3 — CSC Form 212)
+    Route::get('/employees/{employee}/service-record', [ServiceRecordController::class, 'show'])->name('employees.service-record');
+    Route::get('/employees/{employee}/service-record/pdf', [ServiceRecordController::class, 'download'])->name('employees.service-record.pdf');
 });

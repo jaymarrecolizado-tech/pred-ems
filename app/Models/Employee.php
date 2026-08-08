@@ -8,7 +8,7 @@ class Employee extends Model
 {
     protected $fillable = [
         'employee_number', 'user_id',
-        'first_name', 'middle_name', 'last_name', 'suffix',
+        'first_name', 'middle_name', 'maiden_name', 'last_name', 'suffix',
         'birth_date', 'birth_place', 'gender', 'civil_status', 'citizenship',
         'profile_photo_path',
         'blood_type', 'residential_address', 'contact_number', 'personal_email',

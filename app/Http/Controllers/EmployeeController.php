@@ -151,6 +151,7 @@ class EmployeeController extends Controller
             'employee_number' => ['nullable', 'string', 'max:30', $uniqueRule],
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
+            'maiden_name' => ['nullable', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'suffix' => ['nullable', 'string', 'max:20'],
             'birth_date' => ['nullable', 'date'],

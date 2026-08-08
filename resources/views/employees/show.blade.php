@@ -23,8 +23,9 @@
                 <span class="v">{{ $employee->profile_completeness }}%</span>
             </div>
         </div>
-        <div style="margin-left:auto; display:flex; gap:8px">
+        <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap">
             @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                <a href="{{ route('employees.service-record', $employee) }}" class="btn btn-sm" style="background:#fff; color:var(--navy-900)" title="CSC Service Record (CS Form 212)">Service Record</a>
                 <a href="{{ route('employees.edit', $employee) }}" class="btn btn-outline btn-sm" style="color:#fff; border-color:rgba(255,255,255,.35)">Edit</a>
                 <form method="POST" action="{{ route('employees.destroy', $employee) }}"
                       onsubmit="return confirm('Delete this employee record? This cannot be undone.')">

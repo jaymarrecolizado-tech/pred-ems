@@ -125,6 +125,10 @@
             <input type="text" id="middle_name" name="middle_name" value="{{ $old('middle_name') }}">
         </div>
         <div class="field">
+            <label for="maiden_name">Maiden Name <span class="hint" style="text-transform:none; letter-spacing:0">(if married woman)</span></label>
+            <input type="text" id="maiden_name" name="maiden_name" value="{{ $old('maiden_name') }}">
+        </div>
+        <div class="field">
             <label for="last_name">Last Name <span class="req">*</span></label>
             <input type="text" id="last_name" name="last_name" value="{{ $old('last_name') }}" class="{{ $err('last_name') ? 'input-error' : '' }}">
             @if ($err('last_name'))<div class="error">{{ $err('last_name') }}</div>@endif
