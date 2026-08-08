@@ -12,6 +12,9 @@
         <div class="card cp-map-card">
             <div class="card-header">
                 <h2>{{ isset($editing) ? 'Edit Checkpoint' : 'Add Checkpoint' }}</h2>
+                @if (isset($editing))
+                    <a href="{{ route('attendance.checkpoints') }}" class="btn btn-outline btn-sm">＋ Add New</a>
+                @endif
             </div>
             <div class="card-pad">
                 <div id="map" style="height:360px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
@@ -24,11 +27,22 @@
                 <form method="POST" action="{{ isset($editing) ? route('attendance.checkpoints.update', $editing) : route('attendance.checkpoints.store') }}" class="form-grid">
                     @csrf
                     @if (isset($editing)) @method('PUT') @endif
-                    <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude', isset($editing) ? $editing->latitude : '') }}">
-                    <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude', isset($editing) ? $editing->longitude : '') }}">
                     <div class="field" style="grid-column:1 / -1">
                         <label for="name">Checkpoint Name <span class="req">*</span></label>
                         <input type="text" id="name" name="name" value="{{ old('name', isset($editing) ? $editing->name : '') }}" placeholder="e.g. DICT RO2 HQ — Tuguegarao City">
+                    </div>
+                    <div class="field" style="grid-column:1 / -1">
+                        <label>Coordinates <span class="req">*</span> <span class="hint" style="font-weight:400">(auto-filled when you click the map)</span></label>
+                        <div class="form-grid" style="grid-template-columns:1fr 1fr; gap:8px">
+                            <div class="field" style="margin:0">
+                                <label for="latitude" style="font-size:11.5px; color:var(--ink-400)">Latitude</label>
+                                <input type="text" id="latitude" name="latitude" value="{{ old('latitude', isset($editing) ? $editing->latitude : '') }}" readonly placeholder="Click the map…" class="cp-coord-input">
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label for="longitude" style="font-size:11.5px; color:var(--ink-400)">Longitude</label>
+                                <input type="text" id="longitude" name="longitude" value="{{ old('longitude', isset($editing) ? $editing->longitude : '') }}" readonly placeholder="Click the map…" class="cp-coord-input">
+                            </div>
+                        </div>
                     </div>
                     <div class="field" style="grid-column:1 / -1">
                         <label for="address">Address</label>
@@ -63,6 +77,7 @@
         <div class="card cp-list-card">
             <div class="card-header">
                 <h2>Checkpoints <span class="hint">({{ $checkpoints->count() }})</span></h2>
+                <a href="{{ route('attendance.checkpoints') }}" class="btn btn-primary btn-sm">＋ Add Checkpoint</a>
             </div>
             <div class="cp-list-scroll">
                 <ul class="grow-list">
@@ -284,18 +299,29 @@
         }
 
         marker.on('dragend', syncCircle);
-        radiusInput.addEventListener('input', syncCircle);
+
+        // Radius-only updates must NOT capture coordinates — changing the radius
+        // alone would otherwise fill the coordinate fields with the marker's
+        // current (possibly default) position before the user has picked a spot.
+        radiusInput.addEventListener('input', () => {
+            circle.setRadius(parseInt(radiusInput.value || '200', 10));
+        });
 
         map.on('click', (e) => {
             marker.setLatLng(e.latlng);
             syncCircle();
         });
 
-        if (!latInput.value) {
-            latInput.value = initialLat.toFixed(7);
-            lngInput.value = initialLng.toFixed(7);
+        if (latInput.value) {
+            // Editing: surface the checkpoint's stored coordinates immediately.
+            if (coordReadout) coordReadout.textContent = initialLat.toFixed(6) + ', ' + initialLng.toFixed(6);
+        } else {
+            // Adding: keep the fields blank until the user clicks/drags on the
+            // map — the capture is visible, not silently pre-filled.
+            latInput.value = '';
+            lngInput.value = '';
+            if (coordReadout) coordReadout.textContent = '—';
         }
-        if (coordReadout) coordReadout.textContent = initialLat.toFixed(6) + ', ' + initialLng.toFixed(6);
 
         // Park the map on the checkpoint being edited (deterministic — no
         // dependence on the async province-overlay fetch), otherwise show the
@@ -352,6 +378,14 @@
     .cp-row.is-selected:hover { background: var(--brand-50); }
     .cp-row-main { min-width: 0; }
     .cp-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .cp-coord-input {
+        font-variant-numeric: tabular-nums;
+        background: var(--paper-2, #f4f6f9);
+        color: var(--ink-700, #1e293b);
+        font-weight: 600;
+    }
+    .cp-coord-input:read-only { cursor: default; }
 
     .checkpoint-div-icon { background: transparent; border: none; }
     .cp-dot {
