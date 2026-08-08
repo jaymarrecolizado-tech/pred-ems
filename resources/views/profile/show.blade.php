@@ -24,7 +24,7 @@
             @if ($employee)
                 <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm" style="color:#fff; border-color:rgba(255,255,255,.35)">Edit Personal Info</a>
             @endif
-            <a href="{{ route('profile.password') }}" class="btn btn-sm" style="background:var(--gold-500); color:var(--navy-900)">Change Password</a>
+            <a href="{{ route('profile.password') }}" class="btn btn-sm" style="background:#fbbf24; color:#0f172a">Change Password</a>
         </div>
     </div>
 
@@ -42,7 +42,7 @@
     @if ($employee)
         <div class="info-grid">
             <div class="card card-pad">
-                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                     <h2>Profile Photo</h2>
                 </div>
                 <div style="display:flex; align-items:center; gap:18px; margin-top:14px">
@@ -72,7 +72,7 @@
             </div>
 
             <div class="card card-pad">
-                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                     <h2>Personal Information</h2>
                     <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm">Edit</a>
                 </div>
@@ -94,7 +94,7 @@
 
         <div class="info-grid" style="margin-top:18px">
             <div class="card card-pad">
-                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                     <h2>Government IDs</h2>
                 </div>
                 <div class="info-list mt-16">
@@ -107,7 +107,7 @@
             </div>
 
             <div class="card card-pad">
-                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+                <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                     <h2>Employment <span class="hint">(HR-managed)</span></h2>
                 </div>
                 <div class="info-list mt-16">

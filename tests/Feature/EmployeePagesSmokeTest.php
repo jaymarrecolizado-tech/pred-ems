@@ -67,17 +67,19 @@ class EmployeePagesSmokeTest extends TestCase
     public function test_payroll_can_view_but_not_manage_employees(): void
     {
         $payroll = User::where('email', 'payroll@dictro2.gov.ph')->firstOrFail();
+        $employee = Employee::firstOrFail();
 
         $this->actingAs($payroll)->get('/employees')->assertOk();
         $this->actingAs($payroll)->get('/employees/create')->assertForbidden();
-        $this->actingAs($payroll)->get('/employees/1/edit')->assertForbidden();
+        $this->actingAs($payroll)->get("/employees/{$employee->id}/edit")->assertForbidden();
     }
 
     public function test_hr_can_manage_employees(): void
     {
         $hr = User::where('email', 'hr@dictro2.gov.ph')->firstOrFail();
+        $employee = Employee::firstOrFail();
 
         $this->actingAs($hr)->get('/employees/create')->assertOk();
-        $this->actingAs($hr)->get('/employees/1/edit')->assertOk();
+        $this->actingAs($hr)->get("/employees/{$employee->id}/edit")->assertOk();
     }
 }

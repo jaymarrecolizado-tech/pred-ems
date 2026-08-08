@@ -1,96 +1,65 @@
-# UI Redesign — GOV.PH Institutional
+# UI Redesign — eGovPay-style Design System
 
-**Status:** Approved · **Rollout:** foundation-first (chrome → components → page sweeps)
-**Goal:** Replace the generic "AI-generated SaaS" look with an authentic Philippine-government institutional design language.
+**Status:** Implemented (replaces the earlier GOV.PH Institutional pass) · **Zero build step** — plain CSS + vanilla JS, no Tailwind/React.
+
+The design language in `ui_ref/` (an eGovPay merchant-dashboard kit: dark navy sidebar, blue-600 primary actions, light-gray canvas, white rounded cards, tracked uppercase table headers) was translated into the existing Blade + plain-CSS architecture.
 
 ---
 
-## 1. Why
+## 1. Design tokens
 
-The current UI carries the classic AI-slop tells:
-
-- Emoji as nav icons (`👤`, `👥`, `🧾`, `🏖`, `📄`, `💰`, `📊`)
-- An 8-color badge rainbow (blue/green/red/amber/purple/teal/indigo/pink)
-- Soft rounded cards + fuzzy drop shadows
-- Navy *gradient* sidebar + glowing gradient logo tile
-- `Segoe UI` system font with no typographic voice
-- `P2/P3/P4/P5` pills in the nav (reads like a prototype)
-
-## 2. Design direction — "GOV.PH Institutional"
-
-A government HRIS should look like it belongs to a government office: flat, dense,
-rule-bound, unmistakably Filipino. Reference: gov.ph, SSS, GSIS, DICT's own sites.
-
-### Tokens
-
-| Token | Old (AI-like) | New (Institutional) |
+| Token | Value | Used for |
 |---|---|---|
-| Primary | `#1b5faa` muted blue | **Flag royal blue `#0038A8`** |
-| Accent | gold gradient | **Flat flag gold `#FCD116`** — rules, active markers, brand borders only |
-| Red | `#b91c1c` | **Flag red `#CE1126`** — destructive / separated |
-| Surfaces | white cards + soft shadow | **Flat white + `#f4f6f9` panels, 1px hairlines, no shadows** |
-| Radius | 8–20px pills | **2px (squared, official-form feel)** |
-| Type | `Segoe UI` | **IBM Plex Sans** (text) + **IBM Plex Mono** (numbers, IDs, codes) |
-| Palette | 8 badge colors | **1 badge shape + colored square dot** (stamp look), 4 status semantics |
+| `--navy-950` | `#0B1120` | Sidebar background |
+| `--navy-900` | `#0F172A` | Sidebar hover / active row |
+| `--brand-600` | `#2563EB` | Primary buttons, focus rings, active states |
+| `--brand-400` | `#60A5FA` | Active nav text/icon, accent bars |
+| `--canvas` | `#F3F4F6` | Page background |
+| `--surface` | `#FFFFFF` | Cards / panels |
+| `--ink-900 / 700 / 500 / 400` | `#111827 → #9CA3AF` | Text hierarchy |
+| `--line` / `--line-strong` | `#E5E7EB` / `#D1D5DB` | Hairline borders |
+| Status pills | `#DCFCE7`/`#15803D` (green), `#FEE2E2`/`#B91C1C` (red), `#FEF3C7`/`#B45309` (amber), … | Badges |
 
-Variable names are **preserved** (`--blue-600`, `--border`, `--text-muted`, `--gold-500`,
-`--navy-900`, …) so Blade markup stays mostly untouched.
+Typography: **Inter** (body/UI, weights 300–700) + **Be Vietnam Pro** (display titles).
+Radii: `--radius-card` 12px (panels), `--radius-control` 8px (buttons/inputs), `--radius-pill` (badges, progress).
 
-### Non-negotiables
-1. **No emoji anywhere** — replaced by a small stroke-SVG icon set (`partials/icon.blade.php`).
-2. **No gradients, no glass, no glow.**
-3. **No pill shapes** — squared corners (2px) across buttons, badges, inputs, cards.
-4. **Dense, official data tables** — full grid lines, uppercase micro-labels, mono numerals.
-5. **Authentic masthead** — "Republic of the Philippines · Department of Information and
-   Communications Technology · Regional Office 2" on a flag-blue bar with gold rule,
-   on both the app shell and the login page.
-
-## 3. Component map
+## 2. Component map
 
 | Component | Change |
 |---|---|
-| Masthead | Flag-blue bar, red top stripe, gold bottom rule, uppercase micro type |
-| Sidebar | Flat `#0a1c3a`, squared links, active = blue block + gold left bar |
-| Brand mark | Flat blue square, gold hairline border, white serif monogram (no glow) |
-| Nav | SVG icons, upcoming modules = plain dimmed text `(P2)` — no pills |
-| Topbar | White + hairline, uppercase page title with gold square bullet |
-| Panels (cards) | 1px border, squared, header title = uppercase micro-label + rule |
-| Tables | Full grid, gray uppercase header band, mono tabular numbers |
-| Badges | White squared chips, 1px border, colored square dot, uppercase text |
-| Buttons | Squared, solid blue primary, outline secondary, flag-red danger |
-| Forms | Squared inputs, hairline borders, blue focus ring, bold labels + `*` |
-| Avatars | Photos stay circular; initials = squared ID-photo placeholder (blue + gold hairline) |
-| Alerts | Squared, 4px left accent bar |
-| Stats | Flat panels, 3px top color rule, mono numerals |
-| Login | Masthead + centered white squared card, gold top rule, "official website" footer |
+| Masthead | Slim dark-navy strip (`navy-900`) with blue underline, uppercase micro type |
+| Sidebar | Flat `#0B1120`, rounded links, active = `navy-900` row + `brand-400` left accent bar |
+| Brand mark | Rounded blue tile, white serif monogram |
+| Nav | Stroke-SVG icons (no emoji), upcoming modules = dimmed text `(P2)`… |
+| Topbar | White + hairline, bold Be Vietnam Pro page title |
+| Cards | White, 12px radius, hairline border, subtle shadow, bold title + actions header |
+| Tables | Uppercase tracked headers, hairline row dividers, tabular mono numerals |
+| Badges | **Pill shapes** with soft tinted backgrounds (green/red/amber/blue/purple/teal/indigo/pink/gray) |
+| Buttons | Rounded 8px, solid blue primary, outline secondary, red danger, ghost |
+| Forms | Rounded inputs, hairline borders, blue focus ring, bold labels |
+| Avatars | **Circular** with deterministic per-name color (hash of the name) |
+| Stats (dashboard) | Single white panel, 4 tiles divided by hairlines, icon chip + label + big value |
+| Hero banner (dashboard) | Soft blue/lavender gradient + blurred pastel blobs, promo card on the right |
+| Chart (dashboard) | Vanilla-SVG area/bar chart + table view, 3-button view toggle (blue active), peak-value bubble |
+| Login | White rounded card, blue top rule, centered on gray canvas, navy masthead |
 
-## 4. Rollout order
+## 3. Dashboard layout (new)
 
-- **Pass A — Tokens & base:** CSS variables, fonts, body/type/layout shell ✅
-- **Pass B — Sidebar & brand:** masthead, flat sidebar, SVG icons, footer ✅
-- **Pass C — Topbar, content, alerts** ✅
-- **Pass D — Panels, tables, pagination** ✅
-- **Pass E — Buttons, badges, forms, avatars, progress** ✅
-- **Pass F — Login page** ✅
-- **Pass G — Page sweeps:** dashboard, employee index/create/edit/show, profile pages,
-  audit logs — fix any inline styles that fight the system (pending)
-- **Pass H — QA:** `php artisan test`, browser check, review (pending)
+1. **Hero banner** — gradient + blobs, headline + subtext, `promo-card` linking to the directory.
+2. **Overview stat row** — one bordered panel, 4 tiles with vertical dividers (Total Employees, Active, Separated/Retired, Employment Types).
+3. **Headcount by Employment Type** — card with header actions (view toggle: table / area / bar), vanilla-SVG chart with gradient fill + peak bubble.
+4. **Recently Added Employees** — standard table.
 
-**Out of scope:** no markup restructuring, no backend changes, no routes. Pure
-`app.css` + Blade class work. Zero build step maintained.
+## 4. JS (public/js/app.js)
 
----
+- Vanilla SVG chart renderer: `JSON.parse(data-chart)` → area/bar/table views, peak-value bubble, gridlines, auto-thinned x labels.
+- View toggle switches views and updates `aria-pressed`.
+- Sidebar drawer (mobile), table overflow hints (unchanged from Pass I).
 
-## 5. Pass I — Mobile responsive & modern app UX (implemented)
+## 5. Rollout notes
 
-- **Off-canvas sidebar drawer** (< 1024px): hamburger toggle in the topbar,
-  slide-in drawer, dimmed backdrop, Escape/backdrop/nav-click close,
-  auto-close on desktop resize — `public/js/app.js` (vanilla, no deps).
-- **Responsive breakpoints:** 1023px (tablet: drawer + centered masthead),
-  767px (phone: stacked grids, full-width form actions, 16px inputs to stop
-  iOS zoom, stacked profile header, 1-col info lists), 480px (stat grid 1 col).
-- **Modern app details:** 44px touch targets on mobile, `:focus-visible` rings,
-  skip-to-content link, `aria-current`/`aria-expanded`/`aria-controls`,
-  theme-color meta, styled scrollbars, `prefers-reduced-motion`, print
-  stylesheet (hide chrome, clean 201-file prints), table "swipe to see more"
-  hint shown only when a table overflows.
+- **Pass A–F** (GOV.PH Institutional): flat flag-palette chrome, SVG icons, masthead — shipped and later **replaced** by this system.
+- **Pass I** (mobile responsive + modern UX): off-canvas drawer, breakpoints, touch targets, `:focus-visible`, skip link, `prefers-reduced-motion`, print stylesheet — **retained**.
+- **Page sweeps:** dashboard rebuilt; stale inline references to old variables (`--border`, `--text-muted`, `--gold-500`, IBM Plex fonts) updated across profile/employee/audit views.
+
+**Deliberately omitted from the kit:** `YearStepper` (no year dimension in current headcount data) and the Test/Live mode toggle (not meaningful for a gov HRIS). The view toggle covers the interactive chart controls.

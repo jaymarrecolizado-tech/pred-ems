@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="card card-pad" style="max-width:520px">
-        <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+        <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
             <h2>Change Password</h2>
             <a href="{{ route('profile.show') }}" class="btn btn-outline btn-sm">← Back to profile</a>
         </div>

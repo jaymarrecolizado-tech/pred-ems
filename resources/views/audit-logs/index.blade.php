@@ -43,11 +43,11 @@
                         <tr>
                             <td style="white-space:nowrap">
                                 <div style="font-weight:600">{{ $log->created_at->format('M d, Y') }}</div>
-                                <div class="num" style="font-size:11.5px; color:var(--text-muted)">{{ $log->created_at->format('h:i A') }}</div>
+                                <div class="num" style="font-size:11.5px; color:var(--ink-400)">{{ $log->created_at->format('h:i A') }}</div>
                             </td>
                             <td>
                                 <div style="font-weight:600">{{ $log->user?->name ?? 'System' }}</div>
-                                <div class="num" style="font-size:11.5px; color:var(--text-muted)">{{ $log->user?->email }}</div>
+                                <div class="num" style="font-size:11.5px; color:var(--ink-400)">{{ $log->user?->email }}</div>
                             </td>
                             <td>
                                 @php
@@ -64,7 +64,7 @@
                             </td>
                             <td>
                                 <div>{{ $log->model_label }}</div>
-                                <div class="num" style="font-size:11.5px; color:var(--text-muted)">#{{ $log->model_id ?? '—' }}</div>
+                                <div class="num" style="font-size:11.5px; color:var(--ink-400)">#{{ $log->model_id ?? '—' }}</div>
                             </td>
                             <td class="diff-cell">
                                 @php

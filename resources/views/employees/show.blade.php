@@ -38,7 +38,7 @@
 
     <div class="info-grid">
         <div class="card card-pad">
-            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                 <h2>Personal Information</h2>
             </div>
             <div class="info-list mt-16">
@@ -55,7 +55,7 @@
         </div>
 
         <div class="card card-pad">
-            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--border)">
+            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
                 <h2>Government IDs</h2>
             </div>
             <div class="info-list mt-16">
