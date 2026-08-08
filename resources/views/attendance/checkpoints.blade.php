@@ -169,24 +169,30 @@
                     const b = provLayer.getBounds();
                     bounds.push(b.getSouthWest(), b.getNorthEast());
                 }
-                // Smoothly settle from the checkpoint-only view into the full
-                // Region 2 frame once the province overlay has loaded.
-                const editingCp = checkpointData.find((cp) => String(cp.id) === activeCheckpoint);
-                if (editingCp) {
-                    map.setView([editingCp.lat, editingCp.lng], 14, { animate: true });
-                } else {
+
+                // When NOT editing, settle into the full Region 2 frame now that
+                // the province overlay has loaded. (When editing, the synchronous
+                // homeView() below already parked us on the checkpoint.)
+                if (!editingCp) {
                     map.flyToBounds(bounds, { padding: [36, 36], maxZoom: 12, duration: 0.7 });
                 }
             })
             .catch(() => {
-                // GeoJSON unavailable — fall back to a Region 2 viewport.
-                map.setView(REGION2_CENTER, 8);
+                // GeoJSON unavailable — fall back to the Region 2 viewport (or,
+                // when editing, stay parked on the checkpoint from homeView()).
+                if (!editingCp) {
+                    map.setView(REGION2_CENTER, 8);
+                }
             });
 
         // --- All existing checkpoints (marker + radius circle + popup) ---
         const checkpointData = @json($checkpointData);
 
         const activeCheckpoint = '{{ isset($editing) ? $editing->id : '' }}';
+
+        // Resolve the checkpoint being edited up front so homeView() and the
+        // geojson handler can both rely on it without re-searching.
+        const editingCp = checkpointData.find((cp) => String(cp.id) === activeCheckpoint) || null;
 
         const checkpointMarkers = {};
 
@@ -291,15 +297,20 @@
         }
         if (coordReadout) coordReadout.textContent = initialLat.toFixed(6) + ', ' + initialLng.toFixed(6);
 
-        function fitMap() {
-            if (bounds.length) {
+        // Park the map on the checkpoint being edited (deterministic — no
+        // dependence on the async province-overlay fetch), otherwise show the
+        // full Region 2 frame.
+        function homeView() {
+            if (editingCp) {
+                map.setView([editingCp.lat, editingCp.lng], 15, { animate: false });
+            } else if (bounds.length) {
                 map.fitBounds(bounds, { padding: [36, 36], maxZoom: 12 });
             } else {
                 map.setView(REGION2_CENTER, 8);
             }
         }
 
-        fitMap();
+        homeView();
     });
 </script>
 <style>
