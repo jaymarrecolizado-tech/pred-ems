@@ -15,6 +15,10 @@
             </div>
             <div class="card-pad">
                 <div id="map" style="height:360px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
+                <div class="cp-coords" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 2px">
+                    <span class="badge badge-blue" style="font-variant-numeric:tabular-nums" id="cp-coord-readout">—</span>
+                    <span class="hint" style="font-size:12px">Click anywhere on the map or drag the marker — coordinates are captured automatically.</span>
+                </div>
                 <div class="hint" style="margin:8px 0 14px; font-size:12px">Drag the marker to plot the zone center; the circle shows the punch radius. Employees must be inside this radius to time log. Click a checkpoint in the list to zoom to it on the map.</div>
 
                 <form method="POST" action="{{ isset($editing) ? route('attendance.checkpoints.update', $editing) : route('attendance.checkpoints.store') }}" class="form-grid">
@@ -131,6 +135,7 @@
         const latInput = document.getElementById('latitude');
         const lngInput = document.getElementById('longitude');
         const radiusInput = document.getElementById('radius_meters');
+        const coordReadout = document.getElementById('cp-coord-readout');
 
         const initialLat = latInput.value ? parseFloat(latInput.value) : 17.6132;
         const initialLng = lngInput.value ? parseFloat(lngInput.value) : 121.7272;
@@ -269,6 +274,7 @@
             circle.setRadius(parseInt(radiusInput.value || '200', 10));
             latInput.value = pos.lat.toFixed(7);
             lngInput.value = pos.lng.toFixed(7);
+            if (coordReadout) coordReadout.textContent = pos.lat.toFixed(6) + ', ' + pos.lng.toFixed(6);
         }
 
         marker.on('dragend', syncCircle);
@@ -283,6 +289,7 @@
             latInput.value = initialLat.toFixed(7);
             lngInput.value = initialLng.toFixed(7);
         }
+        if (coordReadout) coordReadout.textContent = initialLat.toFixed(6) + ', ' + initialLng.toFixed(6);
 
         function fitMap() {
             if (bounds.length) {
