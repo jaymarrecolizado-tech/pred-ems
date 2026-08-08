@@ -130,6 +130,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/payroll', [PayrollController::class, 'store'])->name('payroll.store');
         Route::get('/payroll/remittances', [PayrollController::class, 'remittances'])->name('payroll.remittances');
         Route::post('/payroll/remittances/{remittance}/remit', [PayrollController::class, 'markRemitted'])->name('payroll.remittances.remit');
+        Route::get('/payroll/items/{item}/adjust', [PayrollController::class, 'adjust'])->name('payroll.adjust');
+        Route::post('/payroll/items/{item}/adjust', [PayrollController::class, 'updateAdjustment'])->name('payroll.adjust.update');
         Route::get('/payroll/{period}', [PayrollController::class, 'show'])->name('payroll.show');
         Route::post('/payroll/{period}/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
         Route::post('/payroll/{period}/finalize', [PayrollController::class, 'finalize'])->name('payroll.finalize');

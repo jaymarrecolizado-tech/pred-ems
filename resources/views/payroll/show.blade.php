@@ -93,6 +93,7 @@
                         <th>Employee</th>
                         <th style="text-align:right">Basic</th>
                         <th style="text-align:right">PERA</th>
+                        <th style="text-align:right">Adjustments</th>
                         <th style="text-align:right">Gross</th>
                         <th style="text-align:right">GSIS</th>
                         <th style="text-align:right">PhilHealth</th>
@@ -113,6 +114,23 @@
                             </td>
                             <td style="text-align:right" class="num">₱{{ number_format((float) $item->basic_salary, 2) }}</td>
                             <td style="text-align:right" class="num">₱{{ number_format((float) $item->pera, 2) }}</td>
+                            <td style="text-align:right" class="num">
+                                @php
+                                    $plus = [];
+                                    if ((float) $item->honoraria > 0) $plus[] = 'Honoraria ' . number_format((float) $item->honoraria, 2);
+                                    if ((float) $item->overtime_pay > 0) $plus[] = 'Overtime ' . number_format((float) $item->overtime_pay, 2);
+                                    if ((float) $item->other_income > 0) $plus[] = 'Other inc ' . number_format((float) $item->other_income, 2);
+                                    $minus = [];
+                                    if ((float) $item->lwop_deduction > 0) $minus[] = 'LWOP ' . number_format((float) $item->lwop_deduction, 2);
+                                    if ((float) $item->other_deductions > 0) $minus[] = 'Other ded ' . number_format((float) $item->other_deductions, 2);
+                                @endphp
+                                @if (! $plus && ! $minus)
+                                    <span class="hint">—</span>
+                                @else
+                                    @foreach ($plus as $p) <div style="color:var(--green-text)">+ {{ $p }}</div> @endforeach
+                                    @foreach ($minus as $m) <div style="color:var(--red-text)">− {{ $m }}</div> @endforeach
+                                @endif
+                            </td>
                             <td style="text-align:right" class="num">₱{{ number_format((float) $item->gross_amount, 2) }}</td>
                             <td style="text-align:right" class="num">₱{{ number_format((float) $item->gsis_employee_share, 2) }}</td>
                             <td style="text-align:right" class="num">₱{{ number_format((float) $item->philhealth_employee_share, 2) }}</td>
@@ -124,10 +142,13 @@
                                 @if ($item->payslip)
                                     <a href="{{ route('payroll.payslip', $item->payslip) }}" class="btn btn-outline btn-sm" target="_blank">Payslip</a>
                                 @endif
+                                @if ($period->isDraft())
+                                    <a href="{{ route('payroll.adjust', $item) }}" class="btn btn-outline btn-sm">Adjust</a>
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="11" class="text-muted">No items yet. Click <strong>Compute Payroll</strong> to generate one row per eligible employee.</td></tr>
+                        <tr><td colspan="12" class="text-muted">No items yet. Click <strong>Compute Payroll</strong> to generate one row per eligible employee.</td></tr>
                     @endforelse
                 </tbody>
             </table>

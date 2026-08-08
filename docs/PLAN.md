@@ -180,7 +180,7 @@ erDiagram
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
 | **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · 🚧 Imports/notifications pending |
 | **3.6. Notifications** | In-system inbox, email, SMS via Android gateway | **Inbox ✅** — topbar bell + `/notifications` (unread badge, mark read, mark all) · **Email ✅** — via Laravel mailer on every notification · **SMS ✅** — queued async delivery to the capcom6 Android gateway (`sms:send` cron, retries ≤ 3, soft-fail) · Fires on document request/issue/reject + leave file/approve/reject |
-| **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limits: honoraria/overtime/LWOP lines exist in the schema and engine but have no per-item entry UI yet; salary scales remain the seeded placeholders pending the official SSL table |
+| **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), **per-item adjustments ✅** (honoraria / overtime / other income + LWOP / other deductions — recompute with the engine, trace re-persisted, preserved across period recomputes, draft-only), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limit: salary scales remain the seeded placeholders pending the official SSL table |
 
 ---
 
@@ -279,8 +279,14 @@ summaries) — plus a remittance register (mark remitted with OR/reference no.)
 and dompdf-safe payslip PDFs with the DICT letterhead and computation-trace
 table. Every employee can open **My Payslips** (`/my/payslips`) to view their
 own finalized payslips. Payroll role sees the module but not the audit trail.
-Known limits (documented): honoraria/overtime/LWOP columns exist in schema +
-engine but have no per-item entry UI yet, and `salary_scales` still holds the
+Per-item **adjustments** are entered from any draft period's item rows
+(`/payroll/items/{id}/adjust`): honoraria, overtime pay, other income
+(taxable additions) plus LWOP / other deductions. Saving recomputes the
+item through the full engine — GSIS/PhilHealth/PAG-IBIG/BIR all refresh,
+the `computation_json` trace is re-persisted (with the manual lines), and
+the change is audited. Recomputed periods **preserve** the manual entries
+(they ride along with each employee's item). Locked periods refuse
+adjustments with a 409. Known limit: `salary_scales` still holds the
 sample placeholder amounts pending the official SSL table.
 
 **Notifications — ✅ complete (stretch of Phase 5, done).** Every employee has an
