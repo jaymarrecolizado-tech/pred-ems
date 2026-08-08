@@ -555,6 +555,80 @@ a:hover { text-decoration: underline; }
 .alert ul { margin: 6px 0 0; padding-left: 18px; }
 .mb-0 { margin-bottom: 0; }
 
+/* ---------- Toasts (action feedback) ---------- */
+.toast-stack {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 2200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: min(400px, calc(100vw - 36px));
+    pointer-events: none;
+}
+.toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand-600);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .14);
+    font-size: 13.5px;
+    color: var(--ink-900);
+    animation: toast-in .25s ease-out;
+}
+.toast-success { border-left-color: var(--green-text); background: #f0fdf4; }
+.toast-error   { border-left-color: var(--red-text);   background: #fef2f2; }
+.toast-info    { border-left-color: var(--brand-600);  background: var(--brand-50); }
+.toast-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #fff;
+    margin-top: 1px;
+}
+.toast-success .toast-icon { background: var(--green-text); }
+.toast-error   .toast-icon { background: var(--red-text); }
+.toast-info    .toast-icon { background: var(--brand-600); }
+.toast-msg { flex: 1; min-width: 0; line-height: 1.45; }
+.toast-msg strong { display: block; margin-bottom: 2px; }
+.toast-msg ul { margin: 4px 0 0; padding-left: 18px; }
+.toast-close {
+    flex: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink-400);
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.toast-close:hover { color: var(--ink-900); background: var(--paper-2); }
+.toast-leaving { animation: toast-out .22s ease-in forwards; }
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(10px) scale(.98); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes toast-out {
+    to { opacity: 0; transform: translateY(8px) scale(.98); }
+}
+@media (max-width: 640px) {
+    .toast-stack { right: 12px; left: 12px; bottom: 12px; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .toast, .toast-leaving { animation: none !important; }
+    .toast-leaving { transition: opacity .2s ease; }
+}
+
 /* ---------- Tables (tracked uppercase headers, hairline rows) ---------- */
 .table-wrap { overflow-x: auto; }
 table.table { width: 100%; border-collapse: collapse; }

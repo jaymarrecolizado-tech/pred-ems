@@ -209,24 +209,20 @@
                 @yield('breadcrumbs')
             @endif
 
+            @yield('content')
+        </div>
+
+        {{-- Action feedback — rendered as toasts (auto-dismissed by app.js) --}}
+        <div class="toast-stack" aria-live="polite">
             @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                @include('partials.toast', ['type' => 'success', 'message' => session('success')])
             @endif
             @if (session('error'))
-                <div class="alert alert-error">{{ session('error') }}</div>
+                @include('partials.toast', ['type' => 'error', 'message' => session('error')])
             @endif
             @if ($errors->any())
-                <div class="alert alert-error">
-                    <strong>Please fix the following:</strong>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+                @include('partials.toast', ['type' => 'error', 'html' => true, 'dismiss' => 12000, 'message' => '<strong>Please fix the following:</strong><ul>' . implode('', array_map(fn ($e) => '<li>' . e($e) . '</li>', $errors->all())) . '</ul>'])
             @endif
-
-            @yield('content')
         </div>
     </main>
 </div>

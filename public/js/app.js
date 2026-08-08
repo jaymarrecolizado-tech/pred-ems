@@ -152,6 +152,85 @@
         }).catch(function () { /* soft-fail: still navigate */ }).finally(go);
     });
 
+    /* ---------------- Toasts (action feedback) ----------------
+       Server-rendered toasts (flash success/error/validation from the
+       layout) get auto-dismiss timers + close buttons; hrisToast() creates
+       new toasts from JS (e.g. attendance punch feedback). */
+
+    var toastStack = document.querySelector('.toast-stack');
+    if (!toastStack) {
+        toastStack = document.createElement('div');
+        toastStack.className = 'toast-stack';
+        toastStack.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toastStack);
+    }
+
+    var TOAST_ICONS = {
+        success: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+        error: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+        info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+    };
+
+    function dismissToast(toast) {
+        if (toast._dismissed) return;
+        toast._dismissed = true;
+        clearTimeout(toast._timer);
+        toast.classList.add('toast-leaving');
+        setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 240);
+    }
+
+    function bindToastLifecycle(toast, ms) {
+        var close = toast.querySelector('.toast-close');
+        if (close) close.addEventListener('click', function () { dismissToast(toast); });
+        toast.addEventListener('mouseenter', function () { clearTimeout(toast._timer); });
+        toast.addEventListener('mouseleave', function () {
+            toast._timer = setTimeout(function () { dismissToast(toast); }, ms);
+        });
+        toast._timer = setTimeout(function () { dismissToast(toast); }, ms);
+    }
+
+    /**
+     * Show a toast. message: string (textContent-safe) or an HTMLElement/
+     * DocumentFragment for richer content (e.g. error lists).
+     * type: 'success' | 'error' | 'info'.
+     */
+    window.hrisToast = function (message, type) {
+        type = type || 'info';
+        var toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+        var icon = document.createElement('span');
+        icon.className = 'toast-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + (TOAST_ICONS[type] || TOAST_ICONS.info) + '</svg>';
+
+        var msg = document.createElement('div');
+        msg.className = 'toast-msg';
+        if (typeof message === 'string') msg.textContent = message;
+        else msg.appendChild(message);
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'toast-close';
+        close.setAttribute('aria-label', 'Dismiss');
+        close.textContent = '\u00d7';
+
+        toast.appendChild(icon);
+        toast.appendChild(msg);
+        toast.appendChild(close);
+        toastStack.appendChild(toast);
+
+        bindToastLifecycle(toast, type === 'error' ? 7000 : 4500);
+        return toast;
+    };
+
+    toastStack.querySelectorAll('.toast').forEach(function (toast) {
+        var ms = parseInt(toast.getAttribute('data-dismiss') || '', 10);
+        if (!ms) ms = toast.classList.contains('toast-error') ? 7000 : 4500;
+        bindToastLifecycle(toast, ms);
+    });
+
     /* ---------------- Dashboard chart ---------------- */
 
     var chartHost = document.getElementById('headcount-chart');

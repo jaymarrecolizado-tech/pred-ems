@@ -27,7 +27,6 @@
                 <button type="button" id="punch-btn" class="btn btn-primary btn-block" style="min-height:48px; font-size:15px">
                     Punch In / Out
                 </button>
-                <div id="punch-status" class="alert" style="display:none; margin-top:14px"></div>
                 <div class="hint" style="margin-top:12px; font-size:12px">
                     Your GPS position is verified against the nearest active checkpoint before the punch is accepted.
                     @if (isset($todaySchedule))
@@ -77,7 +76,6 @@
                         <button type="submit" class="btn btn-primary">Submit to HR</button>
                     </div>
                 </form>
-                <div id="corr-status" class="alert" style="display:none; margin-top:14px"></div>
             </div>
         </div>
     </div>
@@ -158,7 +156,6 @@
 <script>
 (function () {
     const punchBtn = document.getElementById('punch-btn');
-    const punchStatus = document.getElementById('punch-status');
     const clockEl = document.getElementById('clock');
 
     // Live clock
@@ -167,18 +164,12 @@
         clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: true });
     }, 1000);
 
-    function showStatus(el, type, text) {
-        el.className = 'alert alert-' + type;
-        el.textContent = text;
-        el.style.display = 'block';
-    }
-
     punchBtn.addEventListener('click', function () {
         punchBtn.disabled = true;
-        showStatus(punchStatus, 'info', 'Requesting your location…');
+        window.hrisToast('Requesting your location…', 'info');
 
         if (!navigator.geolocation) {
-            showStatus(punchStatus, 'error', 'Geolocation is not supported by this browser. Please use a modern browser on your phone or contact HR.');
+            window.hrisToast('Geolocation is not supported by this browser. Please use a modern browser on your phone or contact HR.', 'error');
             punchBtn.disabled = false;
             return;
         }
@@ -200,15 +191,15 @@
                 .then(r => r.json().then(data => ({ ok: r.ok, data })))
                 .then(({ ok, data }) => {
                     if (ok) {
-                        showStatus(punchStatus, 'success', data.message);
+                        window.hrisToast(data.message, 'success');
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        showStatus(punchStatus, 'error', data.message);
+                        window.hrisToast(data.message, 'error');
                         punchBtn.disabled = false;
                     }
                 })
                 .catch(() => {
-                    showStatus(punchStatus, 'error', 'Network error. Please try again.');
+                    window.hrisToast('Network error. Please try again.', 'error');
                     punchBtn.disabled = false;
                 });
             },
@@ -216,7 +207,7 @@
                 let msg = 'Location unavailable. Please enable location access and retry, or contact HR.';
                 if (err.code === 1) msg = 'Location access was denied. Enable GPS/location for this site and retry, or contact HR for a manual entry.';
                 if (err.code === 2) msg = 'Location unavailable right now. Check your GPS signal and retry.';
-                showStatus(punchStatus, 'error', msg);
+                window.hrisToast(msg, 'error');
                 punchBtn.disabled = false;
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
@@ -225,7 +216,6 @@
 
     // Correction request
     const corrForm = document.getElementById('correction-form');
-    const corrStatus = document.getElementById('corr-status');
 
     corrForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -242,15 +232,15 @@
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
             if (ok) {
-                showStatus(corrStatus, 'success', data.message);
+                window.hrisToast(data.message, 'success');
                 corrForm.reset();
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 const msg = data.errors ? Object.values(data.errors).flat().join(' ') : data.message;
-                showStatus(corrStatus, 'error', msg || 'Could not submit request.');
+                window.hrisToast(msg || 'Could not submit request.', 'error');
             }
         })
-        .catch(() => showStatus(corrStatus, 'error', 'Network error. Please try again.'));
+        .catch(() => window.hrisToast('Network error. Please try again.', 'error'));
     });
 })();
 </script>

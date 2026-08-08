@@ -29,17 +29,6 @@
                 <p>Human Resource Information System</p>
             </div>
 
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <strong>Unable to sign in:</strong>
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('login.attempt') }}">
                 @csrf
                 <div class="field" style="margin-bottom:14px">
@@ -58,5 +47,13 @@
     </div>
 
     <p class="login-foot">An official website of the Republic of the Philippines</p>
+
+    @if ($errors->any())
+        <div class="toast-stack" aria-live="polite">
+            @include('partials.toast', ['type' => 'error', 'html' => true, 'dismiss' => 12000, 'message' => '<strong>Unable to sign in:</strong><ul>' . implode('', array_map(fn ($e) => '<li>' . e($e) . '</li>', $errors->all())) . '</ul>'])
+        </div>
+    @endif
+
+    <script src="{{ asset('js/app.js') }}" defer></script>
 </body>
 </html>
