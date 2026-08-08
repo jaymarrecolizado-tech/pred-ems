@@ -115,7 +115,7 @@ erDiagram
 ## 5. Philippine Compliance Engine
 
 ### Contributions (research-backed, 2025–2026 rules)
-- **GSIS** (RA 8291): employee 9%, government 12% of monthly compensation (basic + PERA); **no salary ceiling**.
+- **GSIS** (RA 8291): employee 9%, government 12% of **basic salary** (PERA exempt — matches the engine's GSIS base); **no salary ceiling**.
 - **PhilHealth** (UHC Act): 5% total split 2.5%/2.5%; salary floor ₱10,000 (min premium ₱500 total), ceiling ₱100,000 (max ₱5,000 total).
 - **PAG-IBIG** (Circular 460): ≤ ₱1,500 → 1%/2%; > ₱1,500–₱10,000 → 2%/2%; > ₱10,000 → capped ₱200 + ₱200.
 - **BIR withholding** (TRAIN Law, current tables): ₱250k exemption; 15%→35% graduated brackets — stored as bracket data.
@@ -178,7 +178,7 @@ erDiagram
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
 | **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · 🚧 Imports/notifications pending |
-| **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports — **scheduled last** by decision (Aug 2026) so the data backbone (appointments, leave ledger, documents) is solid first |
+| **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limits: honoraria/overtime/LWOP lines exist in the schema and engine but have no per-item entry UI yet; salary scales remain the seeded placeholders pending the official SSL table |
 
 ---
 
@@ -249,5 +249,24 @@ day, marks rest days and holidays, and still counts hours rendered on them as
 are the evidence for CTO credit claims. Fixed-date national holidays (recurring yearly) are
 seeded; HR manages the calendar in Settings.
 
-**Remaining in Phase 5:** spreadsheet imports and notifications (stretch). Payroll remains
-deliberately **last** per the August 2026 decision.
+**Phase 6 – Payroll: ✅ complete.** A `Payroll` computation engine
+(`app/Support/Payroll.php`) turns each employee's monthly salary + active PERA
+allowances into a full run using **effective-dated rate rows** from
+`contribution_rates`: GSIS 9%/12% on basic salary, PhilHealth 5% premium
+(₱500 floor / ₱5,000 cap, split 50/50), PAG-IBIG 2%/2% on the capped base
+(employee share ≤ ₱200), and BIR TRAIN brackets annualized (PERA exempt).
+Every computation carries a **full trace** (bases, rates, brackets) persisted
+in `payroll_items.computation_json` so payslips stay auditable years later.
+The `/payroll` module (admin/HR/payroll) manages periods — create (duplicate
+dates rejected) → **Compute Payroll** (one item per active employee) →
+**Finalize & Issue Payslips** (locks the period, issues a `PS-YYYY-NNNN`
+payslip per item, and generates the GSIS/PhilHealth/PAG-IBIG/BIR remittance
+summaries) — plus a remittance register (mark remitted with OR/reference no.)
+and dompdf-safe payslip PDFs with the DICT letterhead and computation-trace
+table. Every employee can open **My Payslips** (`/my/payslips`) to view their
+own finalized payslips. Payroll role sees the module but not the audit trail.
+Known limits (documented): honoraria/overtime/LWOP columns exist in schema +
+engine but have no per-item entry UI yet, and `salary_scales` still holds the
+sample placeholder amounts pending the official SSL table.
+
+**Remaining in Phase 5:** spreadsheet imports and notifications (stretch).

@@ -54,6 +54,10 @@
                         @include('partials.icon', ['name' => 'profile'])
                         <span>My Profile</span>
                     </a>
+                    <a href="{{ route('payroll.my') }}" class="nav-link {{ request()->routeIs('payroll.my') ? 'active' : '' }}" title="My Payslips" {!! request()->routeIs('payroll.my') ? 'aria-current="page"' : '' !!}>
+                        @include('partials.icon', ['name' => 'payroll'])
+                        <span>My Payslips</span>
+                    </a>
                 </div>
             </div>
 
@@ -128,7 +132,7 @@
                 </div>
             </div>
 
-            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+            @if (auth()->user()->hasAnyRole(['admin', 'hr', 'payroll']))
                 {{-- Administration --}}
                 <div class="nav-group" data-nav-group="admin">
                     <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-admin" title="Administration">
@@ -137,6 +141,7 @@
                         @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                     </button>
                     <div class="nav-group-panel" id="nav-group-admin">
+                        @if (auth()->user()->hasAnyRole(['admin', 'hr']))
                         <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" title="Audit Trail" {!! request()->routeIs('audit-logs.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Audit Trail</span>
@@ -145,7 +150,10 @@
                             @include('partials.icon', ['name' => 'reports'])
                             <span>Reports</span>
                         </a>
-                        <span class="nav-link disabled" title="Payroll (Phase 6)">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P6)</em></span>
+                        @endif
+                        <a href="{{ route('payroll.index') }}" class="nav-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}" title="Payroll" {!! request()->routeIs('payroll.*') ? 'aria-current="page"' : '' !!}>
+                            @include('partials.icon', ['name' => 'payroll'])<span>Payroll</span>
+                        </a>
                     </div>
                 </div>
             @endif
@@ -159,7 +167,7 @@
                     <div class="sidebar-user-role">{{ str_replace('_', ' ', ucfirst($myRole)) }}</div>
                 </div>
             </div>
-            <span class="version">Phases 1–5 · Foundation → Attendance</span>
+            <span class="version">Phases 1–6 · Foundation → Payroll</span>
         </div>
     </aside>
 

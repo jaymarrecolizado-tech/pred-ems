@@ -58,6 +58,18 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Flexible scheduling (AOM No. 2026-020)** — Attendance Settings is now an effective-dated **work-schedule registry** + **holiday calendar**: named schedules with per-day-of-week work/rest and AM/PM times (seeded: **4-Day Compressed Workweek** Mon–Thu 7AM–6PM / Friday rest, and **Standard 8-Hour** Mon–Fri 8AM–5PM). The **CSC Res. 2600838 Friday-revert rule** is enforced — a holiday on a weekday rest day reverts the whole week to standard hours; holidays on working days are flagged deemed-complied. Rest-day/holiday/weekend punches are **never blocked** and their hours count as **overtime (CTO-eligible)** — the timelog evidence employees need to claim Compensatory Time-Off.
 - **Audited** — punches, corrections, approvals, checkpoint changes, schedule/holiday changes, and manual entries all land in `audit_logs`.
 
+**Payroll — Phase 6 (implemented):**
+
+- **Computation engine** — `App\Support\Payroll` computes each employee's run from **effective-dated rate rows** (`contribution_rates`): GSIS 9%/12% on basic salary, PhilHealth 5% premium (₱500 floor / ₱5,000 cap, split 50/50), PAG-IBIG 2%/2% capped at ₱200, and BIR TRAIN brackets annualized (PERA exempt). Annual rate changes are data edits — never code changes.
+- **Payroll periods** (`/payroll`, admin/HR/payroll) — create a period (duplicate dates rejected), **Compute Payroll** (one item per active employee with PERA from their allowance rows), then **Finalize & Issue Payslips** (locks the period against edits, issues a `PS-YYYY-NNNN` payslip per item, and generates GSIS/PhilHealth/PAG-IBIG/BIR remittance summaries).
+- **Full audit trace** — every item persists its computation trace (bases, rates, brackets, notes) in `computation_json`, so any payslip can be explained years later.
+- **Payslip PDFs** — dompdf-safe, DICT letterhead, earnings/deductions tables, net pay, and the computation-trace table; `PS-2026-XXXX` reference numbers.
+- **Remittance register** (`/payroll/remittances`) — per-agency summaries per period with pending → remitted lifecycle (record the OR/batch reference number).
+- **Self-service payslips** — every employee sees **My Payslips** (`/my/payslips`): their own finalized payslips with PDF download; accessing anyone else's payslip is forbidden.
+- **RBAC** — the payroll role can run payroll but cannot see the audit trail or manage employees.
+
+> ⚠️ Known limits: honoraria/overtime/LWOP lines exist in the schema and engine but have no per-item entry UI yet; `salary_scales` holds sample placeholder amounts until the official SSL table is imported.
+
 **Reports & Audit — Phase 4 (implemented):**
 
 - **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus five reports, each with **CSV export** (`?format=csv`, UTF-8 BOM, formula-injection safe):
@@ -239,6 +251,6 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
 5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
 6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs, and flexible AOM 2026-020 work scheduling (CWW + holidays + CSC Friday-revert rule, CTO-ready punches) — imports/notifications still stretch
-7. **Phase 6 — Payroll (last by decision):** salary scales, contribution engine, payslips — deferred until the appointment/leave/document backbone is complete
+7. **Phase 6 — Payroll:** ✅ config-driven contribution/tax engine, payroll periods (create → compute → finalize), dompdf payslips with computation traces, remittance register, and employee self-service payslips — built last so the appointment/leave/document backbone was solid first (honoraria/overtime entry UI + official SSL table still open)
 
 See `docs/PLAN.md` for details.

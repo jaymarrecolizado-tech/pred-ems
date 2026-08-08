@@ -9,6 +9,7 @@ use App\Http\Controllers\CoeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRecordController;
@@ -95,6 +96,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/employees/{employee}/service-record/pdf', [ServiceRecordController::class, 'download'])->name('employees.service-record.pdf');
     Route::get('/employees/{employee}/coe', [CoeController::class, 'show'])->name('employees.coe');
     Route::get('/employees/{employee}/coe/pdf', [CoeController::class, 'download'])->name('employees.coe.pdf');
+
+    // Payroll (Phase 6) — admin/HR/payroll manage runs; every role opens their own payslip
+    Route::get('/my/payslips', [PayrollController::class, 'myPayslips'])->name('payroll.my');
+    Route::get('/payroll/payslips/{payslip}', [PayrollController::class, 'payslipPdf'])->name('payroll.payslip');
+
+    Route::middleware('role:admin,hr,payroll')->group(function () {
+        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::post('/payroll', [PayrollController::class, 'store'])->name('payroll.store');
+        Route::get('/payroll/remittances', [PayrollController::class, 'remittances'])->name('payroll.remittances');
+        Route::post('/payroll/remittances/{remittance}/remit', [PayrollController::class, 'markRemitted'])->name('payroll.remittances.remit');
+        Route::get('/payroll/{period}', [PayrollController::class, 'show'])->name('payroll.show');
+        Route::post('/payroll/{period}/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
+        Route::post('/payroll/{period}/finalize', [PayrollController::class, 'finalize'])->name('payroll.finalize');
+    });
 
     // Reports & Audit (Phase 4) — admin/HR only
     Route::middleware('role:admin,hr')->group(function () {
