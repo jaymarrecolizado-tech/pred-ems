@@ -177,7 +177,7 @@ erDiagram
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
-| **5. Extras** | Attendance/DTR, imports from spreadsheets, notifications | Stretch features |
+| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · office-hours settings 🚧 Imports/notifications pending |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | Payroll module + payslip PDFs + remittance reports — **scheduled last** by decision (Aug 2026) so the data backbone (appointments, leave ledger, documents) is solid first |
 
 ---
@@ -227,5 +227,13 @@ COEs with reference numbers), and attrition & onboarding (separations/new hires 
 — each streaming a CSV via `?format=csv` (UTF-8 BOM, `fputcsv` quoting, formula-injection
 guard). Known limitation: separation dates derive from `updated_at` (no dedicated column yet).
 
-**Immediate next step — Phase 5 – Extras: 🚧 next.** Attendance/DTR, spreadsheet imports,
-and notifications. Payroll remains deliberately **last** per the August 2026 decision.
+**Phase 5 – Attendance & DTR: ✅ core complete.** Geofenced time logging with map-plotted
+checkpoints (Leaflet + OpenStreetMap; server-side radius validation), CSC Form 48 Daily
+Time Records (auto-generated monthly grid — hours, late, undertime — as HTML + PDF with
+`DTR-2026-XXXX` reference numbers), and a corrections workflow where every punch alteration
+is an employee request approved/rejected by HR (logs stay append-only; HR also has a manual
+entry path for field duty/forgotten punches). Seeded checkpoints cover HQ + the 5 provincial
+offices; office hours are configurable in Settings.
+
+**Remaining in Phase 5:** spreadsheet imports and notifications (stretch). Payroll remains
+deliberately **last** per the August 2026 decision.

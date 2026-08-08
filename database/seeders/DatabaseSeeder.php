@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             DevEmployeeSeeder::class,
             RealDirectorySeeder::class, // real personnel directory (130 employees)
             EmployeeUserSeeder::class,  // login accounts for all active employees (email + !Password123)
+            AttendanceSeeder::class,    // geofence checkpoints + office hours (Phase 5)
         ]);
     }
 }

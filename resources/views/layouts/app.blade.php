@@ -77,9 +77,31 @@
                 </a>
             @endif
 
+            <a href="{{ route('attendance.index') }}" class="nav-link {{ request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'active' : '' }}" {!! request()->routeIs('attendance.index', 'attendance.dtr', 'attendance.dtr.pdf') ? 'aria-current="page"' : '' !!}>
+                @include('partials.icon', ['name' => 'clock'])
+                <span>My Attendance</span>
+            </a>
+            @if (auth()->user()->hasAnyRole(['admin', 'hr']))
+                <a href="{{ route('attendance.checkpoints') }}" class="nav-link {{ request()->routeIs('attendance.checkpoints*') ? 'active' : '' }}" {!! request()->routeIs('attendance.checkpoints*') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'map'])
+                    <span>Checkpoints</span>
+                </a>
+                <a href="{{ route('attendance.corrections') }}" class="nav-link {{ request()->routeIs('attendance.corrections') ? 'active' : '' }}" {!! request()->routeIs('attendance.corrections') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'audit'])
+                    <span>Correction Requests</span>
+                </a>
+                <a href="{{ route('attendance.logs') }}" class="nav-link {{ request()->routeIs('attendance.logs') ? 'active' : '' }}" {!! request()->routeIs('attendance.logs') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'documents'])
+                    <span>Timelogs</span>
+                </a>
+                <a href="{{ route('attendance.settings') }}" class="nav-link {{ request()->routeIs('attendance.settings') ? 'active' : '' }}" {!! request()->routeIs('attendance.settings') ? 'aria-current="page"' : '' !!}>
+                    @include('partials.icon', ['name' => 'audit'])
+                    <span>Office Hours</span>
+                </a>
+            @endif
+
             <div class="nav-section">Modules (upcoming)</div>
             <span class="nav-link disabled">@include('partials.icon', ['name' => 'payroll'])<span>Payroll</span><em class="phase">(P6)</em></span>
-            <span class="nav-link disabled">@include('partials.icon', ['name' => 'audit'])<span>Attendance / DTR</span><em class="phase">(P5)</em></span>
         </nav>
 
         <div class="sidebar-footer">
@@ -90,7 +112,7 @@
                     <div class="sidebar-user-role">{{ str_replace('_', ' ', ucfirst($myRole)) }}</div>
                 </div>
             </div>
-            <span class="version">Phases 1–4 · Foundation → Reports</span>
+            <span class="version">Phases 1–5 · Foundation → Attendance</span>
         </div>
     </aside>
 

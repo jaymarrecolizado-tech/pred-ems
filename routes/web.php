@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AttendanceAdminController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CoeController;
@@ -102,5 +104,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/leave-utilization', [ReportController::class, 'leaveUtilization'])->name('reports.leave-utilization');
         Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
         Route::get('/reports/attrition', [ReportController::class, 'attrition'])->name('reports.attrition');
+    });
+
+    // Attendance & DTR (Phase 5) — every employee punches from their device
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('/attendance/punch', [AttendanceController::class, 'punch'])->name('attendance.punch');
+    Route::post('/attendance/corrections', [AttendanceController::class, 'requestCorrection'])->name('attendance.corrections.request');
+    Route::get('/attendance/dtr', [AttendanceController::class, 'dtr'])->name('attendance.dtr');
+    Route::get('/attendance/dtr/pdf', [AttendanceController::class, 'dtrPdf'])->name('attendance.dtr.pdf');
+
+    Route::middleware('role:admin,hr')->group(function () {
+        Route::get('/attendance/checkpoints', [AttendanceAdminController::class, 'checkpoints'])->name('attendance.checkpoints');
+        Route::get('/attendance/checkpoints/{checkpoint}/edit', [AttendanceAdminController::class, 'editCheckpoint'])->name('attendance.checkpoints.edit');
+        Route::post('/attendance/checkpoints', [AttendanceAdminController::class, 'storeCheckpoint'])->name('attendance.checkpoints.store');
+        Route::put('/attendance/checkpoints/{checkpoint}', [AttendanceAdminController::class, 'updateCheckpoint'])->name('attendance.checkpoints.update');
+        Route::delete('/attendance/checkpoints/{checkpoint}', [AttendanceAdminController::class, 'destroyCheckpoint'])->name('attendance.checkpoints.destroy');
+        Route::get('/attendance/corrections', [AttendanceAdminController::class, 'corrections'])->name('attendance.corrections');
+        Route::post('/attendance/corrections/{correction}/approve', [AttendanceAdminController::class, 'approveCorrection'])->name('attendance.corrections.approve');
+        Route::post('/attendance/corrections/{correction}/reject', [AttendanceAdminController::class, 'rejectCorrection'])->name('attendance.corrections.reject');
+        Route::get('/attendance/logs', [AttendanceAdminController::class, 'logs'])->name('attendance.logs');
+        Route::post('/attendance/logs', [AttendanceAdminController::class, 'storeManualPunch'])->name('attendance.logs.store');
+        Route::get('/attendance/settings', [AttendanceAdminController::class, 'settings'])->name('attendance.settings');
+        Route::put('/attendance/settings', [AttendanceAdminController::class, 'updateSettings'])->name('attendance.settings.update');
+        Route::get('/attendance/employees/{employee}/dtr', [AttendanceAdminController::class, 'employeeDtr'])->name('attendance.employees.dtr');
+        Route::get('/attendance/employees/{employee}/dtr/pdf', [AttendanceAdminController::class, 'employeeDtrPdf'])->name('attendance.employees.dtr.pdf');
     });
 });
