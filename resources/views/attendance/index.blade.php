@@ -153,6 +153,7 @@
     </div>
 @endsection
 
+@push('scripts')
 <script>
 (function () {
     const punchBtn = document.getElementById('punch-btn');
@@ -244,4 +245,5 @@
     });
 })();
 </script>
+@endpush
 

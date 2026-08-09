@@ -45,6 +45,7 @@
     </div>
 @endsection
 
+@push('scripts')
 <script>
 (function () {
     var select = document.getElementById('document_type');
@@ -61,3 +62,4 @@
     sync();
 })();
 </script>
+@endpush

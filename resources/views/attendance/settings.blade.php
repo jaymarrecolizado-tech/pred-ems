@@ -222,6 +222,7 @@
     </div>
 @endsection
 
+@push('scripts')
 <script>
 (function () {
     // Toggle time inputs on/off with the Working checkbox per day.
@@ -239,3 +240,4 @@
     });
 })();
 </script>
+@endpush

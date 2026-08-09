@@ -123,8 +123,15 @@
     </div>
 @endsection
 
+@push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+@endpush
+
+@push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+@endpush
+
+@push('scripts')
 <script>
     window.addEventListener('DOMContentLoaded', () => {
         @php
@@ -350,6 +357,9 @@
         }
     });
 </script>
+@endpush
+
+@push('styles')
 <style>
     /* ---------- Checkpoints page layout ---------- */
     .cp-layout {
@@ -367,23 +377,27 @@
         max-height: 720px;
     }
 
-    .cp-row {
+    /* Specificity beats the global .grow-list li (10px 0) default so rows get
+       proper breathing room — the list sits inside .cp-list-scroll, which the
+       .card > .grow-list rule never matches. */
+    .grow-list .cp-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
-        padding: 12px 20px;
+        gap: 12px;
+        padding: 14px 20px;
         cursor: pointer;
         transition: background .12s, box-shadow .12s;
     }
-    .cp-row:hover { background: var(--paper-2); }
-    .cp-row:focus-visible { outline: 2px solid var(--brand-600); outline-offset: -2px; }
-    .cp-row.is-selected {
+    .grow-list .cp-row:hover { background: var(--paper-2); }
+    .grow-list .cp-row:focus-visible { outline: 2px solid var(--brand-600); outline-offset: -2px; }
+    .grow-list .cp-row.is-selected {
         background: var(--brand-50);
         box-shadow: inset 3px 0 0 var(--brand-600);
     }
-    .cp-row.is-selected:hover { background: var(--brand-50); }
+    .grow-list .cp-row.is-selected:hover { background: var(--brand-50); }
     .cp-row-main { min-width: 0; }
+    .cp-row-main > div + div { margin-top: 3px; }
     .cp-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
     .cp-coord-input {
@@ -410,3 +424,4 @@
         .cp-list-scroll { max-height: none; }
     }
 </style>
+@endpush

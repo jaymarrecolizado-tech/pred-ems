@@ -80,6 +80,7 @@
     </div>
 @endsection
 
+@push('scripts')
 <script>
 function promptReject(id) {
     const reason = window.prompt('Reason for rejection:');
@@ -89,3 +90,4 @@ function promptReject(id) {
     form.submit();
 }
 </script>
+@endpush
