@@ -190,5 +190,7 @@
             </tr>
         </table>
     </div>
+
+    @include('partials.doc-qr')
 </body>
 </html>

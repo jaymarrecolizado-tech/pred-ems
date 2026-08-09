@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\WorkSchedule;
 use App\Support\Audit;
 use App\Support\DocumentIssuer;
+use App\Support\DocumentQr;
 use App\Support\Dtr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
@@ -279,6 +280,7 @@ class AttendanceAdminController extends Controller
             $pdf = Pdf::loadView('documents.dtr', [
                 'dtr' => $dtr,
                 'referenceNo' => $referenceNo,
+                'qrDataUri' => DocumentQr::dataUri($referenceNo),
             ])->setPaper('a4', 'portrait');
 
             $pdfOutput = $pdf->output();

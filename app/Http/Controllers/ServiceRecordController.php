@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\Employee;
 use App\Support\DocumentIssuer;
+use App\Support\DocumentQr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Response;
@@ -50,6 +51,7 @@ class ServiceRecordController extends Controller
                 'preparer' => DocumentIssuer::preparer(),
                 'certifier' => DocumentIssuer::certifier(),
                 'referenceNo' => $referenceNo,
+                'qrDataUri' => DocumentQr::dataUri($referenceNo),
             ])->setPaper('a4', 'portrait');
 
             $pdfOutput = $pdf->output();

@@ -245,6 +245,8 @@
     @if (isset($referenceNo))
         <div class="ref-no">Ref. No: {{ $referenceNo }}</div>
     @endif
+
+    @include('partials.doc-qr')
 </div>
 </body>
 </html>

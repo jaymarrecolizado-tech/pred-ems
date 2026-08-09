@@ -9,6 +9,7 @@ use App\Notifications\DocumentRequestRejectedNotification;
 use App\Notifications\DocumentRequestSubmittedNotification;
 use App\Support\Audit;
 use App\Support\DocumentIssuer;
+use App\Support\DocumentQr;
 use App\Support\Dtr;
 use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -271,6 +272,7 @@ class DocumentRequestController extends Controller
             return Pdf::loadView($view, [
                 'dtr' => Dtr::build($employee, $month, $year),
                 'referenceNo' => $referenceNo,
+                'qrDataUri' => DocumentQr::dataUri($referenceNo),
             ])->setPaper('a4', 'portrait')->output();
         }
 
@@ -279,6 +281,7 @@ class DocumentRequestController extends Controller
             'preparer' => DocumentIssuer::preparer(),
             'certifier' => DocumentIssuer::certifier(),
             'referenceNo' => $referenceNo,
+            'qrDataUri' => DocumentQr::dataUri($referenceNo),
         ];
 
         if ($documentRequest->document_type === 'leave_balances') {

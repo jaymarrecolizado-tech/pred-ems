@@ -48,6 +48,7 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **Service Record (CS Form 212)** — official CSC-format PDF/HTML preview (`Service Record` button on any profile): DICT letterhead + seal, personal info grid (incl. maiden name + birth date/place), certification paragraph, appointment table (service / record of appointment / separation / remarks), "Nothing Follows" row, EO 54 footer, and prepared-by/certifier signature blocks resolved from the actual plantilla. Sequential `SR-2026-XXXX` reference numbers.
 - **Certificate of Employment (COE)** — letter-style PDF/HTML preview (`COE` button on any profile) certifying employment period, position, and division, with `COE-2026-XXXX` reference numbers.
 - **Issuance ledger** — every generated document is recorded in the `documents` table (employee, type, reference no., issued by, timestamp) for a clean audit trail; PDFs are dompdf-safe (table-only layout).
+- **QR authenticity codes** — every official PDF (COE, Service Record, Leave Balances, No Pending Case, DTR) carries a QR code linking to the **public verification page** (`/verify/{reference}`, throttled) so any agency or bank can confirm the document was issued by DICT RO2 against the ledger.
 
 **Document requests — Phase 3.5 (implemented):**
 
@@ -76,7 +77,7 @@ scripts/setup.sh                        ← one-command XAMPP setup
 
 - **Per-item adjustments** — on any draft period, each employee row has an **Adjust** button (`/payroll/items/{id}/adjust`) for honoraria, overtime pay, other income (taxable additions) and LWOP / other deductions. Saving recomputes the item with the full engine (GSIS/PhilHealth/PAG-IBIG/BIR updated), re-persists the computation trace, and audits the change; recomputing the whole period **preserves** the manual entries. Locked periods are protected.
 
-> ⚠️ Known limit: `salary_scales` holds sample placeholder amounts until the official SSL table is imported.
+> ✅ `salary_scales` now holds the **official SSL V salary table** (Executive Order No. 64, s. 2024 — First Tranche, effective 2024-01-01): grades 1–33, steps 1–8 (258 rows). Later EO 64 tranches (2025 / 2026 / 2027) can be added as effective-dated rows and the newest row wins.
 
 **Notifications — in-system + email + SMS (implemented):**
 
@@ -96,6 +97,12 @@ scripts/setup.sh                        ← one-command XAMPP setup
   - **Documents issued** — every Service Record / COE with reference number, issuer, and timestamp
   - **Attrition & onboarding** — separations and new hires per year
   - **Attendance summary** — monthly per-employee roll-up (scheduled work days, days present, absences, total hours, late/undertime minutes, rest-day/holiday OT hours) with month/year/division filters, computed against the AOM 2026-020 schedule; the PDF export includes the totals row
+
+**Bulk data imports — admin/HR (Phase 5 stretch, done):**
+
+- **Data Imports** (`/imports`) — upload a **CSV, .xls (SpreadsheetML), or .xlsx** roster and import employees with a **preview-then-commit** flow: per-row validation shown before anything is written, rows with errors are skipped, and every import is audited with created/updated/skipped counts.
+  - **Employee roster** — upserts by employee number (create-only / update-only / upsert modes); employment type & division resolved by code or name (with COS/JO aliases); positions auto-created by title; the original appointment seeds the Service Record; template download provided.
+  - **Attendance logs** — punch rows (am_in/am_out/pm_in/pm_out per employee + date) upserted idempotently, stamped `hr_manual` in the append-only log, feeding the CSC Form 48 DTR and attendance reports directly; template download provided.
 
 **Leave management — Phase 2 (implemented):**
 

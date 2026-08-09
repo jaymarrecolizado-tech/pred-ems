@@ -160,6 +160,10 @@
                             @include('partials.icon', ['name' => 'documents'])
                             <span>Document Requests</span>
                         </a>
+                        <a href="{{ route('imports.index') }}" class="nav-link {{ request()->routeIs('imports.*') ? 'active' : '' }}" title="Data Imports" {!! request()->routeIs('imports.*') ? 'aria-current="page"' : '' !!}>
+                            @include('partials.icon', ['name' => 'documents'])
+                            <span>Data Imports</span>
+                        </a>
                         @endif
                         <a href="{{ route('payroll.index') }}" class="nav-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}" title="Payroll" {!! request()->routeIs('payroll.*') ? 'aria-current="page"' : '' !!}>
                             @include('partials.icon', ['name' => 'payroll'])<span>Payroll</span>

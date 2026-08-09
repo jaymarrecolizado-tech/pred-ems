@@ -178,7 +178,7 @@ erDiagram
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding, and a monthly attendance summary (work days, days present, absences, hours, late/undertime, rest-day OT) — every report exports **CSV · Excel · PDF** (`?format=csv|xls|pdf`; SpreadsheetML .xls opens natively in Excel, dompdf landscape PDF with DICT masthead); audit viewer ✅ (Phase 1) |
-| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · 🚧 Imports/notifications pending |
+| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · **Bulk imports ✅** — CSV/XLS/XLSX employee roster + attendance log imports with preview-then-commit, per-row validation, and audit · Notifications ✅ (in-system + email + SMS) |
 | **3.6. Notifications** | In-system inbox, email, SMS via Android gateway | **Inbox ✅** — topbar bell + `/notifications` (unread badge, mark read, mark all) · **Email ✅** — via Laravel mailer on every notification · **SMS ✅** — queued async delivery to the capcom6 Android gateway (`sms:send` cron, retries ≤ 3, soft-fail) · Fires on document request/issue/reject + leave file/approve/reject |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), **per-item adjustments ✅** (honoraria / overtime / other income + LWOP / other deductions — recompute with the engine, trace re-persisted, preserved across period recomputes, draft-only), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limit: salary scales remain the seeded placeholders pending the official SSL table |
 
@@ -260,6 +260,14 @@ day, marks rest days and holidays, and still counts hours rendered on them as
 are the evidence for CTO credit claims. Fixed-date national holidays (recurring yearly) are
 seeded; HR manages the calendar in Settings.
 
+**Document verification — ✅ complete (QR authenticity).** Every official PDF (COE, Service Record,
+Leave Balances, No Pending Case, DTR) now carries a **QR code** (chillerlan/php-qrcode, GD backend)
+encoding a link to the **public verification page** `/verify/{reference}` — no login required, rate-limited
+(20/min) so sequential reference numbers can't be bulk-scraped. The page confirms the document was
+issued by DICT RO2 against the `documents` ledger (reference, type, employee, issuer, timestamp); an
+unknown reference renders the friendly 404. Self-service (reference-free) DTR downloads deliberately
+get no QR.
+
 **Phase 3.5 – Document requests: ✅ complete.** Employees request official documents
 from **My Documents** (`/documents/requests`): Certificate of Employment, Service Record,
 Certificate of Leave Balances (live ledger balances as of issuance),
@@ -295,8 +303,9 @@ item through the full engine — GSIS/PhilHealth/PAG-IBIG/BIR all refresh,
 the `computation_json` trace is re-persisted (with the manual lines), and
 the change is audited. Recomputed periods **preserve** the manual entries
 (they ride along with each employee's item). Locked periods refuse
-adjustments with a 409. Known limit: `salary_scales` still holds the
-sample placeholder amounts pending the official SSL table.
+adjustments with a 409. Known limit: `salary_scales` holds the **official SSL V table** (EO 64 s. 2024 First Tranche,
+effective 2024-01-01 — 258 rows) loaded via `SalaryScaleSeeder`; later EO 64 tranches
+(2025/2026/2027) can be added as effective-dated rows.
 
 **Notifications — ✅ complete (stretch of Phase 5, done).** Every employee has an
 **in-system inbox** (`/notifications`, topbar bell with unread badge, mark-as-read /
@@ -308,5 +317,14 @@ retries ≤ 3 attempts). Fires on: document request submitted (HR/admin), docume
 issued/rejected (employee), leave filed (HR/admin), leave approved/rejected
 (employee). Delivery is **soft-fail** — a broken SMTP or gateway is logged, never
 blocks the business action. SMS only sends when `SMS_ENABLED=true` and the
-employee has a contact number on their 201-file. Remaining stretch in Phase 5:
-spreadsheet imports.
+employee has a contact number on their 201-file. **Bulk imports — ✅ complete (last Phase 5 stretch item).** `Data Imports` (`/imports`, admin/HR)
+lets HR upload **CSV / .xls (SpreadsheetML) / .xlsx** files (`App\Support\ImportReader` — native CSV,
+DOMDocument for SpreadsheetML, PhpSpreadsheet for XLSX) through a **preview-then-commit** flow:
+per-row validation (required names, employment type/division resolution by code/name with COS/JO
+aliases, grade/step bounds, date/time parsing, duplicate employee numbers), a preview table with
+per-row errors, and a commit that imports only the valid rows. Employee roster imports upsert by
+employee number (create/update/upsert modes), auto-create positions by title, seed the original
+appointment, and audit each row; attendance imports upsert punches (am_in/am_out/pm_in/pm_out)
+stamped `hr_manual` in the append-only log, feeding the DTR and attendance reports. Templates are
+downloadable, uploads are cleaned up after commit or on error, and every import writes a summary
+audit entry with created/updated/skipped counts.

@@ -8,7 +8,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CoeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentRequestController;
+use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
@@ -27,6 +29,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => redirect()->route('dashboard'));
 
 // Auth
+// Public document verification — scanned from the QR code on official PDFs.
+// Throttled: reference numbers are sequential, so the rate limit stops
+// bulk enumeration of issued documents (DPA-conscious).
+Route::get('/verify/{referenceNo}', [DocumentVerificationController::class, 'show'])
+    ->middleware('throttle:20,1')
+    ->name('documents.verify');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])
     ->middleware('throttle:5,1')
@@ -155,6 +164,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
         Route::get('/reports/attrition', [ReportController::class, 'attrition'])->name('reports.attrition');
         Route::get('/reports/attendance-summary', [ReportController::class, 'attendanceSummary'])->name('reports.attendance-summary');
+
+        // Bulk imports (Phase 5 stretch) — admin/HR only
+        Route::get('/imports', [ImportController::class, 'index'])->name('imports.index');
+        Route::get('/imports/employees', [ImportController::class, 'employees'])->name('imports.employees');
+        Route::post('/imports/employees/preview', [ImportController::class, 'previewEmployees'])->name('imports.employees.preview');
+        Route::post('/imports/employees/commit', [ImportController::class, 'commitEmployees'])->name('imports.employees.commit');
+        Route::get('/imports/employees/template', [ImportController::class, 'employeesTemplate'])->name('imports.employees.template');
+        Route::get('/imports/attendance', [ImportController::class, 'attendance'])->name('imports.attendance');
+        Route::post('/imports/attendance/preview', [ImportController::class, 'previewAttendance'])->name('imports.attendance.preview');
+        Route::post('/imports/attendance/commit', [ImportController::class, 'commitAttendance'])->name('imports.attendance.commit');
+        Route::get('/imports/attendance/template', [ImportController::class, 'attendanceTemplate'])->name('imports.attendance.template');
     });
 
     // Attendance & DTR (Phase 5) — every employee punches from their device
