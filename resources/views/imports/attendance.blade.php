@@ -65,10 +65,10 @@
                                 <td>{{ $d['pm_out'] ?? '—' }}</td>
                                 <td>
                                     @if (empty($row['errors']))
-                                        <span class="badge-pill" style="color:#157347">✓ Valid</span>
+                                        <span class="badge badge-green">✓ Valid</span>
                                     @else
-                                        <span class="badge-pill" style="color:#c0392b">✗ {{ count($row['errors']) }} issue(s)</span>
-                                        <div style="font-size:11.5px; color:#c0392b; margin-top:3px">{{ implode(' ', $row['errors']) }}</div>
+                                        <span class="badge badge-red">✗ {{ count($row['errors']) }} issue(s)</span>
+                                        <div style="font-size:11.5px; color:var(--red-text); margin-top:3px">{{ implode(' ', $row['errors']) }}</div>
                                     @endif
                                 </td>
                             </tr>

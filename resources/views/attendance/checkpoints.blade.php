@@ -110,7 +110,7 @@
                                       onsubmit="return confirm('Delete this checkpoint?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
                             </div>
                         </li>
@@ -354,18 +354,15 @@
     .cp-list-scroll {
         flex: 1;
         overflow-y: auto;
-        padding: 2px 18px 12px;
         max-height: 640px;
     }
-    .cp-list-scroll .grow-list li { border-bottom: 1px solid var(--line); }
 
     .cp-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        padding: 10px 8px;
-        border-radius: var(--radius-control);
+        padding: 12px 20px;
         cursor: pointer;
         transition: background .12s, box-shadow .12s;
     }

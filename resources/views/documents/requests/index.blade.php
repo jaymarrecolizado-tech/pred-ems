@@ -59,7 +59,7 @@
                                 @elseif ($request->status === 'pending')
                                     <form method="POST" action="{{ route('documents.requests.cancel', $request) }}" class="inline" onsubmit="return confirm('Cancel this request?')">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Cancel</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
                                     </form>
                                 @endif
                             </td>

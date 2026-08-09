@@ -7,13 +7,14 @@
 @endsection
 
 @section('content')
-    <div class="card card-pad" style="max-width:520px">
-        <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
+    <div class="card" style="max-width:520px">
+        <div class="card-header">
             <h2>Change Password</h2>
             <a href="{{ route('profile.show') }}" class="btn btn-outline btn-sm">← Back to profile</a>
         </div>
 
-        <form method="POST" action="{{ route('profile.password.update') }}" style="margin-top:18px">
+        <div class="card-pad">
+        <form method="POST" action="{{ route('profile.password.update') }}">
             @csrf
             @method('PUT')
 
@@ -40,5 +41,6 @@
                 <button type="submit" class="btn btn-primary">Update Password</button>
             </div>
         </form>
+        </div>
     </div>
 @endsection

@@ -19,7 +19,7 @@
                 </form>
             </div>
         </div>
-        <div class="grow-list" style="padding:6px 0">
+        <div class="grow-list">
             @forelse ($notifications as $notification)
                 @php
                     $data = $notification->data;

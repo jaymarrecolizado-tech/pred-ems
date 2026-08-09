@@ -38,24 +38,20 @@
         <div class="card-header">
             <h2>Headcount by {{ $groupLabel }} <span class="hint">({{ $total }} employees)</span></h2>
         </div>
-        <div class="card-pad">
-            <div class="chart-body" style="padding:0">
-                <div class="grow-list">
-                    @foreach ($rows as $row)
-                        <li>
-                            <span>{{ $row['label'] }}</span>
-                            <span style="display:flex; align-items:center; gap:12px">
-                                <span class="progress" style="width:140px"><i style="width:{{ $row['pct'] }}%"></i></span>
-                                <strong style="font-variant-numeric:tabular-nums">{{ $row['count'] }}</strong>
-                                <span class="num" style="font-size:12px; color:var(--ink-400)">{{ $row['pct'] }}%</span>
-                            </span>
-                        </li>
-                    @endforeach
-                </div>
-                @if ($rows->isEmpty())
-                    <div class="empty" style="color:var(--ink-400); font-size:13px; padding:24px 0; text-align:center">No employees match these filters.</div>
-                @endif
-            </div>
+        <div class="grow-list">
+            @foreach ($rows as $row)
+                <li>
+                    <span>{{ $row['label'] }}</span>
+                    <span style="display:flex; align-items:center; gap:12px">
+                        <span class="progress" style="width:140px"><i style="width:{{ $row['pct'] }}%"></i></span>
+                        <strong style="font-variant-numeric:tabular-nums">{{ $row['count'] }}</strong>
+                        <span class="num" style="font-size:12px; color:var(--ink-400)">{{ $row['pct'] }}%</span>
+                    </span>
+                </li>
+            @endforeach
         </div>
+        @if ($rows->isEmpty())
+            <div class="card-pad"><div class="empty" style="color:var(--ink-400); font-size:13px; text-align:center">No employees match these filters.</div></div>
+        @endif
     </div>
 @endsection

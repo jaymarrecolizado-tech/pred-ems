@@ -47,7 +47,7 @@
         {{-- Active rates --}}
         <div class="card">
             <div class="card-header">
-                <h2>Active Contribution &amp; Tax Rates</h2>
+                <h2>Active Contribution &amp; Tax Rates <span class="hint">({{ $rates->flatten()->count() }} agencies)</span></h2>
             </div>
             <div class="grow-list">
                 @forelse ($rates as $agency => $agencyRates)

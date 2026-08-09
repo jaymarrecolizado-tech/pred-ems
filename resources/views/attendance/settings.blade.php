@@ -142,7 +142,7 @@
                             <form method="POST" action="{{ route('attendance.schedules.destroy', $schedule) }}" class="inline" onsubmit="return confirm('Delete this schedule? Existing DTRs resolve against the remaining schedules.')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
                         </div>
                     </li>
@@ -208,7 +208,7 @@
                                     <form method="POST" action="{{ route('attendance.holidays.destroy', $holiday) }}" class="inline" onsubmit="return confirm('Remove this holiday?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Remove</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                     </form>
                                 </td>
                             </tr>

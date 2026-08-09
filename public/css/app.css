@@ -336,7 +336,7 @@ a:hover { text-decoration: underline; }
 }
 .card-header h2 {
     margin: 0;
-    font-size: 14.5px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: .1px;
     color: var(--ink-900);
@@ -532,8 +532,8 @@ a:hover { text-decoration: underline; }
 .btn-primary:hover { background: var(--brand-700); color: #fff; }
 .btn-outline { background: #fff; border-color: var(--line-strong); color: var(--ink-700); }
 .btn-outline:hover { background: var(--paper-2); color: var(--ink-900); }
-.btn-danger { background: var(--red-text); color: #fff; }
-.btn-danger:hover { background: #991b1b; color: #fff; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1b; color: #fff; }
 .btn-ghost { background: transparent; color: var(--ink-500); border-color: var(--line-strong); }
 .btn-ghost:hover { background: var(--paper-2); color: var(--ink-900); }
 .btn-sm { padding: 4px 11px; font-size: 12px; }
@@ -907,9 +907,23 @@ table.table { width: 100%; border-collapse: collapse; }
 .text-danger { color: #c0392b; }
 .text-right { text-align: right; }
 .mt-16 { margin-top: 16px; }
+
+/* ---------- Grow lists (card list sections) ---------- */
 .grow-list { list-style: none; padding: 0; margin: 0; }
-.grow-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; gap: 10px; }
+.grow-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+}
 .grow-list li:last-child { border-bottom: none; }
+
+/* Flush list directly under a card header — rows inset with hairline dividers */
+.card > .grow-list li { padding: 12px 20px; transition: background .12s; }
+.card > .grow-list li:hover { background: var(--paper-2); }
 .progress { height: 7px; background: #e2e6ee; border-radius: var(--radius-pill); overflow: hidden; margin-top: 3px; }
 .progress > i { display: block; height: 100%; background: var(--brand-600); }
 
@@ -1081,6 +1095,7 @@ table.table { width: 100%; border-collapse: collapse; }
 /* ---------- Small phones ---------- */
 @media (max-width: 480px) {
     .grow-list li { flex-wrap: wrap; gap: 6px; }
+    .card > .grow-list li { padding: 10px 14px; }
     .brand { padding: 16px 14px; }
 }
 
@@ -1127,7 +1142,9 @@ table.table { width: 100%; border-collapse: collapse; }
 }
 .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-600); flex-shrink: 0; }
 .notif-row { transition: background .12s; }
+.notif-row:hover { background: var(--paper-2); }
 .notif-row.unread { background: var(--brand-50); }
+.notif-row.unread:hover { background: var(--brand-100); }
 
 @media (max-width: 640px) {
     .notif-dd-panel { right: -64px; }

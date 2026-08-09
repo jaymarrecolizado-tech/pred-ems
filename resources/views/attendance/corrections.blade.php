@@ -60,7 +60,7 @@
                                         <form method="POST" action="{{ route('attendance.corrections.reject', $correction) }}" id="reject-{{ $correction->id }}">
                                             @csrf
                                             <input type="hidden" name="denial_reason" value="Reviewed by HR">
-                                            <button type="button" class="btn btn-sm" style="background:#dc2626; color:#fff" onclick="promptReject({{ $correction->id }})">Reject</button>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="promptReject({{ $correction->id }})">Reject</button>
                                         </form>
                                     </div>
                                 @else

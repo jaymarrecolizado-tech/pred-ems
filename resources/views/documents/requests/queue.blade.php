@@ -73,7 +73,7 @@
                                             <button type="submit" class="btn btn-primary btn-sm">Issue</button>
                                         </form>
                                         <details style="position:relative">
-                                            <summary class="btn btn-sm" style="background:#dc2626; color:#fff; cursor:pointer">Reject</summary>
+                                            <summary class="btn btn-danger btn-sm" style="cursor:pointer">Reject</summary>
                                             <form method="POST" action="{{ route('documents.requests.reject', $request) }}" class="card" style="position:absolute; right:0; top:calc(100% + 6px); z-index:20; padding:12px; width:280px; box-shadow:0 10px 30px rgba(15,23,42,.15)">
                                                 @csrf
                                                 <div class="field" style="margin-bottom:8px">

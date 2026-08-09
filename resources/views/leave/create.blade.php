@@ -7,12 +7,13 @@
 @endsection
 
 @section('content')
-    <div class="card card-pad" style="max-width:640px">
-        <div class="card-header" style="padding:0 0 14px; border-bottom:1px solid var(--line)">
+    <div class="card" style="max-width:640px">
+        <div class="card-header">
             <h2>File a Leave Application</h2>
         </div>
 
-        <form method="POST" action="{{ route('leave.store') }}" class="mt-16">
+        <div class="card-pad">
+        <form method="POST" action="{{ route('leave.store') }}">
             @csrf
 
             <div class="field" style="margin-bottom:14px">
@@ -56,13 +57,14 @@
                 <a href="{{ route('leave.index') }}" class="btn btn-outline">Back to My Leave</a>
             </div>
         </form>
+        </div>
     </div>
 
-    <div class="card card-pad" style="max-width:640px">
-        <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
+    <div class="card" style="max-width:640px">
+        <div class="card-header">
             <h2>Current Balances</h2>
         </div>
-        <div class="grow-list mt-16">
+        <div class="grow-list">
             @forelse ($balances as $row)
                 <li>
                     <span>
@@ -77,6 +79,8 @@
                 <li class="text-muted">No leave credits on record yet.</li>
             @endforelse
         </div>
-        <p class="text-muted" style="font-size:12px; margin:14px 0 0">Days are counted as working days (Mon–Fri) between the selected dates. VL/SL applications require a sufficient credit balance.</p>
+        <div class="card-pad">
+            <p class="text-muted" style="font-size:12px; margin:0">Days are counted as working days (Mon–Fri) between the selected dates. VL/SL applications require a sufficient credit balance.</p>
+        </div>
     </div>
 @endsection

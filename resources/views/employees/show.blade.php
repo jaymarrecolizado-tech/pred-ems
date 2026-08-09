@@ -43,12 +43,13 @@
     </div>
 
     <div class="info-grid">
-        <div class="card card-pad">
-            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
+        <div class="card">
+            <div class="card-header">
                 <h2>Personal Information</h2>
             </div>
-            <div class="info-list mt-16">
-                <div class="item"><span class="k">Birth Date</span><span class="v">{{ $employee->birth_date?->format('F d, Y') ?? '—' }}</span></div>
+            <div class="card-pad">
+                <div class="info-list">
+                    <div class="item"><span class="k">Birth Date</span><span class="v">{{ $employee->birth_date?->format('F d, Y') ?? '—' }}</span></div>
                 <div class="item"><span class="k">Gender</span><span class="v">{{ $employee->gender ?? '—' }}</span></div>
                 <div class="item"><span class="k">Civil Status</span><span class="v">{{ $employee->civil_status ?? '—' }}</span></div>
                 <div class="item"><span class="k">Citizenship</span><span class="v">{{ $employee->citizenship ?? '—' }}</span></div>
@@ -56,16 +57,18 @@
                 <div class="item"><span class="k">Contact Number</span><span class="v">{{ $employee->contact_number ?? '—' }}</span></div>
                 <div class="item"><span class="k">Personal Email</span><span class="v">{{ $employee->personal_email ?? '—' }}</span></div>
                 <div class="item"><span class="k">Gov Email</span><span class="v">{{ $employee->gov_email ?? '—' }}</span></div>
-                <div class="item"><span class="k">Address</span><span class="v">{{ $employee->residential_address ?? '—' }}</span></div>
+                    <div class="item"><span class="k">Address</span><span class="v">{{ $employee->residential_address ?? '—' }}</span></div>
+                </div>
             </div>
         </div>
 
-        <div class="card card-pad">
-            <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
+        <div class="card">
+            <div class="card-header">
                 <h2>Government IDs</h2>
             </div>
-            <div class="info-list mt-16">
-                <div class="item"><span class="k">GSIS No.</span><span class="v">{{ $employee->gsis_no ?? '—' }}</span></div>
+            <div class="card-pad">
+                <div class="info-list">
+                    <div class="item"><span class="k">GSIS No.</span><span class="v">{{ $employee->gsis_no ?? '—' }}</span></div>
                 <div class="item"><span class="k">PhilHealth No.</span><span class="v">{{ $employee->philhealth_no ?? '—' }}</span></div>
                 <div class="item"><span class="k">PAG-IBIG No.</span><span class="v">{{ $employee->pagibig_no ?? '—' }}</span></div>
                 <div class="item"><span class="k">TIN</span><span class="v">{{ $employee->tin_no ?? '—' }}</span></div>
@@ -74,7 +77,8 @@
                 <div class="item"><span class="k">Plantilla Item No.</span><span class="v">{{ $employee->plantilla_item_no ?? '—' }}</span></div>
                 <div class="item"><span class="k">Source of Fund</span><span class="v">{{ $employee->source_of_fund ?? '—' }}</span></div>
                 <div class="item"><span class="k">Original Appointment</span><span class="v">{{ $employee->date_original_appointment?->format('F d, Y') ?? '—' }}</span></div>
-                <div class="item"><span class="k">Last Promotion</span><span class="v">{{ $employee->date_last_promotion?->format('F d, Y') ?? '—' }}</span></div>
+                    <div class="item"><span class="k">Last Promotion</span><span class="v">{{ $employee->date_last_promotion?->format('F d, Y') ?? '—' }}</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -117,7 +121,7 @@
                                           onsubmit="return confirm('Remove this appointment from the service history?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff">Delete</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
                                 </td>
                             @endif

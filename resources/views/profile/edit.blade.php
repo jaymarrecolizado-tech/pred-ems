@@ -7,19 +7,20 @@
 @endsection
 
 @section('content')
-    <div class="card card-pad">
-        <div class="card-header" style="padding:0 0 12px; border-bottom:1px solid var(--line)">
+    <div class="card">
+        <div class="card-header">
             <h2>Edit Personal Information</h2>
             <a href="{{ route('profile.show') }}" class="btn btn-outline btn-sm">← Back to profile</a>
         </div>
 
-        <p class="text-muted" style="margin:14px 0 0">
+        <div class="card-pad">
+        <p class="text-muted" style="margin:0 0 14px">
             You can update your personal details and government ID numbers here.
             Employment information (position, salary, status) and your official gov email
             are managed by the HR office — contact them for corrections.
         </p>
 
-        <form method="POST" action="{{ route('profile.update') }}" style="margin-top:18px">
+        <form method="POST" action="{{ route('profile.update') }}">
             @csrf
             @method('PUT')
 
@@ -142,5 +143,6 @@
                 <a href="{{ route('profile.show') }}" class="btn btn-outline">Cancel</a>
             </div>
         </form>
+        </div>
     </div>
 @endsection
