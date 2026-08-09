@@ -18,7 +18,10 @@
         </div>
         <div class="form-actions" style="margin:0">
             <button type="submit" class="btn btn-primary">Run Report</button>
-            <a href="{{ route('reports.leave-utilization', ['format' => 'csv', 'year' => $year]) }}" class="btn btn-outline">Export CSV</a>
+            @include('partials.report-exports', [
+                'route' => 'reports.leave-utilization',
+                'params' => ['year' => $year],
+            ])
         </div>
     </form>
 

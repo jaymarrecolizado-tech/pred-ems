@@ -18,7 +18,10 @@
         </div>
         <div class="form-actions" style="margin:0">
             <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="{{ route('reports.documents', ['format' => 'csv', 'type' => $type]) }}" class="btn btn-outline">Export CSV</a>
+            @include('partials.report-exports', [
+                'route' => 'reports.documents',
+                'params' => ['type' => $type],
+            ])
         </div>
     </form>
 

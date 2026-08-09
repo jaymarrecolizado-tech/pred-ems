@@ -177,7 +177,7 @@ erDiagram
 | **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
-| **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding — all with CSV export (UTF-8 BOM + formula-injection guard); audit viewer ✅ (Phase 1) |
+| **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding, and a monthly attendance summary (work days, days present, absences, hours, late/undertime, rest-day OT) — every report exports **CSV · Excel · PDF** (`?format=csv|xls|pdf`; SpreadsheetML .xls opens natively in Excel, dompdf landscape PDF with DICT masthead); audit viewer ✅ (Phase 1) |
 | **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · 🚧 Imports/notifications pending |
 | **3.6. Notifications** | In-system inbox, email, SMS via Android gateway | **Inbox ✅** — topbar bell + `/notifications` (unread badge, mark read, mark all) · **Email ✅** — via Laravel mailer on every notification · **SMS ✅** — queued async delivery to the capcom6 Android gateway (`sms:send` cron, retries ≤ 3, soft-fail) · Fires on document request/issue/reject + leave file/approve/reject |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), **per-item adjustments ✅** (honoraria / overtime / other income + LWOP / other deductions — recompute with the engine, trace re-persisted, preserved across period recomputes, draft-only), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limit: salary scales remain the seeded placeholders pending the official SSL table |
@@ -221,13 +221,22 @@ timeline drives the **CSC Service Record (CS Form 212)** and the **Certificate o
 both rendered as dompdf-safe PDFs (table-only layout, no flexbox/transforms) with sequential
 reference numbers (`SR-2026-0001`, `COE-2026-0001`) recorded in `documents`.
 
-**Phase 4 – Reports & Audit: ✅ complete.** A `/reports` hub (admin/HR) with five
+**Phase 4 – Reports & Audit: ✅ complete.** A `/reports` hub (admin/HR) with six
 reports over the live data — headcount (groupable by employment type / division / status /
 source of fund, with a status filter), VL/SL leave balances (single grouped ledger query),
 leave utilization (approved days per type per year), documents issued (Service Records &
-COEs with reference numbers), and attrition & onboarding (separations/new hires per year)
-— each streaming a CSV via `?format=csv` (UTF-8 BOM, `fputcsv` quoting, formula-injection
-guard). Known limitation: separation dates derive from `updated_at` (no dedicated column yet).
+COEs with reference numbers), attrition & onboarding (separations/new hires per year), and
+a new **Attendance Summary** (`/reports/attendance-summary`): a monthly per-employee roll-up
+of scheduled work days, days present, absences, total hours rendered, late/undertime minutes,
+and rest-day/weekend/holiday hours (the CTO evidence), with month/year/division filters and
+a totals row — computed against the AOM 2026-020 schedule via a batched single-pass builder
+(`App\Support\AttendanceSummary`) that resolves the per-day schedule once and reuses it for
+every employee. Every report now exports in **CSV · Excel · PDF**: CSV stays UTF-8 BOM with
+`fputcsv` quoting + formula-injection guard, Excel is generated as SpreadsheetML 2003 XML
+(`.xls`, opens natively in Excel/LibreOffice, string cells guarded against `= + - @` formula
+injection, numeric cells typed Number), and PDF is a dompdf landscape A4 table with the DICT
+masthead and generated-by/timestamp footer. Known limitation: separation dates derive from
+`updated_at` (no dedicated column yet).
 
 **Phase 5 – Attendance & DTR: ✅ core complete.** Geofenced time logging with map-plotted
 checkpoints (Leaflet + OpenStreetMap; server-side radius validation), CSC Form 48 Daily

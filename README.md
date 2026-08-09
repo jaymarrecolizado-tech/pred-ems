@@ -89,12 +89,13 @@ scripts/setup.sh                        ← one-command XAMPP setup
 
 **Reports & Audit — Phase 4 (implemented):**
 
-- **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus five reports, each with **CSV export** (`?format=csv`, UTF-8 BOM, formula-injection safe):
+- **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus six reports, each exportable as **CSV · Excel · PDF** (`?format=csv|xls|pdf`; CSV is UTF-8 BOM + formula-injection safe, Excel is SpreadsheetML 2003 XML that opens natively, PDF is a dompdf landscape table with the DICT masthead):
   - **Headcount** — employees grouped by employment type, division, status, or source of fund, with a status filter and percentage bars
   - **Leave balances** — VL/SL balances for every active employee (one grouped ledger query)
   - **Leave utilization** — approved applications, employees, and days taken per leave type per year
   - **Documents issued** — every Service Record / COE with reference number, issuer, and timestamp
   - **Attrition & onboarding** — separations and new hires per year
+  - **Attendance summary** — monthly per-employee roll-up (scheduled work days, days present, absences, total hours, late/undertime minutes, rest-day/holiday OT hours) with month/year/division filters, computed against the AOM 2026-020 schedule; the PDF export includes the totals row
 
 **Leave management — Phase 2 (implemented):**
 

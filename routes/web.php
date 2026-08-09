@@ -154,6 +154,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/leave-utilization', [ReportController::class, 'leaveUtilization'])->name('reports.leave-utilization');
         Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
         Route::get('/reports/attrition', [ReportController::class, 'attrition'])->name('reports.attrition');
+        Route::get('/reports/attendance-summary', [ReportController::class, 'attendanceSummary'])->name('reports.attendance-summary');
     });
 
     // Attendance & DTR (Phase 5) — every employee punches from their device

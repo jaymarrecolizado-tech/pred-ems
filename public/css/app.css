@@ -904,6 +904,7 @@ table.table { width: 100%; border-collapse: collapse; }
 
 /* ---------- Misc ---------- */
 .text-muted { color: var(--ink-400); }
+.text-danger { color: #c0392b; }
 .text-right { text-align: right; }
 .mt-16 { margin-top: 16px; }
 .grow-list { list-style: none; padding: 0; margin: 0; }

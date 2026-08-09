@@ -89,6 +89,44 @@ class ReportsTest extends TestCase
             ->assertSee('New Hires');
     }
 
+    public function test_attendance_summary_renders_and_exports_all_formats(): void
+    {
+        $this->actingAs($this->adminUser())
+            ->get('/reports/attendance-summary')
+            ->assertOk()
+            ->assertSee('Attendance Summary')
+            ->assertSee('Days Present');
+
+        $csv = $this->actingAs($this->adminUser())->get('/reports/attendance-summary?format=csv');
+        $csv->assertOk();
+        $this->assertStringContainsString('text/csv', $csv->headers->get('Content-Type') ?: '');
+        $this->assertStringContainsString('Employee No', $csv->getContent());
+
+        $xls = $this->actingAs($this->adminUser())->get('/reports/attendance-summary?format=xls');
+        $xls->assertOk();
+        $this->assertStringContainsString('vnd.ms-excel', $xls->headers->get('Content-Type') ?: '');
+        $this->assertStringContainsString('Workbook', $xls->getContent());
+
+        $pdf = $this->actingAs($this->adminUser())->get('/reports/attendance-summary?format=pdf');
+        $pdf->assertOk();
+        $this->assertStringContainsString('application/pdf', $pdf->headers->get('Content-Type') ?: '');
+    }
+
+    public function test_every_report_exports_pdf_and_excel(): void
+    {
+        $reports = ['headcount', 'leave-balances', 'leave-utilization', 'documents', 'attrition', 'attendance-summary'];
+
+        foreach ($reports as $report) {
+            $pdf = $this->actingAs($this->adminUser())->get("/reports/{$report}?format=pdf");
+            $this->assertTrue($pdf->isOk(), "{$report} PDF failed");
+            $this->assertStringContainsString('application/pdf', $pdf->headers->get('Content-Type') ?: '', "{$report} PDF type");
+
+            $xls = $this->actingAs($this->adminUser())->get("/reports/{$report}?format=xls");
+            $this->assertTrue($xls->isOk(), "{$report} XLS failed");
+            $this->assertStringContainsString('vnd.ms-excel', $xls->headers->get('Content-Type') ?: '', "{$report} XLS type");
+        }
+    }
+
     public function test_employees_cannot_access_reports(): void
     {
         $this->actingAs($this->employeeUser())
@@ -97,6 +135,10 @@ class ReportsTest extends TestCase
 
         $this->actingAs($this->employeeUser())
             ->get('/reports/headcount')
+            ->assertForbidden();
+
+        $this->actingAs($this->employeeUser())
+            ->get('/reports/attendance-summary')
             ->assertForbidden();
     }
 }

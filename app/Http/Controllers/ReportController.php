@@ -7,6 +7,8 @@ use App\Models\Division;
 use App\Models\Employee;
 use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
+use App\Support\AttendanceSummary;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -40,11 +42,13 @@ class ReportController extends Controller
     {
         $data = $this->headcountData($request);
 
-        if ($request->query('format') === 'csv') {
-            return $this->csv(
-                $data['groupLabel'],
+        if ($format = $request->query('format')) {
+            return $this->export(
+                $format,
+                'Headcount',
                 [$data['groupLabel'], 'Count', '%'],
-                $data['rows']->map(fn ($row) => [$row['label'], $row['count'], $row['pct']])
+                $data['rows']->map(fn ($row) => [$row['label'], $row['count'], $row['pct']]),
+                "Employees grouped by {$data['groupLabel']}"
             );
         }
 
@@ -128,7 +132,7 @@ class ReportController extends Controller
             return $row;
         });
 
-        if ($request->query('format') === 'csv') {
+        if ($format = $request->query('format')) {
             $headers = ['Employee Number', 'Name', ...$leaveTypes->pluck('code')->map(fn ($c) => "{$c} Balance (days)")->all()];
             $data = $rows->map(function ($row) use ($leaveTypes) {
                 return [
@@ -138,7 +142,7 @@ class ReportController extends Controller
                 ];
             });
 
-            return $this->csv('Leave Balances', $headers, $data);
+            return $this->export($format, 'Leave Balances', $headers, $data, 'VL/SL balances of all active employees');
         }
 
         return view('reports.leave-balances', [
@@ -165,11 +169,13 @@ class ReportController extends Controller
             ];
         })->filter(fn ($row) => $row['applications'] > 0)->values();
 
-        if ($request->query('format') === 'csv') {
-            return $this->csv(
+        if ($format = $request->query('format')) {
+            return $this->export(
+                $format,
                 "Leave Utilization {$year}",
                 ['Leave Type', 'Approved Applications', 'Employees', 'Days Taken'],
-                $rows->map(fn ($row) => [$row['leave_type']->name, $row['applications'], $row['employees'], number_format($row['days'], 2)])
+                $rows->map(fn ($row) => [$row['leave_type']->name, $row['applications'], $row['employees'], number_format($row['days'], 2)]),
+                "Approved leave applications in {$year}"
             );
         }
 
@@ -196,14 +202,15 @@ class ReportController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        if ($request->query('format') === 'csv') {
+        if ($format = $request->query('format')) {
             $all = Document::query()
                 ->with(['employee', 'generatedBy'])
                 ->when($type !== 'all', fn ($q) => $q->where('document_type', $type))
                 ->latest('generated_at')
                 ->get();
 
-            return $this->csv(
+            return $this->export(
+                $format,
                 'Documents Issued',
                 ['Reference No', 'Document', 'Employee', 'Issued By', 'Date Issued'],
                 $all->map(fn (Document $d) => [
@@ -251,10 +258,11 @@ class ReportController extends Controller
             ->orderBy('last_name')
             ->get();
 
-        if ($request->query('format') === 'csv') {
-            // One CSV with both sections (separations then new hires), so the
-            // export always returns a file regardless of which is non-empty.
-            return $this->csv(
+        if ($format = $request->query('format')) {
+            // One export with both sections (separations then new hires), so it
+            // always returns a file regardless of which is non-empty.
+            return $this->export(
+                $format,
                 "Attrition_{$year}",
                 ['Section', 'Employee Number', 'Name', 'Status/Position', 'Date'],
                 $separated->map(fn (Employee $e) => [
@@ -279,8 +287,131 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
+    /*  Attendance summary                                                 */
+    /* ------------------------------------------------------------------ */
+
+    public function attendanceSummary(Request $request): Response|View
+    {
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+        $divisionId = $request->integer('division') ?: null;
+
+        $summary = AttendanceSummary::build($month, $year, $divisionId);
+
+        if ($format = $request->query('format')) {
+            $totals = $summary['totals'];
+
+            return $this->export(
+                $format,
+                'Attendance_Summary_' . $year . '-' . str_pad((string) $month, 2, '0', STR_PAD_LEFT),
+                ['Employee No', 'Name', 'Division', 'Work Days', 'Days Present', 'Absences', 'Hours', 'Late (min)', 'Undertime (min)', 'Rest-Day/OT (hrs)'],
+                $summary['rows']->map(fn ($row) => [
+                    $row['employee']->employee_number,
+                    $row['employee']->full_name,
+                    $row['employee']->division?->name ?? '—',
+                    $row['workdays'],
+                    $row['present'],
+                    $row['absences'],
+                    number_format($row['hours'], 2),
+                    $row['late'],
+                    $row['undertime'],
+                    number_format($row['ot_hours'], 2),
+                ]),
+                "Monthly attendance summary — {$summary['monthLabel']}",
+                ['', 'Totals (' . $summary['rows']->count() . ' employees)', '', $totals['workdays'], $totals['present'], $totals['absences'], number_format($totals['hours'], 2), $totals['late'], $totals['undertime'], number_format($totals['ot_hours'], 2)]
+            );
+        }
+
+        return view('reports.attendance-summary', $summary + [
+            'divisionId' => $divisionId,
+            'months' => collect(range(1, 12)),
+            'years' => collect(range(now()->year, now()->year - 2)),
+        ]);
+    }
+
+    /* ------------------------------------------------------------------ */
     /*  Helpers                                                            */
     /* ------------------------------------------------------------------ */
+
+    /**
+     * Dispatch a report export to CSV (default), Excel (.xls) or PDF.
+     *
+     * @param  array<int, mixed>|null  $totals  optional totals row (PDF only)
+     */
+    private function export(string $format, string $filename, array $headers, Collection $rows, ?string $subtitle = null, ?array $totals = null): Response
+    {
+        return match ($format) {
+            'xls' => $this->xls($filename, $headers, $rows),
+            'pdf' => $this->pdf($filename, $headers, $rows, $subtitle, $totals),
+            default => $this->csv($filename, $headers, $rows),
+        };
+    }
+
+    /**
+     * Excel export as SpreadsheetML 2003 XML (.xls) — pure PHP, no packages.
+     * The <?mso-application?> processing instruction tells Windows/Excel it
+     * is a spreadsheet, so it opens natively; UTF-8 BOM fixes encoding.
+     */
+    private function xls(string $filename, array $headers, Collection $rows): Response
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+            . '<?mso-application progid="Excel.Sheet"?>' . "\n"
+            . '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+            . ' xmlns:o="urn:schemas-microsoft-com:office:office"'
+            . ' xmlns:x="urn:schemas-microsoft-com:office:excel"'
+            . ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+            . '<Styles><Style ss:ID="Header"><Font ss:Bold="1"/></Style></Styles>'
+            . '<Worksheet ss:Name="Report"><Table>';
+
+        $xml .= '<Row>';
+        foreach ($headers as $header) {
+            $xml .= '<Cell ss:StyleID="Header"><Data ss:Type="String">' . $this->xmlSafe($header) . '</Data></Cell>';
+        }
+        $xml .= '</Row>';
+
+        foreach ($rows as $row) {
+            $xml .= '<Row>';
+            foreach ($row as $cell) {
+                $isNumeric = is_int($cell) || is_float($cell);
+                // String cells get the same formula-injection guard as CSV:
+                // Excel would otherwise evaluate a leading = + - @ as a formula.
+                $value = $isNumeric ? (string) $cell : $this->csvSafe((string) $cell);
+                $xml .= '<Cell><Data ss:Type="' . ($isNumeric ? 'Number' : 'String') . '">'
+                    . $this->xmlSafe($value)
+                    . '</Data></Cell>';
+            }
+            $xml .= '</Row>';
+        }
+
+        $xml .= '</Table></Worksheet></Workbook>';
+
+        return response("\xEF\xBB\xBF" . $xml)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '.xls"');
+    }
+
+    private function xmlSafe(mixed $value): string
+    {
+        return htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * PDF export via dompdf — generic landscape table layout (see reports/pdf).
+     *
+     * @param  array<int, mixed>|null  $totals  optional totals row rendered bold
+     */
+    private function pdf(string $filename, array $headers, Collection $rows, ?string $subtitle = null, ?array $totals = null): Response
+    {
+        return Pdf::loadView('reports.pdf', [
+            'title' => $filename,
+            'subtitle' => $subtitle,
+            'headers' => $headers,
+            'rows' => $rows,
+            'totals' => $totals,
+        ])
+            ->setPaper('a4', 'landscape')
+            ->download($filename . '.pdf');
+    }
 
     private function csv(string $filename, array $headers, Collection $rows): Response
     {

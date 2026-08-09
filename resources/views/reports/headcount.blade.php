@@ -27,7 +27,10 @@
         </div>
         <div class="form-actions" style="margin:0">
             <button type="submit" class="btn btn-primary">Run Report</button>
-            <a href="{{ route('reports.headcount', ['format' => 'csv', 'group' => $group, 'status' => $status]) }}" class="btn btn-outline">Export CSV</a>
+            @include('partials.report-exports', [
+                'route' => 'reports.headcount',
+                'params' => ['group' => $group, 'status' => $status],
+            ])
         </div>
     </form>
 

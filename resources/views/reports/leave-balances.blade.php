@@ -9,7 +9,7 @@
 @section('content')
     <div class="filter-bar" style="justify-content:flex-end">
         <div class="form-actions" style="margin:0">
-            <a href="{{ route('reports.leave-balances', ['format' => 'csv']) }}" class="btn btn-outline">Export CSV</a>
+            @include('partials.report-exports', ['route' => 'reports.leave-balances'])
         </div>
     </div>
 
