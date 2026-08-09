@@ -1132,6 +1132,114 @@ table.table { width: 100%; border-collapse: collapse; }
     .notif-dd-panel { right: -64px; }
 }
 
+/* ---------- Friendly error pages (animated cat) ---------- */
+.error-body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #1b2a4a 0%, #16213c 55%, #101a30 100%);
+    color: var(--ink-400, #9fb0cf);
+    display: flex;
+    flex-direction: column;
+}
+.error-body .masthead-inner { justify-content: center; }
+.error-shell {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 40px 20px 48px;
+}
+.error-card {
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+}
+.error-code {
+    font-family: var(--font-display, 'Be Vietnam Pro', system-ui, sans-serif);
+    font-size: clamp(64px, 12vw, 104px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: .5px;
+    background: linear-gradient(120deg, #93c5fd 0%, #60a5fa 55%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 6px;
+}
+.error-title {
+    font-family: var(--font-display, 'Be Vietnam Pro', system-ui, sans-serif);
+    font-size: 21px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 8px;
+    letter-spacing: .2px;
+}
+.error-message {
+    color: #93c5fd;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 10px;
+}
+.error-desc {
+    color: #9fb0cf;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 0 auto;
+    max-width: 400px;
+}
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}
+.error-body .btn-primary { background: var(--brand-500, #2563eb); }
+.error-body .btn-primary:hover { background: var(--brand-400, #3b82f6); }
+.error-body .btn-ghost { color: #c3d0e6; border-color: rgba(148, 163, 184, .4); background: transparent; }
+.error-body .btn-ghost:hover { background: rgba(148, 163, 184, .12); color: #fff; }
+.error-foot { margin-top: 26px; font-size: 11px; color: #5d6f92; letter-spacing: .3px; }
+
+/* Animated cat */
+.error-cat {
+    width: var(--cat-size, 180px);
+    margin: 10px auto 16px;
+    animation: cat-bob 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, .35));
+}
+.error-cat-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.cat-tail {
+    transform-origin: 160px 148px;
+    animation: cat-tail-sway 2.8s ease-in-out infinite;
+}
+.cat-head { transform-origin: 108px 96px; }
+.cat-eye {
+    transform-origin: center;
+    animation: cat-blink 4.2s ease-in-out infinite;
+}
+.cat-speech {
+    transform-origin: 157px 40px;
+    animation: cat-speech-pop 7s ease-in-out infinite;
+}
+@keyframes cat-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+}
+@keyframes cat-tail-sway {
+    0%, 100% { transform: rotate(-9deg); }
+    50% { transform: rotate(13deg); }
+}
+@keyframes cat-blink {
+    0%, 88%, 100% { transform: scaleY(1); }
+    94%, 97% { transform: scaleY(.08); }
+}
+@keyframes cat-speech-pop {
+    0%, 6%, 58%, 100% { opacity: 0; transform: scale(.55); }
+    12%, 52% { opacity: 1; transform: scale(1); }
+}
+@media (max-width: 480px) {
+    .error-code { font-size: 72px; }
+    .error-title { font-size: 18px; }
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
