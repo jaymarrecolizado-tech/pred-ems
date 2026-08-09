@@ -29,3 +29,6 @@ Thumbs.db
 /data/REGION2 EMPLOYEES DIRECTORY.xlsx
 /database/data/employees_directory.json
 
+
+# Graphify tool artifacts (AST/semantic cache, reports)
+graphify-out/
