@@ -17,7 +17,7 @@
                 @endif
             </div>
             <div class="card-pad">
-                <div id="map" style="height:360px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
+                <div id="map" style="height:380px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
                 <div class="cp-coords" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 2px">
                     <span class="badge badge-blue" style="font-variant-numeric:tabular-nums" id="cp-coord-readout">—</span>
                     <span class="hint" style="font-size:12px">Click anywhere on the map or drag the marker — coordinates are captured automatically.</span>
@@ -77,7 +77,7 @@
         <div class="card cp-list-card">
             <div class="card-header">
                 <h2>Checkpoints <span class="hint">({{ $checkpoints->count() }})</span></h2>
-                <a href="{{ route('attendance.checkpoints') }}" class="btn btn-primary btn-sm">＋ Add Checkpoint</a>
+                <a href="{{ route('attendance.checkpoints') }}" id="cp-add-btn" class="btn btn-primary btn-sm">＋ Add Checkpoint</a>
             </div>
             <div class="cp-list-scroll">
                 <ul class="grow-list">
@@ -337,13 +337,24 @@
         }
 
         homeView();
+
+        // In add mode, the list-header button glides to the form and focuses
+        // the name field instead of reloading the same page.
+        const addBtn = document.getElementById('cp-add-btn');
+        if (addBtn && !editingCp) {
+            addBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('.cp-map-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => document.getElementById('name')?.focus({ preventScroll: true }), 400);
+            });
+        }
     });
 </script>
 <style>
     /* ---------- Checkpoints page layout ---------- */
     .cp-layout {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
         gap: 18px;
         align-items: stretch;
         margin-bottom: 18px;
