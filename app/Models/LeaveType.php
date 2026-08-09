@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LeaveType extends Model
 {
     protected $fillable = [
-        'code', 'name', 'accrual_per_month', 'annual_max_credit',
+        'code', 'name', 'accrual_per_month', 'annual_max_credit', 'annual_grant',
         'is_cumulative', 'is_commutable', 'requires_approval', 'is_active', 'notes',
     ];
 
@@ -16,6 +16,7 @@ class LeaveType extends Model
         return [
             'accrual_per_month' => 'decimal:2',
             'annual_max_credit' => 'decimal:2',
+            'annual_grant' => 'boolean',
             'is_cumulative' => 'boolean',
             'is_commutable' => 'boolean',
             'requires_approval' => 'boolean',

@@ -121,11 +121,12 @@ erDiagram
 - **BIR withholding** (TRAIN Law, current tables): ₱250k exemption; 15%→35% graduated brackets — stored as bracket data.
 - All rates live in `contribution_rates` with `effective_from`/`effective_to`, so updates are data changes.
 
-### Leave (CSC Omnibus Rules, MC 41 s. 1998 + amendments)
-- VL & SL accrue **1.25 days/month** (cron job on monthly payroll cut-off).
-- **SLP**: 3 days/year, non-cumulative, non-commutative.
-- **Forced leave**: employees with ≥10 VL credits must take ≥5 working days/year (monitoring report).
-- **Monetization**: `(monthly salary ÷ 22) × days`, min 10 days, retain ≥5, max 30/year.
+### Leave (CSC Omnibus Rules, MC 41 s. 1998 + amendments) — ✅ all enforced
+- VL & SL accrue **1.25 days/month** (cron job on monthly payroll cut-off) ✅
+- **SLP**: **3 days/year, non-cumulative, non-commutative** ✅ — granted automatically each January 1 with any unused balance reset first (ledger `grant`/`reset` movements); filing/approval now re-check the balance for ledger-managed types, so credits can never go negative ✅
+- **Forced leave**: employees with ≥10 VL credits must take ≥5 working days/year ✅ — **Forced Leave Monitoring** report (`/reports/forced-leave`) flags compliant / non-compliant / exempt with CSV·Excel·PDF export
+- **Monetization**: `(monthly salary ÷ 22) × days`, min 10 days, retain ≥5, max 30/year ✅ — **VL Monetization** (`/leave/monetization`, admin/HR): CSC rules enforced server-side against the live ledger, atomic record+ledger debit, `MO-YYYY-NNNN` voucher PDF for the cashier, employee notified (inbox/email/SMS) + audited; employees see their history + vouchers on My Leave
+- **CSC Form No. 6 (Application for Leave)** ✅ — the official printable form (name/position/salary, type-of-leave checkboxes, inclusive dates, days, commutation requested/not requested, reason, applicant signature, office-use approval block) downloadable from My Leave and Leave Approvals
 - **Maternity** 60 days · **Paternity** 7 days (first 4 deliveries) · **Solo Parent** 7 days · **VAWC** 10 days.
 - **Contractual (no leave as of right):** 20% salary premium instead — handled per `employment_types.requires_20pct_premium`.
 
@@ -175,7 +176,7 @@ erDiagram
 |---|---|---|
 | **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type ✅ + self-service profile/photos/password ✅ + audit trail viewer ✅ |
 | **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
-| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) |
+| **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) · **CSC compliance ✅** — SLP annual grants (3 days/yr, non-cumulative), VL monetization (min 10 / retain 5 / max 30 per year, MO- vouchers), forced-leave monitoring report, CSC Form No. 6 application PDF |
 | **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding, and a monthly attendance summary (work days, days present, absences, hours, late/undertime, rest-day OT) — every report exports **CSV · Excel · PDF** (`?format=csv|xls|pdf`; SpreadsheetML .xls opens natively in Excel, dompdf landscape PDF with DICT masthead); audit viewer ✅ (Phase 1) |
 | **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · **Bulk imports ✅** — CSV/XLS/XLSX employee roster + attendance log imports with preview-then-commit, per-row validation, and audit · Notifications ✅ (in-system + email + SMS) |
@@ -306,6 +307,24 @@ the change is audited. Recomputed periods **preserve** the manual entries
 adjustments with a 409. Known limit: `salary_scales` holds the **official SSL V table** (EO 64 s. 2024 First Tranche,
 effective 2024-01-01 — 258 rows) loaded via `SalaryScaleSeeder`; later EO 64 tranches
 (2025/2026/2027) can be added as effective-dated rows.
+
+**CSC leave compliance — ✅ complete (the last unbuilt plan item).** SLP is now
+**granted 3 days/year, non-cumulative**: `leave:accrue` (with a new `--employee`
+scope option) resets any unused balance and re-grants the annual maximum each
+January 1, and both filing and approval re-check the balance for ledger-managed
+types (accrual *or* annual grant), so credits can never go negative. **VL
+monetization** (`/leave/monetization`, admin/HR) enforces the CSC rules against
+the live ledger — ≥ 10 VL days accumulated, retain ≥ 5 days, max 30 days per
+calendar year — computes `(monthly salary ÷ 22) × days`, debits the append-only
+ledger atomically, mints a `MO-YYYY-NNNN` voucher PDF for the cashier, and
+notifies the employee (inbox/email/SMS) + audits the action. Employees see their
+monetization history and vouchers on My Leave. The **Forced Leave Monitoring**
+report (`/reports/forced-leave`) applies the CSC rule that staff with ≥ 10 VL
+credits must take ≥ 5 VL working days per year, flagging compliant / non-compliant
+/ exempt employees with CSV·Excel·PDF export. Every application also downloads as
+the official **CSC Form No. 6 (Application for Leave)** — the printable form with
+the type-of-leave checkboxes, inclusive dates, days, commutation request, reason,
+applicant signature and the office-use approval block.
 
 **Notifications — ✅ complete (stretch of Phase 5, done).** Every employee has an
 **in-system inbox** (`/notifications`, topbar bell with unread badge, mark-as-read /

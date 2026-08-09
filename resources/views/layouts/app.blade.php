@@ -101,6 +101,10 @@
                             @include('partials.icon', ['name' => 'audit'])
                             <span>Leave Approvals</span>
                         </a>
+                        <a href="{{ route('leave.monetization') }}" class="nav-link {{ request()->routeIs('leave.monetization') ? 'active' : '' }}" title="VL Monetization" {!! request()->routeIs('leave.monetization') ? 'aria-current="page"' : '' !!}>
+                            @include('partials.icon', ['name' => 'payroll'])
+                            <span>VL Monetization</span>
+                        </a>
                     @endif
                 </div>
             </div>

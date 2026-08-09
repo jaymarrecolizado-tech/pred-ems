@@ -12,6 +12,7 @@ use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\MonetizationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProfileController;
@@ -79,10 +80,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
     Route::post('/leave/{application}/cancel', [LeaveController::class, 'cancel'])->name('leave.cancel');
 
+    // CSC Form No. 6 (Application for Leave) — printable official form.
+    Route::get('/leave/{application}/form6', [LeaveController::class, 'form6'])->name('leave.form6');
+
+    // VL monetization (CSC compliance) — employees open their own vouchers.
+    Route::get('/leave/monetizations/{monetization}/voucher', [MonetizationController::class, 'voucher'])->name('leave.monetization.voucher');
+
     Route::middleware('role:admin,hr')->group(function () {
         Route::get('/leave/approvals', [LeaveController::class, 'approvals'])->name('leave.approvals');
         Route::post('/leave/{application}/approve', [LeaveController::class, 'approve'])->name('leave.approve');
         Route::post('/leave/{application}/reject', [LeaveController::class, 'reject'])->name('leave.reject');
+
+        // VL monetization workflow (CSC Omnibus Rules on Leave)
+        Route::get('/leave/monetization', [MonetizationController::class, 'index'])->name('leave.monetization');
+        Route::post('/leave/monetization', [MonetizationController::class, 'store'])->name('leave.monetization.store');
     });
 
     // Employee profiles — RBAC enforcement per the permission model.
@@ -161,6 +172,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/headcount', [ReportController::class, 'headcount'])->name('reports.headcount');
         Route::get('/reports/leave-balances', [ReportController::class, 'leaveBalances'])->name('reports.leave-balances');
         Route::get('/reports/leave-utilization', [ReportController::class, 'leaveUtilization'])->name('reports.leave-utilization');
+        Route::get('/reports/forced-leave', [ReportController::class, 'forcedLeave'])->name('reports.forced-leave');
         Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
         Route::get('/reports/attrition', [ReportController::class, 'attrition'])->name('reports.attrition');
         Route::get('/reports/attendance-summary', [ReportController::class, 'attendanceSummary'])->name('reports.attendance-summary');

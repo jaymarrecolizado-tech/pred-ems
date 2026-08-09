@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\Division;
 use App\Models\Employee;
+use App\Models\LeaveApplication;
 use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
 use App\Support\AttendanceSummary;
@@ -184,6 +185,92 @@ class ReportController extends Controller
             'year' => $year,
             'years' => collect(range(now()->year, now()->year - 4)),
             'totalDays' => $rows->sum('days'),
+        ]);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Forced leave monitoring (CSC)                                      */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * CSC Omnibus Rules on Leave: officials/employees with ≥ 10 accumulated
+     * VL credits must take ≥ 5 working days of vacation leave per calendar
+     * year. This report monitors compliance: VL balance now vs. VL days
+     * actually taken in the selected year.
+     */
+    public function forcedLeave(Request $request): Response|View
+    {
+        $year = (int) $request->input('year', now()->year);
+
+        $vl = LeaveType::where('code', 'VL')->firstOrFail();
+        $employees = Employee::with('employmentType')
+            ->where('status', 'active')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        $balances = LeaveCreditLedger::query()
+            ->where('leave_type_id', $vl->id)
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->selectRaw('employee_id, COALESCE(SUM(credit - debit), 0) AS balance')
+            ->groupBy('employee_id')
+            ->get()
+            ->keyBy('employee_id');
+
+        $taken = LeaveApplication::query()
+            ->where('status', 'approved')
+            ->where('leave_type_id', $vl->id)
+            ->whereYear('date_from', $year)
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->selectRaw('employee_id, COALESCE(SUM(days_applied), 0) AS days')
+            ->groupBy('employee_id')
+            ->get()
+            ->keyBy('employee_id');
+
+        $rows = $employees->map(function (Employee $employee) use ($balances, $taken, $year) {
+            $balance = (float) ($balances->get($employee->id)?->balance ?? 0);
+            $takenDays = (float) ($taken->get($employee->id)?->days ?? 0);
+            $required = $balance >= 10 ? 5.0 : 0.0;
+
+            return [
+                'employee' => $employee,
+                'balance' => $balance,
+                'taken' => $takenDays,
+                'required' => $required,
+                'deficit' => $required > 0 ? max(0.0, $required - $takenDays) : 0.0,
+                'status' => match (true) {
+                    $required === 0.0 => 'exempt',
+                    $takenDays >= $required => 'compliant',
+                    default => 'non_compliant',
+                },
+            ];
+        });
+
+        if ($format = $request->query('format')) {
+            return $this->export(
+                $format,
+                'Forced_Leave_' . $year,
+                ['Employee No', 'Name', 'Division', 'VL Balance (days)', "VL Taken {$year} (days)", 'Required (days)', 'Status'],
+                $rows->map(fn ($row) => [
+                    $row['employee']->employee_number,
+                    $row['employee']->full_name,
+                    $row['employee']->division?->name ?? '—',
+                    number_format($row['balance'], 2),
+                    number_format($row['taken'], 2),
+                    number_format($row['required'], 2),
+                    strtoupper(str_replace('_', ' ', $row['status'])),
+                ]),
+                "CSC forced leave monitoring — employees with ≥ 10 VL credits must take ≥ 5 VL working days in {$year}"
+            );
+        }
+
+        return view('reports.forced-leave', [
+            'rows' => $rows,
+            'year' => $year,
+            'years' => collect(range(now()->year, now()->year - 4)),
+            'compliant' => $rows->where('status', 'compliant')->count(),
+            'nonCompliant' => $rows->where('status', 'non_compliant')->count(),
+            'exempt' => $rows->where('status', 'exempt')->count(),
         ]);
     }
 

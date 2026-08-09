@@ -90,13 +90,14 @@ scripts/setup.sh                        ← one-command XAMPP setup
 
 **Reports & Audit — Phase 4 (implemented):**
 
-- **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus six reports, each exportable as **CSV · Excel · PDF** (`?format=csv|xls|pdf`; CSV is UTF-8 BOM + formula-injection safe, Excel is SpreadsheetML 2003 XML that opens natively, PDF is a dompdf landscape table with the DICT masthead):
+- **Reports hub** (`/reports`, admin/HR) — a stat overview (total/active/separated, leave cardholders, documents issued) plus seven reports, each exportable as **CSV · Excel · PDF** (`?format=csv|xls|pdf`; CSV is UTF-8 BOM + formula-injection safe, Excel is SpreadsheetML 2003 XML that opens natively, PDF is a dompdf landscape table with the DICT masthead):
   - **Headcount** — employees grouped by employment type, division, status, or source of fund, with a status filter and percentage bars
   - **Leave balances** — VL/SL balances for every active employee (one grouped ledger query)
   - **Leave utilization** — approved applications, employees, and days taken per leave type per year
   - **Documents issued** — every Service Record / COE with reference number, issuer, and timestamp
   - **Attrition & onboarding** — separations and new hires per year
   - **Attendance summary** — monthly per-employee roll-up (scheduled work days, days present, absences, total hours, late/undertime minutes, rest-day/holiday OT hours) with month/year/division filters, computed against the AOM 2026-020 schedule; the PDF export includes the totals row
+  - **Forced leave monitoring** — CSC compliance: employees with ≥ 10 VL credits who must take ≥ 5 VL working days per year (compliant / non-compliant / exempt)
 
 **Bulk data imports — admin/HR (Phase 5 stretch, done):**
 
@@ -109,8 +110,15 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **My Leave** — every employee linked to a 201-file record gets a personal leave page (`/leave`): a live **leave card** of balances (VL/SL and all CSC types, derived from the append-only ledger), plus their full application history.
 - **File leave** — working-day (Mon–Fri) computation between selected dates, per-type balance hints, and an insufficient-balance guard for accrual leaves (VL/SL).
 - **Approval workflow** — admin/HR review the queue at `/leave/approvals` (filter by status/search), with **Approve** (auto-debits the ledger via a `used` entry, keeping the balance derived and immutable) and **Reject** (records a reason).
-- **Monthly accruals** — `php artisan leave:accrue` accrues VL/SL at 1.25 days/month from each employee's original appointment date (idempotent, append-only), scheduled via `routes/console.php` for the 1st of each month. **15,196 credit entries** seeded for the 33 leave-entitled active staff.
+- **Monthly accruals** — `php artisan leave:accrue` accrues VL/SL at 1.25 days/month from each employee's original appointment date (idempotent, append-only), scheduled via `routes/console.php` for the 1st of each month. **15,196 credit entries** seeded for the 33 leave-entitled active staff. A `--employee=` option scopes a run to one employee.
 - **Audited** — filing, approval, rejection, and cancellation are all appended to `audit_logs`.
+
+**CSC leave compliance (implemented):**
+
+- **SLP annual grants** — SLP is **3 days/year, non-cumulative**: `leave:accrue` resets any unused balance and re-grants the annual maximum each January 1 (append-only `grant`/`reset` ledger movements). Filing and approval now re-check the balance for **every ledger-managed leave type** (monthly accrual *or* annual grant), so credits can never go negative.
+- **VL monetization** (`/leave/monetization`, admin/HR) — converts vacation leave to cash at **(monthly salary ÷ 22) per day** with the CSC rules enforced server-side against the live ledger: **≥ 10 VL days accumulated**, **retain ≥ 5 days**, **max 30 days per year**. Processing atomically creates the record + debits the ledger, mints a **`MO-YYYY-NNNN` voucher PDF** for the cashier, notifies the employee (inbox/email/SMS), and audits the action. Employees see their history + vouchers on **My Leave**.
+- **Forced Leave Monitoring report** (`/reports/forced-leave`) — CSC rule: staff with **≥ 10 VL credits must take ≥ 5 VL working days per year**. Flags **compliant / non-compliant / exempt** with CSV · Excel · PDF export.
+- **CSC Form No. 6** — every leave application downloads as the **official Application for Leave** form (type-of-leave checkboxes, inclusive dates, days, commutation requested/not requested, reason, applicant signature, office-use approval block) from My Leave and Leave Approvals. Filing now also asks whether **commutation** is requested.
 
 **UI & UX (implemented):**
 
@@ -291,7 +299,7 @@ php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint 
 
 1. **Phase 1 — Foundation:** ✅ auth/RBAC, employee profiles, self-service, audit trail
 2. **UI Redesign:** ✅ eGovPay-style design system + mobile responsive — on branch `ui-improvements`
-3. **Phase 2 — Leave:** ✅ accruals (`leave:accrue`), filing, approvals, leave cards
+3. **Phase 2 — Leave:** ✅ accruals (`leave:accrue`), filing, approvals, leave cards · **CSC compliance ✅** — SLP annual grants (3 days/yr, non-cumulative), VL monetization (MO- vouchers, CSC rules), forced-leave monitoring report, CSC Form No. 6 application PDF
 4. **Phase 3 — Documents:** ✅ Service Record (CSC Form 212), Certificate of Employment, and the **Appointment Manager** (HR-managed service history that drives both PDFs)
 5. **Phase 4 — Reports & Audit:** ✅ reporting hub — headcount, leave balances/utilization, documents issued, attrition & onboarding — with CSV export (audit viewer ✅ done)
 6. **Phase 5 — Attendance & DTR:** ✅ geofenced punch-in/out with map-plotted checkpoints, HR-approved correction workflow, CSC Form 48 DTR PDFs, and flexible AOM 2026-020 work scheduling (CWW + holidays + CSC Friday-revert rule, CTO-ready punches) — imports/notifications still stretch

@@ -5,15 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCreditLedger;
+use App\Models\LeaveMonetization;
 use App\Models\LeaveType;
 use App\Notifications\LeaveApprovedNotification;
 use App\Notifications\LeaveFiledNotification;
 use App\Notifications\LeaveRejectedNotification;
 use App\Support\Audit;
 use App\Support\Notifier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class LeaveController extends Controller
@@ -34,6 +37,11 @@ class LeaveController extends Controller
             'balances' => $employee ? $employee->leaveBalances() : collect(),
             'applications' => $employee
                 ? LeaveApplication::with('leaveType')->where('employee_id', $employee->id)->latest()->paginate(10)
+                : null,
+            // Distinct page name so paging monetizations never resets the
+            // applications paginator on the same page (and vice-versa).
+            'monetizations' => $employee
+                ? LeaveMonetization::with('processedBy')->where('employee_id', $employee->id)->latest()->paginate(5, ['*'], 'monet_page')
                 : null,
         ]);
     }
@@ -61,6 +69,7 @@ class LeaveController extends Controller
             'date_to' => ['required', 'date', 'after_or_equal:date_from'],
             'reason' => ['required', 'string', 'max:255'],
             'contact_during_leave' => ['nullable', 'string', 'max:100'],
+            'commutation_requested' => ['nullable', 'boolean'],
         ]);
 
         $from = Carbon::parse($validated['date_from']);
@@ -72,8 +81,10 @@ class LeaveController extends Controller
             return back()->with('error', 'This leave type is not available.')->withInput();
         }
 
-        // Accrual-based leaves (VL/SL) require a sufficient credit balance.
-        if ($type->accrual_per_month > 0) {
+        // Ledger-managed leaves (monthly accrual like VL/SL, or annual grants
+        // like SLP) require a sufficient credit balance. Statutory leaves
+        // (maternity, paternity, …) are granted per occurrence and skip this.
+        if ($type->accrual_per_month > 0 || $type->annual_grant) {
             $balance = $this->balanceFor($employee, $type);
             if ($balance < $days) {
                 return back()
@@ -90,6 +101,7 @@ class LeaveController extends Controller
             'days_applied' => $days,
             'reason' => $validated['reason'],
             'contact_during_leave' => $validated['contact_during_leave'] ?? null,
+            'commutation_requested' => $validated['commutation_requested'] ?? false,
             'status' => 'pending',
         ]);
 
@@ -116,6 +128,26 @@ class LeaveController extends Controller
         Audit::record('updated', $application, $old, $application->toArray());
 
         return redirect()->route('leave.index')->with('success', 'Leave application cancelled.');
+    }
+
+    /**
+     * Download the CSC Form No. 6 (Application for Leave) for an application
+     * — the official printed form. The applicant may print their own; admin/HR
+     * any application.
+     */
+    public function form6(LeaveApplication $application): Response
+    {
+        $employee = auth()->user()->employee;
+        $isOwner = $employee && $application->employee_id === $employee->id;
+        abort_unless($isOwner || auth()->user()->hasAnyRole(['admin', 'hr']), 403);
+
+        $application->load(['employee.position', 'employee.division', 'leaveType']);
+
+        $filename = 'CSC_Form_6_' . str_replace([' ', '.'], '_', $application->employee->full_name) . '.pdf';
+
+        return Pdf::loadView('leave.form6', ['application' => $application])
+            ->setPaper('a4', 'portrait')
+            ->download($filename);
     }
 
     /* ------------------------------------------------------------------ */
@@ -156,7 +188,7 @@ class LeaveController extends Controller
         abort_unless($application->isPending(), 403, 'This application is no longer pending.');
 
         $type = $application->leaveType;
-        if ($type->accrual_per_month > 0) {
+        if ($type->accrual_per_month > 0 || $type->annual_grant) {
             $balance = $application->employee->leaveBalanceFor($type);
             if ($balance < (float) $application->days_applied) {
                 return back()->with('error', "Cannot approve: only {$this->fmt($balance)} {$type->code} day(s) remain for {$application->employee->full_name}.");

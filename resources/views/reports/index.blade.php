@@ -83,6 +83,16 @@
             </div>
         </a>
 
+        <a href="{{ route('reports.forced-leave') }}" class="card card-pad" style="text-decoration:none; color:inherit; transition:transform .12s, border-color .12s; display:block">
+            <div style="display:flex; align-items:center; gap:12px">
+                <span class="chip amber">@include('partials.icon', ['name' => 'leave'])</span>
+                <div>
+                    <div style="font-weight:700; color:var(--ink-900)">Forced Leave Monitoring</div>
+                    <div style="font-size:12.5px; color:var(--ink-500); margin-top:2px">CSC rule: ≥10 VL credits → take ≥5 VL working days per year · CSV, Excel &amp; PDF</div>
+                </div>
+            </div>
+        </a>
+
         <a href="{{ route('reports.attrition') }}" class="card card-pad" style="text-decoration:none; color:inherit; transition:transform .12s, border-color .12s; display:block">
             <div style="display:flex; align-items:center; gap:12px">
                 <span class="chip amber">@include('partials.icon', ['name' => 'audit'])</span>

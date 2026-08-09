@@ -114,7 +114,7 @@ class ReportsTest extends TestCase
 
     public function test_every_report_exports_pdf_and_excel(): void
     {
-        $reports = ['headcount', 'leave-balances', 'leave-utilization', 'documents', 'attrition', 'attendance-summary'];
+        $reports = ['headcount', 'leave-balances', 'leave-utilization', 'forced-leave', 'documents', 'attrition', 'attendance-summary'];
 
         foreach ($reports as $report) {
             $pdf = $this->actingAs($this->adminUser())->get("/reports/{$report}?format=pdf");

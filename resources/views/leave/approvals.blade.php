@@ -82,6 +82,9 @@
                                 @else
                                     <span class="text-muted">{{ $application->approver?->name ?? '—' }}</span>
                                 @endif
+                                @unless ($application->status === 'cancelled')
+                                    <a href="{{ route('leave.form6', $application) }}" class="btn btn-outline btn-sm" title="Download CSC Form No. 6 (Application for Leave)">CSC Form 6</a>
+                                @endunless
                             </td>
                         </tr>
                     @empty

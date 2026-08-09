@@ -8,8 +8,8 @@ class LeaveApplication extends Model
 {
     protected $fillable = [
         'employee_id', 'leave_type_id', 'date_from', 'date_to', 'days_applied',
-        'reason', 'contact_during_leave', 'status', 'approver_id', 'approved_at',
-        'denial_reason', 'remarks',
+        'reason', 'contact_during_leave', 'commutation_requested',
+        'status', 'approver_id', 'approved_at', 'denial_reason', 'remarks',
     ];
 
     protected function casts(): array
@@ -18,6 +18,7 @@ class LeaveApplication extends Model
             'date_from' => 'date',
             'date_to' => 'date',
             'days_applied' => 'decimal:2',
+            'commutation_requested' => 'boolean',
             'approved_at' => 'datetime',
         ];
     }

@@ -50,6 +50,11 @@
                 <label for="contact_during_leave">Contact number during leave</label>
                 <input type="text" id="contact_during_leave" name="contact_during_leave" value="{{ old('contact_during_leave') }}" maxlength="100" placeholder="Optional">
                 @error('contact_during_leave')<div class="error">{{ $message }}</div>@enderror
+
+                <label class="check-line" style="display:flex; align-items:center; gap:8px; margin-top:14px; cursor:pointer">
+                    <input type="checkbox" name="commutation_requested" value="1" @checked(old('commutation_requested'))>
+                    <span>Request commutation of leave (convert leave days to cash)</span>
+                </label>
             </div>
 
             <div class="form-actions">
@@ -80,7 +85,7 @@
             @endforelse
         </div>
         <div class="card-pad">
-            <p class="text-muted" style="font-size:12px; margin:0">Days are counted as working days (Mon–Fri) between the selected dates. VL/SL applications require a sufficient credit balance.</p>
+            <p class="text-muted" style="font-size:12px; margin:0">Days are counted as working days (Mon–Fri) between the selected dates. VL/SL applications require a sufficient credit balance. SLP is granted 3 days per year (non-cumulative).</p>
         </div>
     </div>
 @endsection

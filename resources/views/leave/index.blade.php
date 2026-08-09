@@ -75,6 +75,9 @@
                                     @elseif ($application->status === 'rejected' && $application->denial_reason)
                                         <span class="text-muted" title="{{ $application->denial_reason }}">Reason: {{ \Illuminate\Support\Str::limit($application->denial_reason, 28) }}</span>
                                     @endif
+                                    @unless ($application->status === 'cancelled')
+                                        <a href="{{ route('leave.form6', $application) }}" class="btn btn-outline btn-sm" title="Download CSC Form No. 6 (Application for Leave)">CSC Form 6</a>
+                                    @endunless
                                 </td>
                             </tr>
                         @empty
@@ -85,6 +88,45 @@
             </div>
             @if ($applications)
                 <div class="pagination">{{ $applications->links('vendor.pagination.custom') }}</div>
+            @endif
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>My VL Monetizations <span class="hint">({{ $monetizations ? $monetizations->total() : 0 }})</span></h2>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th class="num">Days</th>
+                            <th class="num">Rate / Day</th>
+                            <th class="num">Gross Amount</th>
+                            <th>Processed</th>
+                            <th class="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($monetizations ?? [] as $monetization)
+                            <tr>
+                                <td><span class="badge badge-blue">{{ $monetization->reference_no }}</span></td>
+                                <td class="num"><strong>{{ number_format($monetization->days, 2) }}</strong></td>
+                                <td class="num">₱{{ number_format($monetization->per_day_rate, 2) }}</td>
+                                <td class="num"><strong>₱{{ number_format($monetization->gross_amount, 2) }}</strong></td>
+                                <td>{{ $monetization->processed_at?->format('M d, Y') }}</td>
+                                <td class="actions">
+                                    <a href="{{ route('leave.monetization.voucher', $monetization) }}" class="btn btn-outline btn-sm" title="Download voucher PDF">Voucher</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-muted">No monetization records. Vacation leave credits are converted to cash by the HR office.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if ($monetizations)
+                <div class="pagination">{{ $monetizations->links('vendor.pagination.custom') }}</div>
             @endif
         </div>
     @endif

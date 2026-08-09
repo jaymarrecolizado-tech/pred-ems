@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\DocumentRequest;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
+use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
 use App\Models\Setting;
 use App\Models\SmsQueue;
@@ -44,7 +45,12 @@ class NotificationsTest extends TestCase
 
     private function employeeUser(): User
     {
-        $employee = Employee::whereHas('user.roles', fn ($q) => $q->where('name', 'employee'))->firstOrFail();
+        // The leave-approval test files SLP, which now requires a credit
+        // balance — so pick a leave-entitled employee (JO/COS have none).
+        $employee = Employee::whereHas('user.roles', fn ($q) => $q->where('name', 'employee'))
+            ->whereHas('employmentType', fn ($q) => $q->where('has_leave_credits', true))
+            ->orderBy('id')
+            ->firstOrFail();
 
         return $employee->user;
     }
@@ -351,7 +357,12 @@ class NotificationsTest extends TestCase
             $this->assertNotNull($notification);
             $this->assertSame('Leave approved', $notification->data['title']);
         } finally {
+            // The approved SLP application debited the ledger — remove that row
+            // too so repeated runs never drain the employee's SLP credit.
             if ($application) {
+                LeaveCreditLedger::where('source_type', LeaveApplication::class)
+                    ->where('source_id', $application->id)
+                    ->delete();
                 $application->delete();
             }
             $this->cleanupNotifications($user);
