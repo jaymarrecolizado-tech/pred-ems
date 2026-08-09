@@ -17,7 +17,7 @@
                 @endif
             </div>
             <div class="card-pad">
-                <div id="map" style="height:380px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
+                <div id="map" style="height:360px; border-radius:var(--radius-control); border:1px solid var(--line-strong); z-index:1"></div>
                 <div class="cp-coords" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 2px">
                     <span class="badge badge-blue" style="font-variant-numeric:tabular-nums" id="cp-coord-readout">—</span>
                     <span class="hint" style="font-size:12px">Click anywhere on the map or drag the marker — coordinates are captured automatically.</span>
@@ -354,18 +354,17 @@
     /* ---------- Checkpoints page layout ---------- */
     .cp-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
         gap: 18px;
-        align-items: stretch;
+        align-items: start;
         margin-bottom: 18px;
     }
     .cp-map-card { display: flex; flex-direction: column; min-width: 0; }
     .cp-map-card .card-pad { flex: 1; }
     .cp-list-card { display: flex; flex-direction: column; min-width: 0; }
     .cp-list-scroll {
-        flex: 1;
         overflow-y: auto;
-        max-height: 640px;
+        max-height: 720px;
     }
 
     .cp-row {
