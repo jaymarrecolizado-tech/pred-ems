@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class LeaveController extends Controller
@@ -222,13 +223,16 @@ class LeaveController extends Controller
         }
 
         $old = $application->toArray();
-        $application->update([
-            'status' => 'approved',
-            'approver_id' => auth()->id(),
-            'approved_at' => now(),
-        ]);
 
-        $this->debitLedger($application, 'Leave application approved');
+        DB::transaction(function () use ($application) {
+            $application->update([
+                'status' => 'approved',
+                'approver_id' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+
+            $this->debitLedger($application, 'Leave application approved');
+        });
 
         Audit::record('approved', $application, $old, $application->toArray());
 

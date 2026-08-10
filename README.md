@@ -6,16 +6,19 @@ appointments, leave management (CSC rules), payroll with Philippine statutory de
 
 - **Framework:** Laravel 11/12 (PHP 8.2+)
 - **Database:** MySQL 8 / MariaDB
-- **Frontend:** Blade + Tailwind + Alpine.js (+ Livewire 3 for interactive forms)
+- **Frontend:** Blade + vanilla CSS/JS (no build step required)
 - See [`docs/PLAN.md`](docs/PLAN.md) for the full blueprint (architecture, ERD, roadmap).
+- See [`plans/app-audit-and-improvement-plan.md`](plans/app-audit-and-improvement-plan.md) for the improvement roadmap.
 
 ---
 
-## 🧱 Repository layoutThis repository ships the **Phase 1 application + data layer + blueprint** for a fresh Laravel project:
+## Repository layout
+
+This repository contains the **complete HRIS application** (Phases 1–6 + UI redesign):
 
 ```
 docs/PLAN.md                            ← full technical blueprint (ERD, roadmap, deployment)
-database/migrations/                    ← 21 migrations: RBAC → employees → leave → payroll
+database/migrations/                    ← 31 migrations: RBAC → employees → leave → payroll → attendance
 database/seeders/                       ← roles, employment types, leave types, contribution rates, dev data, real directory
 database/data/README.md                 ← how to regenerate the personnel directory locally
 data/normalize_to_json.py               ← tracker xlsx → JSON converter (Python, run locally)
@@ -23,23 +26,25 @@ data/cleanup_directory.py               ← dedupe + email hygiene pass on the J
 
 > 🔒 Employee personal data (tracker xlsx + generated `employees_directory.json`) is
 > **not committed** — generate it locally before seeding (see `database/data/README.md`).
-app/Models/                             ← Eloquent models (User, Role, Employee, …) + RBAC helpers
+app/Models/                             ← 30 Eloquent models (User, Role, Employee, …) + RBAC helpers
 app/Http/Controllers/Auth/              ← custom session login/logout (no Breeze dependency)
-app/Http/Controllers/                   ← DashboardController, EmployeeController
+app/Http/Controllers/                   ← 18 controllers (Dashboard, Employee, Leave, Payroll, Attendance, Documents, Reports)
 app/Http/Middleware/RoleMiddleware.php  ← role-guard middleware
-routes/web.php · bootstrap/app.php      ← Phase 1 routes + role middleware alias
-resources/views/                        ← Blade views: login, dashboard, employee CRUD
+app/Support/                            ← 10 service classes (Payroll engine, Audit, DTR, SMS, Notifier, …)
+routes/web.php · bootstrap/app.php      ← full route definitions + role middleware alias
+resources/views/                        ← 75 Blade templates across all modules
 public/css/app.css                      ← zero-build-step stylesheet
-scripts/setup.sh                        ← one-command XAMPP setup
+public/js/app.js                        <- sidebar, toasts, chart toggles
+config/services.php                     <- SMS gateway configuration
 ```
 
-**Phase 1 scope (implemented):** login, RBAC (admin/hr/payroll/unit_head/employee), dashboard with headcount stats, and full employee profile management — list with search + employment-type/status filters, add/edit, profile view with appointment history and leave balances, auto employee-number generation (`RO2-XXXX`).
+**Implemented modules:** auth/RBAC, employee profiles, self-service, audit trail, leave management (CSC-compliant), documents (COE, Service Record, DTR), document requests, attendance (geofenced), payroll (statutory deductions), reports, notifications (inbox/email/SMS), and bulk imports.
 
 **Self-service (implemented):**
 
 - **My Profile** — every logged-in user gets a personal profile area (sidebar + topbar avatar). Employees linked to a 201-file record can **edit their own personal information** (name, birthdate, civil status, contact details, gov ID numbers). Employment data (position, salary, grade, status) stays HR-managed.
 - **Profile photos** — upload/remove your photo (JPG/PNG/WebP, max 2 MB) from the profile page; HR can also set photos on the employee edit form. Photos are stored on the public disk (`storage/app/public/photos/`) — run `php artisan storage:link` so they're served at `/storage/…` (the setup script does this automatically). Avatars appear everywhere: sidebar, topbar, employee list, dashboard, and profile headers.
-- **Change own password** — self-service password update with current-password verification (min 8 chars).
+- **Change own password** — self-service password update with current-password verification (min 8 chars, mixed case + numbers + symbols required).
 - **Audit trail viewer** — every create/update/delete of an employee record, profile self-edit, photo change, and password change is appended to `audit_logs` with actor, IP, and old→new value diffs. Admin/HR can browse and filter the trail at `/audit-logs` (searchable by actor, record id, IP, and action type).
 
 **Documents & service history — Phase 3 (implemented):**
@@ -125,7 +130,7 @@ scripts/setup.sh                        ← one-command XAMPP setup
 - **eGovPay-style design system** — dark navy sidebar (`#1B2A4A`), blue-600 primary actions, light-gray canvas, white rounded cards, pill badges, tracked uppercase table headers, Inter + Be Vietnam Pro type, circular deterministic avatars, and a rebuilt dashboard (hero banner, stat-row panel, vanilla-SVG headcount chart with table/area/bar view toggle). See [`docs/UI_REDESIGN.md`](docs/UI_REDESIGN.md). Delivered on the `ui-improvements` branch.
 - **Mobile responsive + modern app UX** — off-canvas sidebar drawer (hamburger toggle, backdrop, Escape close) via `public/js/app.js`, breakpoints for tablet/phone/small-phone, 44px touch targets, 16px mobile inputs (no iOS zoom), `:focus-visible` rings, skip-link, `aria-current`/`aria-expanded`, `theme-color`, styled scrollbars, `prefers-reduced-motion`, a print stylesheet, and "swipe to see more" hints on overflowing tables.
 
-> To install Phase 1 in one command, see **Quick start** below.
+> To install in one command, see **Quick start** below.
 
 ---
 

@@ -176,13 +176,20 @@ class Employee extends Model
      */
     public function leaveBalances(): \Illuminate\Support\Collection
     {
-        return LeaveType::query()
-            ->orderBy('code')
-            ->get()
-            ->map(function (LeaveType $type) {
+        $leaveTypes = LeaveType::query()->orderBy('code')->get();
+
+        // Single grouped query instead of N per-type SUM queries.
+        $balances = LeaveCreditLedger::query()
+            ->where('employee_id', $this->id)
+            ->selectRaw('leave_type_id, COALESCE(SUM(credit - debit), 0) as balance')
+            ->groupBy('leave_type_id')
+            ->pluck('balance', 'leave_type_id');
+
+        return $leaveTypes
+            ->map(function (LeaveType $type) use ($balances) {
                 return (object) [
                     'leave_type' => $type,
-                    'balance' => $this->leaveBalanceFor($type),
+                    'balance' => (float) ($balances[$type->id] ?? 0),
                 ];
             })
             ->reject(fn ($row) => $row->balance == 0 && $row->leave_type->code !== 'VL' && $row->leave_type->code !== 'SL');

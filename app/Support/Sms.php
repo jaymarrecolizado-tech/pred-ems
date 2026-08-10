@@ -18,30 +18,30 @@ use Illuminate\Support\Facades\Log;
  * scheduled every minute). Business actions never block on the gateway and
  * never fail because an SMS failed.
  *
- * Config (env): SMS_ENABLED, SMS_GATEWAY_URL, SMS_GATEWAY_USERNAME,
- * SMS_GATEWAY_PASSWORD, SMS_API_PATH, SMS_DEFAULT_COUNTRY_CODE,
- * SMS_TIMEOUT_SECONDS, SMS_MAX_MESSAGE_LENGTH.
+ * Config (config/services.php): sms.enabled, sms.url, sms.username,
+ * sms.password, sms.path, sms.country_code, sms.timeout, sms.max_length.
+ * Values are set from .env in config/services.php — never call env() here.
  */
 class Sms
 {
     public static function enabled(): bool
     {
-        return (bool) config('services.sms.enabled', env('SMS_ENABLED', false));
+        return (bool) config('services.sms.enabled', false);
     }
 
     public static function gatewayUrl(): string
     {
-        return rtrim((string) config('services.sms.url', env('SMS_GATEWAY_URL', 'https://api.sms-gate.app')), '/');
+        return rtrim((string) config('services.sms.url', 'https://api.sms-gate.app'), '/');
     }
 
     public static function apiPath(): string
     {
-        return (string) config('services.sms.path', env('SMS_API_PATH', '/3rdparty/v1/messages'));
+        return (string) config('services.sms.path', '/3rdparty/v1/messages');
     }
 
     public static function maxMessageLength(): int
     {
-        return (int) config('services.sms.max_length', env('SMS_MAX_MESSAGE_LENGTH', 320));
+        return (int) config('services.sms.max_length', 320);
     }
 
     /**
@@ -60,7 +60,7 @@ class Sms
             return null;
         }
 
-        $countryCode = (int) config('services.sms.country_code', env('SMS_DEFAULT_COUNTRY_CODE', 63));
+        $countryCode = (int) config('services.sms.country_code', 63);
 
         // Already E.164 with a leading +.
         if (str_starts_with(trim($phone), '+')) {
@@ -102,9 +102,9 @@ class Sms
      */
     public static function sendOne(SmsQueue $job): bool
     {
-        $username = config('services.sms.username', env('SMS_GATEWAY_USERNAME', ''));
-        $password = config('services.sms.password', env('SMS_GATEWAY_PASSWORD', ''));
-        $timeout = (int) config('services.sms.timeout', env('SMS_TIMEOUT_SECONDS', 15));
+        $username = (string) config('services.sms.username', '');
+        $password = (string) config('services.sms.password', '');
+        $timeout = (int) config('services.sms.timeout', 15);
 
         try {
             $response = Http::withBasicAuth($username, $password)
