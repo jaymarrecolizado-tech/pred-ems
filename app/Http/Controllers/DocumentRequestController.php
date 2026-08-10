@@ -14,6 +14,7 @@ use App\Support\Dtr;
 use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -178,12 +179,14 @@ class DocumentRequestController extends Controller
             abort(500, 'Unable to issue this document at this time. Please try again.');
         }
 
-        $documentRequest->update([
-            'status' => DocumentRequest::STATUS_ISSUED,
-            'reference_no' => $referenceNo,
-            'processed_by' => auth()->id(),
-            'processed_at' => now(),
-        ]);
+        DB::transaction(function () use ($documentRequest, $referenceNo) {
+            $documentRequest->update([
+                'status' => DocumentRequest::STATUS_ISSUED,
+                'reference_no' => $referenceNo,
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+        });
 
         Audit::record('document_issued', $documentRequest, [], [
             'document_type' => $documentRequest->document_type,

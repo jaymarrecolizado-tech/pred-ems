@@ -77,7 +77,9 @@ Route::middleware('auth')->group(function () {
     // Leave module — self-service filing + approval workflow (Phase 2)
     Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
     Route::get('/leave/create', [LeaveController::class, 'create'])->name('leave.create');
-    Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
+    Route::post('/leave', [LeaveController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('leave.store');
     Route::post('/leave/{application}/cancel', [LeaveController::class, 'cancel'])->name('leave.cancel');
 
     // CSC Form No. 6 (Application for Leave) — printable official form.
@@ -137,7 +139,9 @@ Route::middleware('auth')->group(function () {
     // Note: 'create'/'queue' must be registered before '/{documentRequest}'.
     Route::get('/documents/requests', [DocumentRequestController::class, 'index'])->name('documents.requests');
     Route::get('/documents/requests/create', [DocumentRequestController::class, 'create'])->name('documents.requests.create');
-    Route::post('/documents/requests', [DocumentRequestController::class, 'store'])->name('documents.requests.store');
+    Route::post('/documents/requests', [DocumentRequestController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('documents.requests.store');
     Route::get('/documents/requests/queue', [DocumentRequestController::class, 'queue'])
         ->middleware('role:admin,hr')
         ->name('documents.requests.queue');
@@ -191,7 +195,9 @@ Route::middleware('auth')->group(function () {
 
     // Attendance & DTR (Phase 5) — every employee punches from their device
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-    Route::post('/attendance/punch', [AttendanceController::class, 'punch'])->name('attendance.punch');
+    Route::post('/attendance/punch', [AttendanceController::class, 'punch'])
+        ->middleware('throttle:20,1')
+        ->name('attendance.punch');
     Route::post('/attendance/corrections', [AttendanceController::class, 'requestCorrection'])->name('attendance.corrections.request');
     Route::get('/attendance/dtr', [AttendanceController::class, 'dtr'])->name('attendance.dtr');
     Route::get('/attendance/dtr/pdf', [AttendanceController::class, 'dtrPdf'])->name('attendance.dtr.pdf');
