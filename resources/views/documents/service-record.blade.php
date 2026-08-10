@@ -5,6 +5,7 @@
     <title>Service Record — {{ $employee->full_name }}</title>
     <style>
         /* CSC Service Record (CS Form 212) — print / dompdf compatible. */
+        @page { margin: 4.5mm 5mm; }
         * { box-sizing: border-box; }
         body {
             font-family: "DejaVu Serif", "Times New Roman", serif;
@@ -12,66 +13,66 @@
             color: #000;
             margin: 0 auto;
             max-width: 8.5in;
-            padding: 18px 22px;
+            padding: 4px 8px;
         }
         .border {
             border: 2px solid #000;
-            padding: 14px 16px 12px;
+            padding: 4px 6px 4px;
         }
 
         /* ---------- Letterhead (table layout — dompdf has no flexbox/transform) ---------- */
         
 
-        .doc-title { text-align: center; font-size: 19px; font-weight: 700; margin: 10px 0 12px; }
+        .doc-title { text-align: center; font-size: 16px; font-weight: 700; margin: 2px 0 4px; }
 
         /* ---------- Personal info grid ---------- */
-        table.personal { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+        table.personal { width: 100%; border-collapse: collapse; margin-bottom: 3px; }
         table.personal td {
             border: 1px solid #000;
-            padding: 4px 8px;
-            height: 30px;
+            padding: 1.5px 5px;
+            height: 16px;
             vertical-align: middle;
         }
         table.personal .lbl {
             width: 70px;
             text-align: center;
-            font-size: 8.5px;
+            font-size: 8px;
             font-weight: 700;
             background: #f2f2f2;
             vertical-align: top;
-            padding-top: 6px;
+            padding-top: 3px;
         }
-        table.personal .val { font-size: 11.5px; }
+        table.personal .val { font-size: 10.5px; }
         table.personal .birth-lbl { font-size: 8px; }
-        .maiden-note { font-size: 8.5px; color: #000; font-style: italic; }
+        .maiden-note { font-size: 8px; color: #000; font-style: italic; }
 
         /* ---------- Certification ---------- */
         .certification {
             font-style: italic;
             text-align: justify;
-            text-indent: 30px;
-            margin: 10px 0;
-            line-height: 1.45;
+            text-indent: 24px;
+            margin: 3px 0;
+            line-height: 1.2;
         }
 
         /* ---------- Main table ---------- */
         table.record { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        table.record th, table.record td { border: 1px solid #000; padding: 4px 5px; vertical-align: top; }
+        table.record th, table.record td { border: 1px solid #000; padding: 1px 2.5px; vertical-align: top; line-height: 1.05; word-wrap: break-word; overflow-wrap: break-word; }
         table.record thead th {
             text-align: center;
             font-size: 8.5px;
             background: #f2f2f2;
         }
-        table.record thead th.main { font-size: 9.5px; }
-        table.record thead th.col { font-size: 8px; padding: 2px 3px; }
-        table.record tbody td { font-size: 9.5px; }
+        table.record thead th.main { font-size: 8.5px; }
+        table.record thead th.col { font-size: 7px; padding: 1.5px 2px; }
+        table.record tbody td { font-size: 8px; }
         table.record .c { text-align: center; }
         table.record .r { text-align: right; }
         .nothing-follows {
             text-align: center;
-            padding: 8px 4px;
+            padding: 2px 2px;
             font-style: italic;
-            font-size: 9px;
+            font-size: 8px;
         }
         .nothing-follows span {
             display: block;
@@ -82,31 +83,31 @@
         /* Column widths (11 data columns + spacing) */
         .col-from { width: 7.5%; }
         .col-to   { width: 7.5%; }
-        .col-des  { width: 11%; }
+        .col-des  { width: 14%; }
         .col-status { width: 7%; }
-        .col-salary { width: 10%; }
-        .col-office { width: 12.5%; }
+        .col-salary { width: 9.5%; }
+        .col-office { width: 15%; }
         .col-branch { width: 7%; }
         .col-lv   { width: 7.5%; }
         .col-sep-date { width: 7%; }
         .col-sep-cause { width: 7.5%; }
-        .col-remarks  { width: 15.5%; }
+        .col-remarks  { width: 11.5%; }
 
         /* ---------- Footer ---------- */
-        .compliance { font-size: 9.5px; margin: 12px 0 4px; text-align: justify; }
-        .signatures { margin-top: 18px; }
+        .compliance { font-size: 8.5px; margin: 3px 0 1px; text-align: justify; }
+        .signatures { margin-top: 4px; }
         .signatures table { width: 100%; border-collapse: collapse; }
         .signatures td { width: 50%; padding: 0 10px; vertical-align: top; }
-        .sig-label { font-size: 10px; margin-bottom: 26px; }
-        .sig-name { border-top: 1px solid #000; padding-top: 4px; font-weight: 700; font-size: 11px; }
+        .sig-label { font-size: 9px; margin-bottom: 6px; }
+        .sig-name { border-top: 1px solid #000; padding-top: 3px; font-weight: 700; font-size: 10.5px; }
         .sig-title { font-size: 9.5px; margin-top: 1px; }
-        .ref-no { text-align: right; font-size: 8.5px; margin-top: 8px; }
+        .ref-no { text-align: right; font-size: 8.5px; margin-top: 4px; }
     </style>
 </head>
 <body>
 <div class="border">
     {{-- Letterhead --}}
-    @include('partials.letterhead', ['mb' => 8])
+    @include('partials.letterhead', ['compact' => true, 'mb' => 2])
 
     <div class="doc-title">SERVICE RECORD</div>
 
@@ -143,6 +144,19 @@
 
     {{-- Record of appointment --}}
     <table class="record">
+        <colgroup>
+            <col class="col-from">
+            <col class="col-to">
+            <col class="col-des">
+            <col class="col-status">
+            <col class="col-salary">
+            <col class="col-office">
+            <col class="col-branch">
+            <col class="col-lv">
+            <col class="col-sep-date">
+            <col class="col-sep-cause">
+            <col class="col-remarks">
+        </colgroup>
         <thead>
             <tr>
                 <th class="main col-from" colspan="2">SERVICE</th>
@@ -153,7 +167,7 @@
             <tr>
                 <th class="col">Inclusive Dates<br>From</th>
                 <th class="col">To</th>
-                <th class="col col-des">Designation</th>
+                <th class="col col-des" style="width:14%">Designation</th>
                 <th class="col">Status</th>
                 <th class="col">Annual Salary</th>
                 <th class="col col-office">Name of Office</th>
@@ -168,7 +182,7 @@
                 <tr>
                     <td class="c">{{ $appointment->effective_from->format('m/d/Y') }}</td>
                     <td class="c">{{ $appointment->effective_to?->format('m/d/Y') ?? 'Present' }}</td>
-                    <td>{{ $appointment->position?->title ?? '—' }}</td>
+                    <td style="width:14%">{{ $appointment->position?->title ?? '—' }}</td>
                     <td class="c">{{ $appointment->employmentType?->name ?? '—' }}</td>
                     <td class="r">{{ $appointment->monthly_salary ? '₱' . number_format((float) $appointment->monthly_salary * 12, 2) : '' }}</td>
                     <td>DEPT OF INFO AND<br>COMMUNICATIONS TECH</td>
@@ -176,7 +190,7 @@
                     <td class="c">None</td>
                     <td class="c">None</td>
                     <td class="c">None</td>
-                    <td>{{ $appointment->remarks ?? '' }}</td>
+                    <td style="width:12.5%">{{ $appointment->remarks ?? '' }}</td>
                 </tr>
             @empty
                 <tr><td colspan="11" style="text-align:center">No appointment records on file.</td></tr>
@@ -217,7 +231,7 @@
         <div class="ref-no">Ref. No: {{ $referenceNo }}</div>
     @endif
 
-    @include('partials.doc-qr')
+    @include('partials.doc-qr', ['qrMargin' => 2, 'qrSize' => 40])
 </div>
 </body>
 </html>
