@@ -32,3 +32,6 @@ Thumbs.db
 
 # Graphify tool artifacts (AST/semantic cache, reports)
 graphify-out/
+
+# Thumbnails/extraction artifacts from reference templates
+Reference/certificates/_extracted/
