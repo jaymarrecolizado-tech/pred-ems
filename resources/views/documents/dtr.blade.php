@@ -22,21 +22,7 @@
         }
 
         /* ---------- Letterhead ---------- */
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
-        .letterhead td { vertical-align: middle; text-align: center; }
-        .letterhead td.lh-side { width: 64px; }
-        .letterhead td.lh-seal { text-align: left; }
-        .letterhead td.lh-logo { text-align: right; }
-        .seal {
-            width: 50px; height: 50px; margin: 0 auto;
-            border: 2px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 11px;
-            text-align: center; line-height: 1.15;
-            padding-top: 9px;
-        }
-        .letterhead h1 { margin: 0; font-size: 13px; letter-spacing: .4px; color: #1b2a4a; text-transform: uppercase; }
-        .letterhead .sub { font-size: 10.5px; color: #1b2a4a; margin-top: 1px; }
-        .logo { text-align: center; font-size: 8.5px; font-weight: 700; color: #1b2a4a; }
+        
 
         .doc-title { text-align: center; font-size: 17px; font-weight: 700; margin: 8px 0 2px; letter-spacing: 1px; }
         .ref-no { text-align: right; font-size: 8px; margin-bottom: 4px; }
@@ -75,16 +61,7 @@
 </head>
 <body>
     {{-- Letterhead --}}
-    <table class="letterhead">
-        <tr>
-            <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
-            <td>
-                <h1>Republic of the Philippines</h1>
-                <div class="sub">Department of Information and Communications Technology</div>
-            </td>
-            <td class="lh-side lh-logo"><div class="logo">BAGONG<br>PILIPINAS</div></td>
-        </tr>
-    </table>
+    @include('partials.letterhead', ['compact' => true])
 
     <div class="doc-title">DAILY TIME RECORD</div>
     @if (isset($referenceNo) && $referenceNo)

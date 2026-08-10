@@ -52,21 +52,7 @@
         }
 
         /* ---------- Letterhead ---------- */
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-        .letterhead td { vertical-align: middle; text-align: center; }
-        .letterhead td.lh-side { width: 84px; }
-        .letterhead td.lh-seal { text-align: left; }
-        .letterhead td.lh-logo { text-align: right; }
-        .seal {
-            width: 62px; height: 62px; margin: 0 auto;
-            border: 2px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 12px;
-            text-align: center; line-height: 1.15;
-            padding-top: 13px;
-        }
-        .letterhead .gov { font-size: 13.5px; letter-spacing: .5px; color: #1b2a4a; font-weight: 700; }
-        .letterhead .dept { font-size: 13px; color: #1b2a4a; margin-top: 1px; font-weight: 700; }
-        .logo { text-align: center; font-size: 9.5px; font-weight: 700; color: #1b2a4a; }
+        
 
         .head-rule { border: none; border-top: 1.6px solid #1b2a4a; margin: 0 0 20px; }
 
@@ -95,18 +81,7 @@
 </head>
 <body>
     {{-- Letterhead --}}
-    <table class="letterhead">
-        <tr>
-            <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
-            <td>
-                <div class="gov">Republic of the Philippines</div>
-                <div class="dept">Department of Information and Communications Technology</div>
-            </td>
-            <td class="lh-side lh-logo">
-                <div class="logo">BAGONG<br>PILIPINAS</div>
-            </td>
-        </tr>
-    </table>
+    @include('partials.letterhead')
 
     <hr class="head-rule">
 

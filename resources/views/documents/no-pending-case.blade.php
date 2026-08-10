@@ -15,21 +15,7 @@
             padding: 34px 44px;
         }
 
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
-        .letterhead td { vertical-align: middle; text-align: center; }
-        .letterhead td.lh-side { width: 84px; }
-        .letterhead td.lh-seal { text-align: left; }
-        .letterhead td.lh-logo { text-align: right; }
-        .seal {
-            width: 64px; height: 64px; margin: 0 auto;
-            border: 2px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 13px;
-            text-align: center; line-height: 1.15;
-            padding-top: 13px;
-        }
-        .letterhead h1 { margin: 0; font-size: 16px; letter-spacing: .4px; color: #1b2a4a; text-transform: uppercase; }
-        .letterhead .sub { font-size: 13px; color: #1b2a4a; margin-top: 2px; }
-        .logo { text-align: center; font-size: 10px; font-weight: 700; color: #1b2a4a; }
+        
 
         .doc-title { text-align: center; font-size: 20px; font-weight: 700; margin: 0 0 8px; }
         .ref-date { text-align: right; font-size: 10.5px; margin-bottom: 20px; }
@@ -47,16 +33,7 @@
     </style>
 </head>
 <body>
-    <table class="letterhead">
-        <tr>
-            <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
-            <td>
-                <h1>Republic of the Philippines</h1>
-                <div class="sub">Department of Information and Communications Technology</div>
-            </td>
-            <td class="lh-side lh-logo"><div class="logo">BAGONG<br>PILIPINAS</div></td>
-        </tr>
-    </table>
+    @include('partials.letterhead', ['mb' => 22])
 
     <div class="doc-title">CERTIFICATION OF NO PENDING CASE</div>
 

@@ -60,7 +60,10 @@ class DocumentVerificationTest extends TestCase
             'certifier' => DocumentIssuer::certifier(),
         ])->render();
 
-        $this->assertStringNotContainsString('data:image/png;base64', $html);
+        // The letterhead always embeds the real DICT/Bagong Pilipinas logos as
+        // base64 data URIs, so assert on the QR-specific markers instead.
+        $this->assertStringNotContainsString('/verify/', $html);
+        $this->assertStringNotContainsString('VERIFY THIS DOCUMENT', $html);
     }
 
     public function test_public_verification_page_and_unknown_reference(): void

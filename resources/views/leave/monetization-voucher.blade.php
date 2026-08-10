@@ -8,15 +8,7 @@
         * { box-sizing: border-box; }
         body { font-family: "DejaVu Serif", "Times New Roman", serif; font-size: 12px; color: #000; margin: 0 auto; max-width: 8in; padding: 30px 40px; }
 
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .letterhead td { vertical-align: middle; text-align: center; }
-        .letterhead td.lh-side { width: 84px; }
-        .letterhead td.lh-seal { text-align: left; }
-        .letterhead td.lh-logo { text-align: right; }
-        .seal { width: 62px; height: 62px; margin: 0 auto; border: 2px solid #1b2a4a; border-radius: 50%; color: #1b2a4a; font-weight: 700; font-size: 13px; text-align: center; line-height: 1.15; padding-top: 12px; }
-        .letterhead h1 { margin: 0; font-size: 16px; letter-spacing: .4px; color: #1b2a4a; text-transform: uppercase; }
-        .letterhead .sub { font-size: 13px; color: #1b2a4a; margin-top: 2px; }
-        .logo { text-align: center; font-size: 10px; font-weight: 700; color: #1b2a4a; }
+        
 
         .doc-title { text-align: center; font-size: 18px; font-weight: 700; margin: 0 0 4px; }
         .doc-sub { text-align: center; font-size: 11px; margin-bottom: 18px; }
@@ -43,16 +35,7 @@
     </style>
 </head>
 <body>
-    <table class="letterhead">
-        <tr>
-            <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
-            <td>
-                <h1>Republic of the Philippines</h1>
-                <div class="sub">Department of Information and Communications Technology · Regional Office 2</div>
-            </td>
-            <td class="lh-side lh-logo"><div class="logo">BAGONG<br>PILIPINAS</div></td>
-        </tr>
-    </table>
+    @include('partials.letterhead', ['mb' => 20, 'subtitle' => 'Department of Information and Communications Technology · Regional Office 2'])
 
     <div class="doc-title">VACATION LEAVE MONETIZATION VOUCHER</div>
     <div class="doc-sub">CSC Omnibus Rules on Leave (MC 41, s. 1998, as amended)</div>

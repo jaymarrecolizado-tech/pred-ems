@@ -17,21 +17,7 @@
         .border { border: 2px solid #000; padding: 14px 16px 12px; }
 
         /* Letterhead */
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        .letterhead td { vertical-align: middle; text-align: center; }
-        .letterhead td.lh-side { width: 84px; }
-        .letterhead td.lh-seal { text-align: left; }
-        .letterhead td.lh-logo { text-align: right; }
-        .seal {
-            width: 64px; height: 64px; margin: 0 auto;
-            border: 2px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 13px;
-            text-align: center; line-height: 1.15;
-            padding-top: 13px;
-        }
-        .letterhead h1 { margin: 0; font-size: 15px; letter-spacing: .4px; color: #1b2a4a; text-transform: uppercase; }
-        .letterhead .sub { font-size: 12px; color: #1b2a4a; margin-top: 2px; }
-        .logo { text-align: center; font-size: 9px; font-weight: 700; color: #1b2a4a; }
+        
 
         .doc-title { text-align: center; font-size: 18px; font-weight: 700; margin: 8px 0 2px; }
         .doc-sub { text-align: center; font-size: 10.5px; margin-bottom: 10px; }
@@ -76,16 +62,7 @@
     @endphp
 
     {{-- Letterhead --}}
-    <table class="letterhead">
-        <tr>
-            <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
-            <td>
-                <h1>Republic of the Philippines</h1>
-                <div class="sub">Department of Information and Communications Technology</div>
-            </td>
-            <td class="lh-side lh-logo"><div class="logo">BAGONG<br>PILIPINAS</div></td>
-        </tr>
-    </table>
+    @include('partials.letterhead', ['mb' => 8])
 
     <div class="doc-title">PAYSLIP</div>
     <div class="doc-sub">Payroll Period: {{ $period->period_from->format('M j, Y') }} – {{ $period->period_to->format('M j, Y') }} · Payroll Date: {{ $period->payroll_date->format('M j, Y') }}</div>

@@ -16,11 +16,11 @@
             background: #fff; border-radius: 16px; box-shadow: 0 12px 40px rgba(27, 42, 74, .14);
             max-width: 520px; width: 100%; padding: 34px 38px; text-align: center;
         }
-        .seal {
+        .seal-img {
             width: 74px; height: 74px; margin: 0 auto 14px;
             border: 3px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 15px; line-height: 1.15;
-            display: flex; align-items: center; justify-content: center;
+            object-fit: contain; padding: 4px;
+            background: #fff;
         }
         .badge {
             display: inline-flex; align-items: center; gap: 8px;
@@ -41,7 +41,7 @@
 </head>
 <body>
     <div class="card">
-        <div class="seal">DICT<br>RO2</div>
+        <img class="seal-img" src="{{ asset('img/dict_logo.png') }}" alt="DICT">
         <div class="badge"><span class="dot"></span> DOCUMENT VERIFIED</div>
         <h1>Authentic Issuance Confirmed</h1>
         <div class="sub">This document was issued by the Department of Information and Communications Technology, Regional Office No. 2.</div>
