@@ -284,6 +284,11 @@ class DocumentRequestController extends Controller
             'qrDataUri' => DocumentQr::dataUri($referenceNo),
         ];
 
+        // The COE letter quotes the purpose the employee stated when requesting.
+        if ($documentRequest->document_type === 'certificate_of_employment') {
+            $data['purpose'] = $documentRequest->purpose;
+        }
+
         if ($documentRequest->document_type === 'leave_balances') {
             $data['asOf'] = now();
         }

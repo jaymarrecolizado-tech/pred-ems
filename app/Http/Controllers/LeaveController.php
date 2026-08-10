@@ -11,6 +11,7 @@ use App\Notifications\LeaveApprovedNotification;
 use App\Notifications\LeaveFiledNotification;
 use App\Notifications\LeaveRejectedNotification;
 use App\Support\Audit;
+use App\Support\DocumentIssuer;
 use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -143,10 +144,35 @@ class LeaveController extends Controller
 
         $application->load(['employee.position', 'employee.division', 'leaveType']);
 
+        // Section 7.A — live credit certification from the append-only ledger,
+        // "as of" today. Earned = current balance (prior usage already netted),
+        // Less = this application's days for the applied type, Balance = diff.
+        $summary = function (LeaveType $type) use ($application) {
+            $earned = $application->employee->leaveBalanceFor($type);
+            $less = $application->leave_type_id === $type->id ? (float) $application->days_applied : 0.0;
+
+            return [
+                'earned' => number_format($earned, $earned == (int) $earned ? 0 : 2),
+                'less' => number_format($less, $less == (int) $less ? 0 : 2),
+                'balance' => number_format($earned - $less, ($earned - $less) == (int) ($earned - $less) ? 0 : 2),
+            ];
+        };
+
+        $vlType = LeaveType::where('code', 'VL')->first();
+        $slType = LeaveType::where('code', 'SL')->first();
+
         $filename = 'CSC_Form_6_' . str_replace([' ', '.'], '_', $application->employee->full_name) . '.pdf';
 
-        return Pdf::loadView('leave.form6', ['application' => $application])
-            ->setPaper('a4', 'portrait')
+        return Pdf::loadView('leave.form6', [
+            'application' => $application,
+            'credits' => [
+                'vl' => $vlType ? $summary($vlType) : ['earned' => '', 'less' => '', 'balance' => ''],
+                'sl' => $slType ? $summary($slType) : ['earned' => '', 'less' => '', 'balance' => ''],
+            ],
+            'asOf' => now()->format('F j, Y'),
+            'hrmo' => DocumentIssuer::preparer(),
+            'adminFinance' => DocumentIssuer::certifier(),
+        ])->setPaper('legal', 'portrait') // official CSC Form 6 is long-bond sized
             ->download($filename);
     }
 

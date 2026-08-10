@@ -215,7 +215,7 @@ class AppointmentAndCoeTest extends TestCase
         $this->actingAs($this->adminUser())
             ->get("/employees/{$employee->id}/coe")
             ->assertOk()
-            ->assertSee('CERTIFICATE OF EMPLOYMENT')
+            ->assertSee('CERTIFICATION')
             ->assertSee('TO WHOM IT MAY CONCERN');
 
         $response = $this->actingAs($this->adminUser())

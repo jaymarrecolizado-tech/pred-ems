@@ -3,6 +3,36 @@
     $lastAppt = $employee->appointments->last();
     $serviceFrom = $employee->date_original_appointment ?? $firstAppt?->effective_from;
     $serviceTo = $lastAppt?->effective_to; // null = present
+
+    $isActive = in_array($employee->status, ['active', null, ''], true) && $serviceTo === null;
+    $isFemale = strtolower((string) $employee->gender) === 'female';
+    $title = $isFemale ? 'MS.' : 'MR.';
+    $pronoun = $isFemale ? 'She' : 'He';
+
+    $status = $employee->employmentType?->name;
+    $statusPhrase = $status
+        ? 'on a ' . strtolower(trim((string) preg_replace('/\s*\(.*\)\s*/', ' ', $status))) . ' status'
+        : '';
+
+    $position = $employee->position?->title;
+    $salary = (float) $employee->monthly_salary;
+    $purposeText = (isset($purpose) && trim((string) $purpose) !== '')
+        ? trim((string) $purpose)
+        : 'whatever legal purpose it may serve';
+
+    // Employment clause assembled once so the sentence punctuation stays clean.
+    $fromText = $serviceFrom?->format('F d, Y') ?? '—';
+    $toText = $serviceTo?->format('F d, Y') ?? '—';
+    $employmentClause = $isActive
+        ? 'is currently employed with the Department of Information and Communications Technology – Region 2, since ' . $fromText . ' to present'
+        : 'was employed with the Department of Information and Communications Technology – Region 2, from ' . $fromText . ' to ' . $toText;
+    if ($position) {
+        $employmentClause .= ' and ' . ($isActive ? 'currently holding the position of' : 'held the position of') . ' ' . $position;
+    }
+    if ($statusPhrase) {
+        $employmentClause .= ', ' . $statusPhrase;
+    }
+    $employmentClause .= '.';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +40,7 @@
     <meta charset="UTF-8">
     <title>Certificate of Employment — {{ $employee->full_name }}</title>
     <style>
-        /* Certificate of Employment — print / dompdf compatible. */
+        /* Certificate of Employment — official DICT RO2 template, print / dompdf compatible. */
         * { box-sizing: border-box; }
         body {
             font-family: "DejaVu Serif", "Times New Roman", serif;
@@ -18,46 +48,49 @@
             color: #000;
             margin: 0 auto;
             max-width: 8.5in;
-            padding: 34px 44px;
+            padding: 34px 44px 28px;
         }
 
         /* ---------- Letterhead ---------- */
-        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
+        table.letterhead { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
         .letterhead td { vertical-align: middle; text-align: center; }
         .letterhead td.lh-side { width: 84px; }
         .letterhead td.lh-seal { text-align: left; }
         .letterhead td.lh-logo { text-align: right; }
         .seal {
-            width: 64px; height: 64px; margin: 0 auto;
+            width: 62px; height: 62px; margin: 0 auto;
             border: 2px solid #1b2a4a; border-radius: 50%;
-            color: #1b2a4a; font-weight: 700; font-size: 13px;
+            color: #1b2a4a; font-weight: 700; font-size: 12px;
             text-align: center; line-height: 1.15;
             padding-top: 13px;
         }
-        .letterhead h1 {
-            margin: 0;
-            font-size: 16px;
-            letter-spacing: .4px;
-            color: #1b2a4a;
-            text-transform: uppercase;
-        }
-        .letterhead .sub { font-size: 13px; color: #1b2a4a; margin-top: 2px; }
-        .logo { text-align: center; font-size: 10px; font-weight: 700; color: #1b2a4a; }
+        .letterhead .gov { font-size: 13.5px; letter-spacing: .5px; color: #1b2a4a; font-weight: 700; }
+        .letterhead .dept { font-size: 13px; color: #1b2a4a; margin-top: 1px; font-weight: 700; }
+        .logo { text-align: center; font-size: 9.5px; font-weight: 700; color: #1b2a4a; }
 
-        .doc-title { text-align: center; font-size: 20px; font-weight: 700; margin: 0 0 8px; }
-        .ref-date { text-align: right; font-size: 10.5px; margin-bottom: 20px; }
-        .salutation { margin: 0 0 12px; }
+        .head-rule { border: none; border-top: 1.6px solid #1b2a4a; margin: 0 0 20px; }
 
-        .body { line-height: 1.75; text-align: justify; margin: 0 0 12px; }
-        .closing { margin-top: 26px; }
+        .doc-title { text-align: center; font-size: 20px; font-weight: 700; margin: 0 0 4px; letter-spacing: 2px; }
+        .doc-ref { text-align: center; font-size: 10px; margin-bottom: 22px; color: #333; }
 
-        .signatures { margin-top: 30px; }
-        .signatures table { width: 100%; border-collapse: collapse; }
-        .signatures td { width: 50%; padding: 0 10px; vertical-align: top; }
-        .sig-label { font-size: 11px; margin-bottom: 30px; }
-        .sig-name { border-top: 1px solid #000; padding-top: 4px; font-weight: 700; font-size: 12px; }
-        .sig-title { font-size: 10px; margin-top: 1px; }
-        .ref-no { text-align: right; font-size: 9px; margin-top: 14px; }
+        .salutation { margin: 0 0 14px; }
+
+        .body { line-height: 1.8; text-align: justify; margin: 0 0 14px; }
+        .body p { margin: 0 0 14px; }
+
+        .issuance { margin: 22px 0 8px; }
+
+        /* Single right-aligned signatory (official layout) */
+        .signatory { text-align: right; margin-top: 46px; }
+        .signatory .sig-name { font-weight: 700; font-size: 12.5px; }
+        .signatory .sig-title { font-size: 11px; margin-top: 1px; }
+
+        /* Footer */
+        .footer { margin-top: 26px; }
+        .footer .foot-rule { border: none; border-top: 1px solid #000; margin: 0 0 6px; }
+        table.foot { width: 100%; border-collapse: collapse; font-size: 9px; color: #333; line-height: 1.5; }
+        .foot td { vertical-align: top; }
+        .foot .foot-right { text-align: right; }
     </style>
 </head>
 <body>
@@ -66,61 +99,75 @@
         <tr>
             <td class="lh-side lh-seal"><div class="seal">DICT<br>RO2</div></td>
             <td>
-                <h1>Republic of the Philippines</h1>
-                <div class="sub">Department of Information and Communications Technology</div>
+                <div class="gov">Republic of the Philippines</div>
+                <div class="dept">Department of Information and Communications Technology</div>
             </td>
-            <td class="lh-side lh-logo"><div class="logo">BAGONG<br>PILIPINAS</div></td>
+            <td class="lh-side lh-logo">
+                <div class="logo">BAGONG<br>PILIPINAS</div>
+            </td>
         </tr>
     </table>
 
-    <div class="doc-title">CERTIFICATE OF EMPLOYMENT</div>
+    <hr class="head-rule">
 
+    <div class="doc-title">CERTIFICATION</div>
     @if (isset($referenceNo))
-        <div class="ref-date">Ref. No: {{ $referenceNo }}<br>{{ now()->format('F d, Y') }}</div>
+        <div class="doc-ref">Ref. No: {{ $referenceNo }}</div>
     @endif
 
     <p class="salutation">TO WHOM IT MAY CONCERN:</p>
 
-    <p class="body">
-        This is to certify that <strong>{{ $employee->full_name }}</strong>
-        @if ($employee->position?->title), holding the position of
-        <strong>{{ $employee->position->title }}</strong>@endif
-        @if ($employee->division?->name) under the {{ $employee->division->name }}@endif,
-        has been employed in the Department of Information and Communications
-        Technology, Regional Office No. 2 from
-        <strong>{{ $serviceFrom?->format('F d, Y') ?? '—' }}</strong> up to
-        <strong>{{ $serviceTo?->format('F d, Y') ?? 'the present' }}</strong>.
+    <div class="body">
+        <p>
+            This is to certify that <strong>{{ $title }} {{ strtoupper($employee->full_name) }}</strong>
+            {{ $employmentClause }}
+        </p>
+
+        @if ($salary > 0)
+            <p>
+                {{ $pronoun }} is receiving a gross monthly compensation amounting to
+                <strong>{{ \App\Support\DocumentIssuer::amountInWords($salary) }}</strong>
+                (Php {{ number_format($salary, 2) }}) only.
+            </p>
+        @endif
+
+        <p>
+            This certification is being issued upon the request of the above-named employee for
+            {{ $purposeText }}.
+        </p>
+    </div>
+
+    <p class="issuance">
+        Issued this {{ \App\Support\DocumentIssuer::ordinalSuffix((int) now()->format('j')) }} day of
+        {{ now()->format('F') }} {{ now()->format('Y') }}.
     </p>
 
-    <p class="body">
-        This certification is issued upon the request of the above-named employee
-        for whatever legal purpose it may serve.
-    </p>
+    {{-- Signatory --}}
+    <div class="signatory">
+        <div class="sig-name">{{ $certifier['name'] }}</div>
+        <div class="sig-title">{{ $certifier['title'] }}</div>
+    </div>
 
-    <p class="closing">Given this {{ now()->format('F j, Y') }} at Tuguegarao City, Cagayan, Philippines.</p>
+    @include('partials.doc-qr')
 
-    {{-- Signature blocks --}}
-    <div class="signatures">
-        <table>
+    {{-- Footer --}}
+    <div class="footer">
+        <hr class="foot-rule">
+        <table class="foot">
             <tr>
-                <td>
-                    <div class="sig-label">Prepared by:</div>
-                    <div class="sig-name">{{ $preparer['name'] }}</div>
-                    <div class="sig-title">{{ $preparer['title'] }}</div>
+                <td class="foot-left">
+                    DICT - Region II<br>
+                    02 Bagay Road, San Gabriel Village,<br>
+                    Tuguegarao City, Cagayan 3500
                 </td>
-                <td>
-                    <div class="sig-label">Certified true and correct:</div>
-                    <div class="sig-name">{{ $certifier['name'] }}</div>
-                    <div class="sig-title">{{ $certifier['title'] }}</div>
+                <td class="foot-right">
+                    https://www.dict.gov.ph<br>
+                    region2@dict.gov.ph<br>
+                    (078) 8251624<br>
+                    Certificate of Employment | Page 1 of 1
                 </td>
             </tr>
         </table>
     </div>
-
-    @if (isset($referenceNo))
-        <div class="ref-no">Ref. No: {{ $referenceNo }}</div>
-    @endif
-
-    @include('partials.doc-qr')
 </body>
 </html>
