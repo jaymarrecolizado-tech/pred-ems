@@ -1,6 +1,6 @@
 # DICT Regional Office 2 — Employee Management System (HRIS)
 
-**Version:** 1.0 · **Date:** August 4, 2026 · **Status:** Approved blueprint (Phase 1 ready)
+**Version:** 1.1 · **Date:** August 10, 2026 · **Status:** Phases 1–6 complete — UI/UX polish pass on `ui-improvements`
 
 ---
 
@@ -142,6 +142,8 @@ erDiagram
 - **Service Record**: generated chronologically from `appointments` (CSC format) — critical for retirement/GSIS/transfers.
 - **COE**, **Certificate of Leave Balances**, **Certification of No Pending Case** — templated PDFs with reference numbers.
 - **Document requests** (`document_requests` table): employees request any requestable document (COE, Service Record, Leave Balances, No Pending Case, DTR); HR fulfills from a queue — issue mints a reference + records the issuance, reject carries a reason. Statuses pending → issued | rejected | canceled.
+- **Official templates ✅** — the COE is the official DICT RO2 CERTIFICATION letter (letterhead, employment + compensation paragraphs with the amount spelled out in English words, request purpose, ordinal issuance date, certifier signatory, DICT RO2 footer, QR). The **CSC Form No. 6** was rebuilt cell-by-cell from the official form: 14-item type-of-leave catalogue with legal bases, pre-checked applied type, inclusive dates, commutation request, applicant signature, live ledger credit certification (VL/SL earned/less/balance), and the recommending-official + HRMO + Assistant Regional Director approval lines — rendered on legal paper in one page.
+- **Official logos ✅** — every report letterhead now embeds the real **DICT seal** and **Bagong Pilipinas** PNGs via a shared `partials/letterhead` (base64 data URIs, dompdf-safe; compact variant for the DTR); the public QR verification page shows the seal too.
 
 ---
 
@@ -175,12 +177,12 @@ erDiagram
 | Phase | Scope | Deliverables |
 |---|---|---|
 | **1. Foundation** | Auth/RBAC, employment types, divisions/positions, employee profiles | Login, user management, employee CRUD, lists & filters by type ✅ + self-service profile/photos/password ✅ + audit trail viewer ✅ |
-| **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ — on branch `ui-improvements` |
+| **1.5. UI Redesign** | eGovPay-style design system (dark navy sidebar, blue-600 actions, rounded cards, tracked tables) + mobile responsiveness | Design kit translated to plain CSS/Blade (see `docs/UI_REDESIGN.md`), off-canvas mobile drawer, SVG headcount chart with view toggle, a11y/UX ✅ · **systemwide polish ✅** — app-drawer collapsible nav groups (open state persisted), breadcrumbs on every page, toast feedback for every action, friendly animated error pages (403/404/409/419/422/429/500/503), reports-hub stat cards + stable aligned grid, consistent card/grow-list layout sweeps — on branch `ui-improvements` |
 | **2. Leave** | Leave types, monthly accruals, applications, approval workflow, leave cards | Leave module end-to-end ✅ (accruals, filing, approvals, leave cards, ledger integrity) · **CSC compliance ✅** — SLP annual grants (3 days/yr, non-cumulative), VL monetization (min 10 / retain 5 / max 30 per year, MO- vouchers), forced-leave monitoring report, CSC Form No. 6 application PDF |
-| **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) — all PDFs dompdf-compatible with sequential reference numbers |
+| **3. Documents** | Service Record, COE, certifications + appointment history management | Service Record (CSC Form 212) ✅ · Certificate of Employment ✅ · **Appointment Manager** ✅ (HR maintains the effective-dated timeline that drives the Service Record) · **official DICT RO2 templates ✅** — COE as the CERTIFICATION letter (compensation in English words, request purpose, ordinal date) and CSC Form No. 6 rebuilt from the official form (leave catalogue + live credit certification, legal-size one page) · **official report logos ✅** — real DICT seal + Bagong Pilipinas on every letterhead — all PDFs dompdf-compatible with sequential reference numbers |
 | **4. Reports & Audit** | Dashboards, headcount/leave/remittance reports, audit viewer | Reporting suite ✅ — hub + headcount (by type/division/status/fund), leave balances, leave utilization, document issuance log, attrition & onboarding, and a monthly attendance summary (work days, days present, absences, hours, late/undertime, rest-day OT) — every report exports **CSV · Excel · PDF** (`?format=csv|xls|pdf`; SpreadsheetML .xls opens natively in Excel, dompdf landscape PDF with DICT masthead); audit viewer ✅ (Phase 1) |
-| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · **Bulk imports ✅** — CSV/XLS/XLSX employee roster + attendance log imports with preview-then-commit, per-row validation, and audit · Notifications ✅ (in-system + email + SMS) |
-| **3.6. Notifications** | In-system inbox, email, SMS via Android gateway | **Inbox ✅** — topbar bell + `/notifications` (unread badge, mark read, mark all) · **Email ✅** — via Laravel mailer on every notification · **SMS ✅** — queued async delivery to the capcom6 Android gateway (`sms:send` cron, retries ≤ 3, soft-fail) · Fires on document request/issue/reject + leave file/approve/reject |
+| **5. Attendance & DTR** | Geofenced time logging, CSC Form 48 DTR, corrections workflow | **Geofenced attendance ✅** — admin/HR plot checkpoints on a Leaflet/OSM map (HQ + provincial offices); punches accepted only when the device GPS is inside a checkpoint radius (server-side haversine check) · **CSC Form 48 DTR ✅** — auto-generated monthly grid with late/undertime/hours, HTML preview + PDF with DTR- reference numbers · **Correction workflow ✅** — logs are append-only; every alteration is a request reviewed/approved by HR · **HR timelog browser + manual entries ✅** · **Flexible scheduling ✅ (AOM 2026-020)** — effective-dated work-schedule registry (4-Day CWW Mon–Thu 7–6 seeded, Standard Mon–Fri 8–5) with per-day-of-week work/rest + times, holiday calendar with the CSC 2600838 Friday-revert rule (holiday on a weekday rest day reverts the whole week), and rest-day/holiday punches still counted as overtime (CTO-eligible) · **Checkpoint CRUD ✅** — admin/HR create/edit/delete checkpoints; clicking the map auto-fills the coordinates · **Bulk imports ✅** — CSV/XLS/XLSX employee roster + attendance log imports with preview-then-commit, per-row validation, and audit · Notifications ✅ (in-system + email + SMS) |
+| **3.6. Notifications** | In-system inbox, email, SMS via Android gateway | **Inbox ✅** — topbar bell + `/notifications` (unread badge, mark read, mark all) · **Email ✅** — via Laravel mailer on every notification · **SMS ✅** — queued async delivery to the capcom6 Android gateway (`sms:send` cron, retries ≤ 3, soft-fail) · Fires on document request/issue/reject + leave file/approve/reject · **Admin toggles ✅** — SMS and email notifications can be switched on/off per event |
 | **6. Payroll** | Salary scales, contribution engine, payroll runs, payslips | **Payroll module ✅** — config-driven contribution/tax engine (GSIS 9%/12%, PhilHealth 5% with ₱500–₱5,000 premium floor/cap, PAG-IBIG 2%/2% capped at ₱200, BIR TRAIN brackets annualized), payroll periods with a draft → generated → finalized → remitted lifecycle, per-employee items with the **full computation trace persisted** (`computation_json`), dompdf payslips (`PS-YYYY-NNNN`) with DICT letterhead, per-agency remittance register (pending → remitted), **per-item adjustments ✅** (honoraria / overtime / other income + LWOP / other deductions — recompute with the engine, trace re-persisted, preserved across period recomputes, draft-only), and employee **self-service payslips** (`/my/payslips`). Scheduled last by decision (Aug 2026) so the data backbone was solid first. Known limit: salary scales remain the seeded placeholders pending the official SSL table |
 
 ---
@@ -347,3 +349,53 @@ appointment, and audit each row; attendance imports upsert punches (am_in/am_out
 stamped `hr_manual` in the append-only log, feeding the DTR and attendance reports. Templates are
 downloadable, uploads are cleaned up after commit or on error, and every import writes a summary
 audit entry with created/updated/skipped counts.
+
+
+**Official document templates — ✅ complete.** The Certificate of Employment
+now matches the official DICT RO2 letter exactly: three-column letterhead
+(seal / Republic of the Philippines · DICT masthead / Bagong Pilipinas),
+CERTIFICATION title, TO WHOM IT MAY CONCERN, employment paragraph (active
+"since … to present" vs separated "from … to …", with position and
+employment-status phrases), gross monthly compensation spelled out in English
+words (Forty Thousand … Pesos and Forty Centavos) with the numeral in
+parentheses, the request purpose (or the standard fallback), "Issued this
+[ordinal] day of …", the certifier signatory, and the DICT RO2 contact
+footer. The **CSC Form No. 6 (Application for Leave)** was rebuilt from the
+actual official form: the full 14-item leave catalogue with legal bases,
+details-of-leave conditionals, working days + inclusive dates, commutation
+checkboxes, applicant signature, and the office-use approval block with the
+live VL/SL credit certification — pre-checking the applied leave type and
+rendering on legal paper as a single page.
+
+**Official report logos — ✅ complete.** All official PDFs (COE, Service
+Record, No Pending Case, Leave Balances, Monetization Voucher, Payslip, DTR)
+now carry the **real DICT seal** and **Bagong Pilipinas** artwork instead of
+CSS placeholder circles. A shared `partials/letterhead` embeds both PNGs as
+base64 data URIs (no asset resolution at PDF time — dompdf-safe), with
+compact sizing for the DTR, per-document bottom-margin and subtitle knobs.
+The public QR **document verification** page shows the real seal as well.
+
+**Systemwide UI/UX polish — ✅ complete (branch `ui-improvements`).** The
+main navigation is now an **app-drawer** with collapsible, role-gated groups
+(open state persisted per user). **Breadcrumbs** are enforced on every page
+(semantic nav, aria-current). All action feedback is delivered via **toasts**.
+Error pages (403/404/409/419/422/429/500/503) are friendly, branded pages
+with an animated cat. The reports hub, attendance checkpoints, and shared
+card/grow-list layouts were swept for consistent alignment (equal stat cards,
+stable grids, no adjacent-card margin bugs).
+
+**Attendance checkpoints — ✅ CRUD + map picker.** Admin/HR can now create,
+edit, and delete geofenced checkpoints from the map screen; **clicking the
+map auto-fills the latitude/longitude** into the form, and clicking a
+checkpoint in the list zooms the map to it.
+
+**Notifications — ✅ admin-controlled.** SMS and email notification delivery
+can now be turned on/off per event from the admin settings, so the office can
+silence channels during maintenance without code changes.
+
+**Next up (suggested order):**
+1. **SSL V tranche data** — add the EO 64 s. 2024 later tranches (2025/2026/2027) as effective-dated `salary_scales` rows.
+2. **Attendance ↔ payroll integration** — LWOP/unpaid-leave auto-deduction and tardiness/undertime reporting flowing into payroll items.
+3. **Employee mobile check-in** — PWA so staff punch from phones (geofenced against the same checkpoints).
+4. **201-file data migration** — import the legacy Excel directory into the employees module (extend the existing bulk-import pipeline).
+5. **Production deploy** — Hostinger VPS per §6 (Nginx, PHP-FPM, OPcache, queue worker, backups).

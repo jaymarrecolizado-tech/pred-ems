@@ -30,13 +30,16 @@ Radii: `--radius-card` 12px (panels), `--radius-control` 8px (buttons/inputs), `
 | Masthead | Slim dark-navy strip (`navy-900`) with blue underline, uppercase micro type |
 | Sidebar | Flat `#0B1120`, rounded links, active = `navy-900` row + `brand-400` left accent bar |
 | Brand mark | Rounded blue tile, white serif monogram |
-| Nav | Stroke-SVG icons (no emoji), upcoming modules = dimmed text `(P2)`… |
+| Nav | Stroke-SVG icons (no emoji), upcoming modules = dimmed text `(P2)`…; **collapsible app-drawer groups** with open state persisted (localStorage) |
 | Topbar | White + hairline, bold Be Vietnam Pro page title |
 | Cards | White, 12px radius, hairline border, subtle shadow, bold title + actions header |
 | Tables | Uppercase tracked headers, hairline row dividers, tabular mono numerals |
 | Badges | **Pill shapes** with soft tinted backgrounds (green/red/amber/blue/purple/teal/indigo/pink/gray) |
 | Buttons | Rounded 8px, solid blue primary, outline secondary, red danger, ghost |
 | Forms | Rounded inputs, hairline borders, blue focus ring, bold labels |
+| Breadcrumbs | Semantic `<nav aria-label="Breadcrumb">` on every page; last item plain with `aria-current="page"` |
+| Toasts | Top-right stacked toast stack for all action feedback (success/error/info), auto-dismiss with progress bar |
+| Error pages | Friendly branded 403/404/409/419/422/429/500/503 pages with an animated SVG cat (blinking, swaying tail) |
 | Avatars | **Circular** with deterministic per-name color (hash of the name) |
 | Stats (dashboard) | Single white panel, 4 tiles divided by hairlines, icon chip + label + big value |
 | Hero banner (dashboard) | Soft blue/lavender gradient + blurred pastel blobs, promo card on the right |
@@ -61,5 +64,6 @@ Radii: `--radius-card` 12px (panels), `--radius-control` 8px (buttons/inputs), `
 - **Pass A–F** (GOV.PH Institutional): flat flag-palette chrome, SVG icons, masthead — shipped and later **replaced** by this system.
 - **Pass I** (mobile responsive + modern UX): off-canvas drawer, breakpoints, touch targets, `:focus-visible`, skip link, `prefers-reduced-motion`, print stylesheet — **retained**.
 - **Page sweeps:** dashboard rebuilt; stale inline references to old variables (`--border`, `--text-muted`, `--gold-500`, IBM Plex fonts) updated across profile/employee/audit views.
+- **Polish pass (Aug 2026):** collapsible nav groups, systemwide breadcrumbs, toast feedback, friendly error pages, and layout-consistency sweeps (reports hub stat cards + stable grids, checkpoint cards, grow-list rows).
 
 **Deliberately omitted from the kit:** `YearStepper` (no year dimension in current headcount data) and the Test/Live mode toggle (not meaningful for a gov HRIS). The view toggle covers the interactive chart controls.
