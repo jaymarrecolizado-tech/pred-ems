@@ -202,7 +202,7 @@ tests/Feature/            16 feature tests (smoke/integration level)
 |-----|--------|--------|--------|
 | Introduce Vite for frontend asset building | 1d | Minification, autoprefixing, purging | Pending |
 | Split monolithic CSS into component files | 1d | Maintainability | Pending |
-| Extract inline SVGs into reusable Blade components | 4h | DRY, consistency | Pending |
+| ~~Extract inline SVGs into reusable Blade components~~ | 4h | DRY, consistency | ✅ Done (`partials/icon` — 25 feather-style glyphs; every nav group header + item uses a unique icon) |
 | ~~Self-host Google Fonts~~ | 1h | Offline/intranet readiness | ✅ Done (11 TTF files) |
 | Add Larastan static analysis | 4h | Type safety, early bug detection | Pending |
 | ~~Update README to reflect actual state~~ | 2h | Accurate documentation | ✅ Done |

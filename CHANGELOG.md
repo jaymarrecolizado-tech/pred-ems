@@ -54,6 +54,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Self-hosted 11 Google Fonts TTF files (Inter + Be Vietnam Pro) for offline/intranet readiness
 - Created comprehensive `.env.example` with all required environment variables
 - Updated README to reflect actual stack (removed stale Tailwind/Livewire references)
+- Moved the sidebar hamburger into the main nav's brand row (collapses to an icon rail on desktop); added a mobile-only topbar toggle that slides the app drawer in — one shared `.js-sidebar-toggle` handler drives both
+- Expanded the nav icon partial to 25 distinct feather-style glyphs and gave every nav group header and item its own unique icon (no repeats; group headers no longer mirror their first child's icon)
+- Fixed sidebar brand/nav spacing so the office name no longer clips mid-word, the subtitle stays on one line, and nav items have comfortable breathing room
+
+### Reports
+- All report PDF exports (headcount, leave balances, leave utilization, documents issued, forced leave, attrition, attendance summary) now carry the official DICT RO2 letterhead — DICT seal left, Bagong Pilipinas right, Republic of the Philippines / DICT RO2 masthead centered — via the shared `partials/letterhead` (dompdf-safe base64), matching COEs, payslips, service records, and DTRs
+
+### Data & Tooling
+- Added `scripts/sample_attendance_import.php`: generates a full sample attendance set (weekday AM/PM punches, standard 8–5 office hours) for every active employee through the `ImportAttendance` action, so rows are recorded and audited exactly like a real UI import
 
 ## [Previous] — Pre-audit baseline
 

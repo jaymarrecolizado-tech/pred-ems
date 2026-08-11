@@ -377,7 +377,11 @@ The public QR **document verification** page shows the real seal as well.
 
 **Systemwide UI/UX polish — ✅ complete (branch `ui-improvements`).** The
 main navigation is now an **app-drawer** with collapsible, role-gated groups
-(open state persisted per user). **Breadcrumbs** are enforced on every page
+(open state persisted per user). The **hamburger lives in the main nav**
+(brand row) and collapses the sidebar to an icon rail on desktop, with a
+mobile-only topbar toggle that opens the drawer. Every nav group header and
+item has its **own unique icon** from a 25-glyph `partials/icon` set (no
+repeats). **Breadcrumbs** are enforced on every page
 (semantic nav, aria-current). All action feedback is delivered via **toasts**.
 Error pages (403/404/409/419/422/429/500/503) are friendly, branded pages
 with an animated cat. The reports hub, attendance checkpoints, and shared
