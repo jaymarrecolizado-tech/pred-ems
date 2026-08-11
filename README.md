@@ -7,8 +7,11 @@ appointments, leave management (CSC rules), payroll with Philippine statutory de
 - **Framework:** Laravel 11/12 (PHP 8.2+)
 - **Database:** MySQL 8 / MariaDB
 - **Frontend:** Blade + vanilla CSS/JS (no build step required)
+- **Testing:** PHPUnit/Pest (unit + feature tests, payroll computation tests)
+- **CI:** GitHub Actions (PHP 8.2/8.3/8.4 matrix, lint + test)
 - See [`docs/PLAN.md`](docs/PLAN.md) for the full blueprint (architecture, ERD, roadmap).
 - See [`plans/app-audit-and-improvement-plan.md`](plans/app-audit-and-improvement-plan.md) for the improvement roadmap.
+- See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 ---
 
@@ -176,18 +179,20 @@ with their plantilla grades, replacing the sample starter data.
 - **Composer** (https://getcomposer.org)
 - Git Bash (comes with Git for Windows)
 
-### Quick start (one command)
-From this repo's folder, in Git Bash (make sure `php` is on your PATH — add `C:\xampp\php` to PATH if needed):
+### Quick start
+This is a standard Laravel 12 project. From the repo root:
 
 ```bash
-bash scripts/setup.sh hris
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve          # → http://localhost:8000
+php artisan storage:link   # serve profile photos at /storage/…
 ```
 
-This scaffolds Laravel, copies all Phase 1 files, creates the `hris` database, and runs `migrate --seed`. Then:
-
-```bash
-cd hris && php artisan serve   # → http://localhost:8000
-```
+> The `.env.example` file documents every required env var (DB, SMS, mail).
+> The setup is self-contained — no external scaffolding scripts needed.
 
 ### Manual setup (alternative)
 
@@ -290,13 +295,32 @@ Specs used: Ubuntu 24.04 · Nginx · PHP 8.2-FPM · MariaDB · Let's Encrypt
 
 ---
 
-## 🧪 Validation commands
+## 🧪 Testing & CI
 
 ```bash
-php artisan migrate:fresh --seed   # rebuild DB with seed data (dev only)
-php artisan route:list             # confirm routes
-php -l database/migrations/2026_08_04_000006_create_employees_table.php  # lint a file
+php artisan test                    # run all tests
+php artisan test --testsuite=Unit   # unit tests only (payroll computation)
+php artisan test --testsuite=Feature # feature tests only
+vendor/bin/pint --test              # code style check (Laravel Pint)
 ```
+
+**CI Pipeline** (`.github/workflows/ci.yml`): on every push to `main`/`improvements`
+and PR to `main`, GitHub Actions runs:
+- PHP syntax lint across all `app/` files
+- Pint code style check
+- Unit + feature test suites (MySQL 8.0 service, PHP 8.2/8.3/8.4 matrix)
+
+---
+
+## 🔒 Security hardening (improvements branch)
+
+- **Form Request classes** — all POST routes use typed request validation
+- **Account lockout** — per-account progressive lockout (5 failed attempts → 15-min lock)
+- **Security headers** — CSP, X-Frame-Options, X-Content-Type-Options, HSTS
+- **Session hardening** — `secure`, `http_only`, `same_site=lax` cookies
+- **LIKE wildcard escaping** — search inputs escape `%`, `_`, `\` to prevent wildcard injection
+- **Password policy** — min 8 chars with mixed case, numbers, and symbols
+- **Rate limiting** — login (5/min), leave filing & document requests (10/min)
 
 ---
 
