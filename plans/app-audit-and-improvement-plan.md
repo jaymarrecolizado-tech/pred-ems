@@ -205,7 +205,7 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Extract inline SVGs into reusable Blade components | 4h | DRY, consistency | Pending |
 | ~~Self-host Google Fonts~~ | 1h | Offline/intranet readiness | ✅ Done (11 TTF files) |
 | Add Larastan static analysis | 4h | Type safety, early bug detection | Pending |
-| Update README to reflect actual state | 2h | Accurate documentation | Pending |
+| ~~Update README to reflect actual state~~ | 2h | Accurate documentation | ✅ Done |
 | Add data retention / right-to-erasure mechanisms | 2d | DPA compliance | Pending |
 | ~~Add security headers middleware~~ | 2h | Hardening | ✅ Done (SecurityHeaders) |
 | ~~Add session security config~~ | 1h | Hardening | ✅ Done (secure, httponly, samesite) |
