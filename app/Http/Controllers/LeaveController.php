@@ -13,6 +13,7 @@ use App\Notifications\LeaveApprovedNotification;
 use App\Notifications\LeaveFiledNotification;
 use App\Notifications\LeaveRejectedNotification;
 use App\Support\Audit;
+use App\Support\Search;
 use App\Support\DocumentIssuer;
 use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -184,9 +185,9 @@ class LeaveController extends Controller
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->string('search'));
                 $q->whereHas('employee', function ($inner) use ($search) {
-                    $inner->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('employee_number', 'like', "%{$search}%");
+                    $inner->where('first_name', 'like', Search::contains($search))
+                        ->orWhere('last_name', 'like', Search::contains($search))
+                        ->orWhere('employee_number', 'like', Search::contains($search));
                 });
             })
             ->latest('created_at')

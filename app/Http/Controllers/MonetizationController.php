@@ -9,6 +9,7 @@ use App\Models\LeaveMonetization;
 use App\Models\LeaveType;
 use App\Notifications\LeaveMonetizedNotification;
 use App\Support\Audit;
+use App\Support\Search;
 use App\Support\DocumentIssuer;
 use App\Support\Notifier;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -43,9 +44,9 @@ class MonetizationController extends Controller
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->string('search'));
                 $q->whereHas('employee', function ($inner) use ($search) {
-                    $inner->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('employee_number', 'like', "%{$search}%");
+                    $inner->where('first_name', 'like', Search::contains($search))
+                        ->orWhere('last_name', 'like', Search::contains($search))
+                        ->orWhere('employee_number', 'like', Search::contains($search));
                 });
             })
             ->when($request->filled('year'), fn ($q) => $q->where('year', $year))

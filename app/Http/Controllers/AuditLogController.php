@@ -21,9 +21,9 @@ class AuditLogController extends Controller
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->string('search'));
                 $q->where(function ($inner) use ($search) {
-                    $inner->where('model_id', 'like', "%{$search}%")
-                        ->orWhere('ip_address', 'like', "%{$search}%")
-                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+                    $inner->where('model_id', 'like', Search::contains($search))
+                        ->orWhere('ip_address', 'like', Search::contains($search))
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', Search::contains($search))->orWhere('email', 'like', Search::contains($search)));
                 });
             })
             ->latest()

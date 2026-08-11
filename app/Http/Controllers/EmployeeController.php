@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmploymentType;
 use App\Models\Position;
 use App\Support\Audit;
+use App\Support\Search;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -25,10 +26,10 @@ class EmployeeController extends Controller
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->string('search'));
                 $q->where(function ($inner) use ($search) {
-                    $inner->where('employee_number', 'like', "%{$search}%")
-                        ->orWhere('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('middle_name', 'like', "%{$search}%");
+                    $inner->where('employee_number', 'like', Search::contains($search))
+                        ->orWhere('first_name', 'like', Search::contains($search))
+                        ->orWhere('last_name', 'like', Search::contains($search))
+                        ->orWhere('middle_name', 'like', Search::contains($search));
                 });
             })
             ->when($request->filled('employment_type'), fn ($q) => $q->where('employment_type_id', $request->integer('employment_type')))
