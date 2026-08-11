@@ -183,18 +183,18 @@ tests/Feature/            16 feature tests (smoke/integration level)
 
 ### Priority 2: High (Address in Next Sprint)
 
-| Rec | Effort | Impact |
-|-----|--------|--------|
-| Extract Form Request classes for all POST routes | 1d | Cleaner validation, reusable rules |
-| Create action/service classes for business operations | 2d | Testability, separation of concerns |
-| Use PHP enums for all status fields | 4h | Eliminates magic strings, typo-proof |
-| Set up CI pipeline (GitHub Actions: lint + test) | 4h | Automated quality gate |
-| Add database factories for all models | 1d | Faster, more reliable test setup |
-| Add rate limiting to sensitive POST routes | 2h | Abuse prevention |
-| Add password complexity policy | 2h | Security hardening |
-| Fix N+1 in `Employee::leaveBalances()` | 2h | Performance on profile pages |
-| Cache dashboard counts and reference data | 2h | Reduced DB load |
-| Add foreign key constraints to all migrations | 3h | DB-level data integrity |
+| Rec | Effort | Impact | Status |
+|-----|--------|--------|--------|
+| ~~Extract Form Request classes for all POST routes~~ | 1d | Cleaner validation, reusable rules | ✅ Done (26 classes) |
+| Create action/service classes for business operations | 2d | Testability, separation of concerns | Pending |
+| ~~Use PHP enums for all status fields~~ | 4h | Eliminates magic strings, typo-proof | ✅ Done (3 enums) |
+| ~~Set up CI pipeline (GitHub Actions: lint + test)~~ | 4h | Automated quality gate | ✅ Done |
+| ~~Add database factories for all models~~ | 1d | Faster, more reliable test setup | ✅ Done (17 factories) |
+| ~~Add rate limiting to sensitive POST routes~~ | 2h | Abuse prevention | ✅ Done |
+| ~~Add password complexity policy~~ | 2h | Security hardening | ✅ Done |
+| ~~Fix N+1 in `Employee::leaveBalances()`~~ | 2h | Performance on profile pages | ✅ Done |
+| ~~Cache dashboard counts and reference data~~ | 2h | Reduced DB load | ✅ Done |
+| ~~Add foreign key constraints to all migrations~~ | 3h | DB-level data integrity | ✅ Verified (already present) |
 
 ### Priority 3: Medium (Address in Next Quarter)
 
