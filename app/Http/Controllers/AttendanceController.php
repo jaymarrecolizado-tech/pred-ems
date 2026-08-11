@@ -11,7 +11,7 @@ use App\Models\Employee;
 use App\Models\Setting;
 use App\Support\Audit;
 use App\Support\Dtr;
-use App\Support\DocumentIssuer;
+use App\Support\Schedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -59,7 +59,7 @@ class AttendanceController extends Controller
                 ->take(10)
                 ->get(),
             'officeHours' => Setting::officeHours(),
-            'todaySchedule' => \App\Support\Schedule::day(now()),
+            'todaySchedule' => Schedule::day(now()),
         ]);
     }
 
@@ -147,7 +147,7 @@ class AttendanceController extends Controller
         ]);
 
         return response()->json([
-            'message' => $log->punch_type_label . ' recorded at ' . $log->time . ' (' . $nearest['cp']->name . ').',
+            'message' => $log->punch_type_label.' recorded at '.$log->time.' ('.$nearest['cp']->name.').',
             'punch_type' => $punchType,
             'time' => $log->time,
             'checkpoint' => $nearest['cp']->name,
@@ -228,7 +228,7 @@ class AttendanceController extends Controller
 
         $dtr = Dtr::build($employee, $month, $year);
 
-        $filename = 'DTR_' . str_replace([' ', '.'], '_', $employee->full_name) . '_' . $dtr['monthLabel'] . '.pdf';
+        $filename = 'DTR_'.str_replace([' ', '.'], '_', $employee->full_name).'_'.$dtr['monthLabel'].'.pdf';
 
         // Employee self-service download stays reference-free (reference
         // numbers are minted only for official HR-issued copies).
@@ -238,11 +238,11 @@ class AttendanceController extends Controller
 
         return response($pdf->output())
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     /**

@@ -8,7 +8,6 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Employee;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -132,7 +131,7 @@ class ProfileController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     private function ownEmployee(): Employee

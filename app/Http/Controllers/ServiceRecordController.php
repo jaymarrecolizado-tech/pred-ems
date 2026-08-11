@@ -41,7 +41,7 @@ class ServiceRecordController extends Controller
 
         $employee->load(['employmentType', 'position', 'appointments.position', 'appointments.employmentType']);
 
-        $filename = 'Service_Record_' . str_replace([' ', '.'], '_', $employee->full_name) . '.pdf';
+        $filename = 'Service_Record_'.str_replace([' ', '.'], '_', $employee->full_name).'.pdf';
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $referenceNo = DocumentIssuer::nextReferenceNo('SR');
@@ -71,19 +71,20 @@ class ServiceRecordController extends Controller
                 if ((int) $e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
+
                 continue;
             }
 
             return response($pdfOutput)
                 ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
         }
 
         abort(500, 'Unable to issue a Service Record at this time.');
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     /**

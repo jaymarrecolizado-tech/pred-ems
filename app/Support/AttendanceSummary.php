@@ -53,7 +53,7 @@ class AttendanceSummary
             ->when($divisionId, fn ($q) => $q->whereIn('employee_id', $employees->pluck('id')))
             ->get()
             ->groupBy('employee_id')
-            ->map(fn (Collection $set) => $set->keyBy(fn ($log) => $log->log_date->format('j') . ':' . $log->punch_type));
+            ->map(fn (Collection $set) => $set->keyBy(fn ($log) => $log->log_date->format('j').':'.$log->punch_type));
 
         $rows = $employees->map(function (Employee $employee) use ($dayPlans, $logs) {
             $own = $logs->get($employee->id, collect());
@@ -71,10 +71,10 @@ class AttendanceSummary
                     $workdays++;
                 }
 
-                $amIn = $own->get($day . ':am_in');
-                $amOut = $own->get($day . ':am_out');
-                $pmIn = $own->get($day . ':pm_in');
-                $pmOut = $own->get($day . ':pm_out');
+                $amIn = $own->get($day.':am_in');
+                $amOut = $own->get($day.':am_out');
+                $pmIn = $own->get($day.':pm_in');
+                $pmOut = $own->get($day.':pm_out');
 
                 $dayHours = 0.0;
                 if ($amIn && $amOut) {

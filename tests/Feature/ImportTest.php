@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AttendanceLog;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -12,21 +11,12 @@ use Tests\TestCase;
 
 class ImportTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     protected function tearDown(): void
     {
-        // Clean up test-imported records so reruns stay idempotent.
-        Employee::where('employee_number', 'like', 'RO2-9%')->where('remarks', 'IMPORT TEST')->delete();
+        // Clean up test-imported records so reruns stay idempotent. Must be a
+        // hard delete — the Employee model is soft-deleting, so a regular
+        // delete() would leave the unique employee_number occupied.
+        Employee::where('employee_number', 'like', 'RO2-9%')->where('remarks', 'IMPORT TEST')->forceDelete();
         parent::tearDown();
     }
 
@@ -134,7 +124,7 @@ class ImportTest extends TestCase
 
     public function test_xlsx_import_supported(): void
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $spreadsheet->getActiveSheet()->fromArray([
             ['employee_number', 'first_name', 'last_name', 'employment_type', 'remarks'],
             ['RO2-9907', 'Xlsx', 'Imported', 'Permanent', 'IMPORT TEST'],

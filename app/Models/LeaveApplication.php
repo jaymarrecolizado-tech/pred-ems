@@ -27,7 +27,7 @@ class LeaveApplication extends Model
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Relations                                                          */
+    /*  Relations */
     /* ------------------------------------------------------------------ */
 
     public function employee()
@@ -46,7 +46,7 @@ class LeaveApplication extends Model
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     public function getStatusLabelAttribute(): string

@@ -22,18 +22,6 @@ use Tests\TestCase;
  */
 class LeaveComplianceTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function adminUser(): User
     {
         return User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();
@@ -59,9 +47,9 @@ class LeaveComplianceTest extends TestCase
         $vl = LeaveType::where('code', 'VL')->firstOrFail();
 
         $employee = Employee::create([
-            'employee_number' => 'TST-' . strtoupper(Str::random(8)),
+            'employee_number' => 'TST-'.strtoupper(Str::random(8)),
             'first_name' => 'Rule',
-            'last_name' => 'Test' . random_int(100, 999),
+            'last_name' => 'Test'.random_int(100, 999),
             'employment_type_id' => $type->id,
             'status' => 'active',
             'monthly_salary' => $salary,
@@ -85,7 +73,7 @@ class LeaveComplianceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  SLP annual grant (3 days/year, non-cumulative)                     */
+    /*  SLP annual grant (3 days/year, non-cumulative) */
     /* ------------------------------------------------------------------ */
 
     public function test_slp_annual_grant_resets_and_grants_per_year(): void
@@ -95,7 +83,7 @@ class LeaveComplianceTest extends TestCase
         $this->assertTrue((bool) $slp->annual_grant);
 
         $employee = Employee::create([
-            'employee_number' => 'TST-' . strtoupper(Str::random(8)),
+            'employee_number' => 'TST-'.strtoupper(Str::random(8)),
             'first_name' => 'SLP',
             'last_name' => 'Grant',
             'employment_type_id' => $type->id,
@@ -141,7 +129,7 @@ class LeaveComplianceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  VL monetization                                                    */
+    /*  VL monetization */
     /* ------------------------------------------------------------------ */
 
     public function test_hr_processes_vl_monetization_and_issues_voucher(): void
@@ -176,7 +164,7 @@ class LeaveComplianceTest extends TestCase
             $monetization = LeaveMonetization::where('employee_id', $employee->id)
                 ->where('remarks', 'Test monetization')->latest()->first();
             $this->assertNotNull($monetization);
-            $this->assertStringStartsWith('MO-' . now()->year . '-', $monetization->reference_no);
+            $this->assertStringStartsWith('MO-'.now()->year.'-', $monetization->reference_no);
             $this->assertEquals(5.0, (float) $monetization->days);
             $this->assertEqualsWithDelta(round($employee->monthly_salary / 22, 2), (float) $monetization->per_day_rate, 0.01);
             $this->assertEqualsWithDelta(round($monetization->per_day_rate * 5, 2), (float) $monetization->gross_amount, 0.01);
@@ -271,7 +259,7 @@ class LeaveComplianceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Forced leave monitoring report (CSC)                               */
+    /*  Forced leave monitoring report (CSC) */
     /* ------------------------------------------------------------------ */
 
     public function test_forced_leave_report_renders_and_exports_all_formats(): void
@@ -297,7 +285,7 @@ class LeaveComplianceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  CSC Form No. 6 (Application for Leave)                             */
+    /*  CSC Form No. 6 (Application for Leave) */
     /* ------------------------------------------------------------------ */
 
     public function test_employee_can_download_own_csc_form6(): void

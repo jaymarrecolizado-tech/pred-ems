@@ -16,6 +16,7 @@ class PayrollItem extends Model
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_FINALIZED = 'finalized';
 
     protected $fillable = [

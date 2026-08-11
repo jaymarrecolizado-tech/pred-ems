@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\Search;
 use App\Models\AuditLog;
+use App\Support\Search;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -18,7 +18,7 @@ class AuditLogController extends Controller
         $logs = AuditLog::query()
             ->with('user')
             ->when($request->filled('action'), fn ($q) => $q->where('action', $request->string('action')))
-            ->when($request->filled('model'), fn ($q) => $q->where('model_type', 'like', '%' . $request->string('model') . '%'))
+            ->when($request->filled('model'), fn ($q) => $q->where('model_type', 'like', '%'.$request->string('model').'%'))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->string('search'));
                 $q->where(function ($inner) use ($search) {

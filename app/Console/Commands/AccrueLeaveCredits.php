@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Employee;
+use App\Models\EmploymentType;
 use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
 use Carbon\Carbon;
@@ -30,10 +31,10 @@ class AccrueLeaveCredits extends Command
     public function handle(): int
     {
         $asOf = $this->option('as-of')
-            ? Carbon::parse($this->option('as-of') . '-01')->endOfMonth()
+            ? Carbon::parse($this->option('as-of').'-01')->endOfMonth()
             : now()->endOfMonth();
 
-        $entitled = \App\Models\EmploymentType::where('has_leave_credits', true)->pluck('id');
+        $entitled = EmploymentType::where('has_leave_credits', true)->pluck('id');
         $accrualTypes = LeaveType::query()
             ->where('accrual_per_month', '>', 0)
             ->orderBy('code')
@@ -110,7 +111,7 @@ class AccrueLeaveCredits extends Command
                         'credit' => $type->accrual_per_month,
                         'debit' => 0,
                         'balance_after' => $balance,
-                        'remarks' => 'Monthly accrual (' . $transactionDate->format('F Y') . ')',
+                        'remarks' => 'Monthly accrual ('.$transactionDate->format('F Y').')',
                     ]);
                     $created++;
                     $createdHere++;
@@ -159,7 +160,7 @@ class AccrueLeaveCredits extends Command
                                 'credit' => 0,
                                 'debit' => $leftover,
                                 'balance_after' => 0,
-                                'remarks' => 'Non-cumulative reset (unused ' . ($year - 1) . ' balance)',
+                                'remarks' => 'Non-cumulative reset (unused '.($year - 1).' balance)',
                             ]);
                             $created++;
                         }
@@ -179,16 +180,16 @@ class AccrueLeaveCredits extends Command
                         'credit' => $type->annual_max_credit,
                         'debit' => 0,
                         'balance_after' => $balance + (float) $type->annual_max_credit,
-                        'remarks' => 'Annual ' . $type->code . ' grant (' . $year . ')',
+                        'remarks' => 'Annual '.$type->code.' grant ('.$year.')',
                     ]);
                     $created++;
                 }
             }
         }
 
-        $this->info('Recorded ' . $created . ' leave credit entr' . ($created === 1 ? 'y' : 'ies')
-            . ' for ' . $employees->count() . ' employee(s) as of ' . $asOf->format('F Y') . ' '
-            . '(' . $skipped . ' employee/type combos already up to date).');
+        $this->info('Recorded '.$created.' leave credit entr'.($created === 1 ? 'y' : 'ies')
+            .' for '.$employees->count().' employee(s) as of '.$asOf->format('F Y').' '
+            .'('.$skipped.' employee/type combos already up to date).');
 
         return self::SUCCESS;
     }

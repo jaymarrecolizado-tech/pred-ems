@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
-use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +34,8 @@ class LoginController extends Controller
 
         // Per-account progressive lockout — keyed on the email so a bot
         // rotating IPs can't bypass a single global throttle.
-        $lockoutKey = 'login.lockout:' . $credentials['email'];
-        $attemptsKey = 'login.attempts:' . $credentials['email'];
+        $lockoutKey = 'login.lockout:'.$credentials['email'];
+        $attemptsKey = 'login.attempts:'.$credentials['email'];
 
         if (cache()->has($lockoutKey)) {
             $seconds = cache()->get($lockoutKey) - now()->timestamp;

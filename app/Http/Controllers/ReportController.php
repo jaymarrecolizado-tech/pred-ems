@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
-use App\Models\Division;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCreditLedger;
@@ -36,7 +35,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Headcount                                                          */
+    /*  Headcount */
     /* ------------------------------------------------------------------ */
 
     public function headcount(Request $request): Response|View
@@ -102,7 +101,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Leave balances & utilization                                       */
+    /*  Leave balances & utilization */
     /* ------------------------------------------------------------------ */
 
     public function leaveBalances(Request $request): Response|View
@@ -121,13 +120,13 @@ class ReportController extends Controller
             ->selectRaw('employee_id, leave_type_id, COALESCE(SUM(credit - debit), 0) AS balance')
             ->groupBy('employee_id', 'leave_type_id')
             ->get()
-            ->keyBy(fn ($row) => $row->employee_id . ':' . $row->leave_type_id);
+            ->keyBy(fn ($row) => $row->employee_id.':'.$row->leave_type_id);
 
         $rows = $employees->map(function (Employee $employee) use ($leaveTypes, $balances) {
             $row = ['employee' => $employee, 'balances' => []];
 
             foreach ($leaveTypes as $type) {
-                $row['balances'][$type->code] = (float) ($balances->get($employee->id . ':' . $type->id)?->balance ?? 0);
+                $row['balances'][$type->code] = (float) ($balances->get($employee->id.':'.$type->id)?->balance ?? 0);
             }
 
             return $row;
@@ -189,7 +188,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Forced leave monitoring (CSC)                                      */
+    /*  Forced leave monitoring (CSC) */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -227,7 +226,7 @@ class ReportController extends Controller
             ->get()
             ->keyBy('employee_id');
 
-        $rows = $employees->map(function (Employee $employee) use ($balances, $taken, $year) {
+        $rows = $employees->map(function (Employee $employee) use ($balances, $taken) {
             $balance = (float) ($balances->get($employee->id)?->balance ?? 0);
             $takenDays = (float) ($taken->get($employee->id)?->days ?? 0);
             $required = $balance >= 10 ? 5.0 : 0.0;
@@ -249,7 +248,7 @@ class ReportController extends Controller
         if ($format = $request->query('format')) {
             return $this->export(
                 $format,
-                'Forced_Leave_' . $year,
+                'Forced_Leave_'.$year,
                 ['Employee No', 'Name', 'Division', 'VL Balance (days)', "VL Taken {$year} (days)", 'Required (days)', 'Status'],
                 $rows->map(fn ($row) => [
                     $row['employee']->employee_number,
@@ -275,7 +274,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Documents issued                                                   */
+    /*  Documents issued */
     /* ------------------------------------------------------------------ */
 
     public function documents(Request $request): Response|View
@@ -325,7 +324,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Attrition / onboarding                                             */
+    /*  Attrition / onboarding */
     /* ------------------------------------------------------------------ */
 
     public function attrition(Request $request): Response|View
@@ -354,7 +353,7 @@ class ReportController extends Controller
                 ['Section', 'Employee Number', 'Name', 'Status/Position', 'Date'],
                 $separated->map(fn (Employee $e) => [
                     'Separated', $e->employee_number, $e->full_name,
-                    $e->status_label . ' · ' . ($e->position?->title ?? '—'),
+                    $e->status_label.' · '.($e->position?->title ?? '—'),
                     $e->updated_at?->format('Y-m-d') ?? '—',
                 ])
                     ->concat($hired->map(fn (Employee $e) => [
@@ -374,7 +373,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Attendance summary                                                 */
+    /*  Attendance summary */
     /* ------------------------------------------------------------------ */
 
     public function attendanceSummary(Request $request): Response|View
@@ -390,7 +389,7 @@ class ReportController extends Controller
 
             return $this->export(
                 $format,
-                'Attendance_Summary_' . $year . '-' . str_pad((string) $month, 2, '0', STR_PAD_LEFT),
+                'Attendance_Summary_'.$year.'-'.str_pad((string) $month, 2, '0', STR_PAD_LEFT),
                 ['Employee No', 'Name', 'Division', 'Work Days', 'Days Present', 'Absences', 'Hours', 'Late (min)', 'Undertime (min)', 'Rest-Day/OT (hrs)'],
                 $summary['rows']->map(fn ($row) => [
                     $row['employee']->employee_number,
@@ -405,7 +404,7 @@ class ReportController extends Controller
                     number_format($row['ot_hours'], 2),
                 ]),
                 "Monthly attendance summary — {$summary['monthLabel']}",
-                ['', 'Totals (' . $summary['rows']->count() . ' employees)', '', $totals['workdays'], $totals['present'], $totals['absences'], number_format($totals['hours'], 2), $totals['late'], $totals['undertime'], number_format($totals['ot_hours'], 2)]
+                ['', 'Totals ('.$summary['rows']->count().' employees)', '', $totals['workdays'], $totals['present'], $totals['absences'], number_format($totals['hours'], 2), $totals['late'], $totals['undertime'], number_format($totals['ot_hours'], 2)]
             );
         }
 
@@ -417,7 +416,7 @@ class ReportController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -441,18 +440,18 @@ class ReportController extends Controller
      */
     private function xls(string $filename, array $headers, Collection $rows): Response
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-            . '<?mso-application progid="Excel.Sheet"?>' . "\n"
-            . '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
-            . ' xmlns:o="urn:schemas-microsoft-com:office:office"'
-            . ' xmlns:x="urn:schemas-microsoft-com:office:excel"'
-            . ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-            . '<Styles><Style ss:ID="Header"><Font ss:Bold="1"/></Style></Styles>'
-            . '<Worksheet ss:Name="Report"><Table>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
+            .'<?mso-application progid="Excel.Sheet"?>'."\n"
+            .'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+            .' xmlns:o="urn:schemas-microsoft-com:office:office"'
+            .' xmlns:x="urn:schemas-microsoft-com:office:excel"'
+            .' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+            .'<Styles><Style ss:ID="Header"><Font ss:Bold="1"/></Style></Styles>'
+            .'<Worksheet ss:Name="Report"><Table>';
 
         $xml .= '<Row>';
         foreach ($headers as $header) {
-            $xml .= '<Cell ss:StyleID="Header"><Data ss:Type="String">' . $this->xmlSafe($header) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="Header"><Data ss:Type="String">'.$this->xmlSafe($header).'</Data></Cell>';
         }
         $xml .= '</Row>';
 
@@ -463,18 +462,18 @@ class ReportController extends Controller
                 // String cells get the same formula-injection guard as CSV:
                 // Excel would otherwise evaluate a leading = + - @ as a formula.
                 $value = $isNumeric ? (string) $cell : $this->csvSafe((string) $cell);
-                $xml .= '<Cell><Data ss:Type="' . ($isNumeric ? 'Number' : 'String') . '">'
-                    . $this->xmlSafe($value)
-                    . '</Data></Cell>';
+                $xml .= '<Cell><Data ss:Type="'.($isNumeric ? 'Number' : 'String').'">'
+                    .$this->xmlSafe($value)
+                    .'</Data></Cell>';
             }
             $xml .= '</Row>';
         }
 
         $xml .= '</Table></Worksheet></Workbook>';
 
-        return response("\xEF\xBB\xBF" . $xml)
+        return response("\xEF\xBB\xBF".$xml)
             ->header('Content-Type', 'application/vnd.ms-excel')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '.xls"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'.xls"');
     }
 
     private function xmlSafe(mixed $value): string
@@ -497,7 +496,7 @@ class ReportController extends Controller
             'totals' => $totals,
         ])
             ->setPaper('a4', 'landscape')
-            ->download($filename . '.pdf');
+            ->download($filename.'.pdf');
     }
 
     private function csv(string $filename, array $headers, Collection $rows): Response
@@ -514,9 +513,9 @@ class ReportController extends Controller
 
         // UTF-8 BOM so Excel opens the file with correct encoding, prefixed
         // before fputcsv's own output.
-        return response("\xEF\xBB\xBF" . $csv)
+        return response("\xEF\xBB\xBF".$csv)
             ->header('Content-Type', 'text/csv; charset=UTF-8')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '.csv"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'.csv"');
     }
 
     /**
@@ -528,7 +527,7 @@ class ReportController extends Controller
         $value = (string) $cell;
 
         return in_array(substr($value, 0, 1), ['=', '+', '-', '@'], true)
-            ? "'" . $value
+            ? "'".$value
             : $value;
     }
 }

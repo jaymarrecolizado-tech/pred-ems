@@ -21,7 +21,7 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 
-$say = fn (string $m) => fwrite(STDOUT, $m . PHP_EOL);
+$say = fn (string $m) => fwrite(STDOUT, $m.PHP_EOL);
 
 // Employee numbers dropped during the JSON cleanup (stale active copies +
 // the double-active Catinoy copy). Their kept counterparts are refreshed by
@@ -51,6 +51,7 @@ foreach ($dropNumbers as $number) {
     $employee = Employee::where('employee_number', $number)->first();
     if (! $employee) {
         $say("  [skip] {$number} not found (already clean)");
+
         continue;
     }
 
@@ -71,18 +72,18 @@ $say('');
 $say('=== 2. Renaming user accounts with malformed emails ===');
 foreach ($userEmailFixes as $old => $new) {
     $updated = User::where('email', $old)->update(['email' => $new]);
-    $say("  " . ($updated ? "[renamed] {$old} -> {$new}" : "[skip] no user with {$old}"));
+    $say('  '.($updated ? "[renamed] {$old} -> {$new}" : "[skip] no user with {$old}"));
 }
 
 $say('');
 $say('=== 3. Refreshing employees from the cleaned JSON ===');
 Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\RealDirectorySeeder', '--force' => true]);
-$say('  ' . trim(Artisan::output()));
+$say('  '.trim(Artisan::output()));
 
 $say('');
 $say('=== 4. Provisioning accounts for newly-emailed staff ===');
 Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\EmployeeUserSeeder', '--force' => true]);
-$say('  ' . trim(Artisan::output()));
+$say('  '.trim(Artisan::output()));
 
 $say('');
 $say('=== 5. Verification ===');

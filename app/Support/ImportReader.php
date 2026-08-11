@@ -20,7 +20,7 @@ use RuntimeException;
 class ImportReader
 {
     /**
-     * @return array<int, array<string, string>>  rows keyed by normalized header
+     * @return array<int, array<string, string>> rows keyed by normalized header
      */
     public static function rows(string $path, string $filename): array
     {
@@ -39,7 +39,7 @@ class ImportReader
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Format readers                                                     */
+    /*  Format readers */
     /* ------------------------------------------------------------------ */
 
     private static function fromCsv(string $path): array
@@ -60,7 +60,7 @@ class ImportReader
 
     private static function fromXls(string $path): array
     {
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         $loaded = @$dom->loadXML((string) file_get_contents($path));
         if (! $loaded) {
             throw new RuntimeException('This .xls file is not in the SpreadsheetML format we accept. Save it as Excel XML Spreadsheet 2003 or CSV.');
@@ -87,7 +87,7 @@ class ImportReader
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Normalization                                                      */
+    /*  Normalization */
     /* ------------------------------------------------------------------ */
 
     /**

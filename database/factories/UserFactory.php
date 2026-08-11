@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -23,7 +25,7 @@ class UserFactory extends Factory
     {
         return $this->afterCreating(function ($user) {
             $user->roles()->attach(
-                \App\Models\Role::firstOrCreate(['name' => 'admin'], ['label' => 'Administrator'])->id
+                Role::firstOrCreate(['name' => 'admin'], ['label' => 'Administrator'])->id
             );
         });
     }
@@ -32,7 +34,7 @@ class UserFactory extends Factory
     {
         return $this->afterCreating(function ($user) {
             $user->roles()->attach(
-                \App\Models\Role::firstOrCreate(['name' => 'hr'], ['label' => 'Human Resources'])->id
+                Role::firstOrCreate(['name' => 'hr'], ['label' => 'Human Resources'])->id
             );
         });
     }

@@ -17,7 +17,7 @@ use Illuminate\View\View;
 class NotificationController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  Inbox                                                              */
+    /*  Inbox */
     /* ------------------------------------------------------------------ */
 
     public function index(Request $request): View
@@ -53,7 +53,7 @@ class NotificationController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Channel switches (admin)                                           */
+    /*  Channel switches (admin) */
     /* ------------------------------------------------------------------ */
 
     public function settings(): View
@@ -78,8 +78,8 @@ class NotificationController extends Controller
 
         Audit::record('updated', null, $old, $new);
 
-        return back()->with('success', 'Notification channels updated — ' .
-            ($new['email'] ? 'email on' : 'email off') . ', ' .
-            ($new['sms'] ? 'SMS on' : 'SMS off') . '.');
+        return back()->with('success', 'Notification channels updated — '.
+            ($new['email'] ? 'email on' : 'email off').', '.
+            ($new['sms'] ? 'SMS on' : 'SMS off').'.');
     }
 }

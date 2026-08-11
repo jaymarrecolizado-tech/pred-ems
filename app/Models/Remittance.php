@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 class Remittance extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_REMITTED = 'remitted';
+
     public const STATUS_VERIFIED = 'verified';
 
     public const AGENCIES = ['GSIS', 'PHILHEALTH', 'PAGIBIG', 'BIR'];

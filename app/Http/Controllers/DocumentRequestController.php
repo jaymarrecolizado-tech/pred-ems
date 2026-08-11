@@ -2,25 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CancelDocumentRequest;
+use App\Actions\IssueDocumentRequest;
+use App\Actions\RejectDocumentRequest;
+use App\Actions\SubmitDocumentRequest;
 use App\Http\Requests\RejectDocumentRequestRequest;
 use App\Http\Requests\StoreDocumentRequestRequest;
-use App\Models\Document;
 use App\Models\DocumentRequest;
-use App\Notifications\DocumentRequestIssuedNotification;
-use App\Notifications\DocumentRequestRejectedNotification;
-use App\Notifications\DocumentRequestSubmittedNotification;
-use App\Support\Audit;
-use App\Support\DocumentIssuer;
-use App\Support\DocumentQr;
-use App\Support\Dtr;
-use App\Support\Notifier;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
+use App\Support\DocumentRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -29,12 +21,14 @@ use Illuminate\View\View;
  * Employees request any of the requestable documents (COE, Service Record,
  * Leave Balances, No Pending Case, DTR); admin/HR fulfill them from a queue —
  * issuing mints a reference number, generates the PDF, records the issuance
- * in `documents`, and the employee can then download the official copy.
+ * in `documents`, and the employee can then download the official copy. The
+ * business operations live in App\Actions\* (SubmitDocumentRequest,
+ * IssueDocumentRequest, …); this controller handles validation + flashes.
  */
 class DocumentRequestController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  Self-service                                                       */
+    /*  Self-service */
     /* ------------------------------------------------------------------ */
 
     public function index(): View
@@ -61,40 +55,14 @@ class DocumentRequestController extends Controller
         $employee = auth()->user()->employee;
         abort_unless($employee, 403, 'No employee 201-file record linked to this account.');
 
-        $validated = $request->validated();
+        $result = (new SubmitDocumentRequest)->handle($employee, $request->validated());
 
-        if ($validated['document_type'] === 'dtr' && empty($validated['period'])) {
-            return back()->withErrors(['period' => 'Choose the month for the Daily Time Record.'])
-                ->withInput();
+        if (! $result->success) {
+            return back()->withErrors($result->errors)->withInput();
         }
-
-        // Guard against duplicate pending requests for the same document.
-        $duplicate = DocumentRequest::query()
-            ->where('employee_id', $employee->id)
-            ->where('document_type', $validated['document_type'])
-            ->where('status', DocumentRequest::STATUS_PENDING)
-            ->exists();
-
-        if ($duplicate) {
-            return back()->withErrors(['document_type' => 'You already have a pending request for this document. Wait for HR to process it.'])
-                ->withInput();
-        }
-
-        $documentRequest = DocumentRequest::create([
-            'employee_id' => $employee->id,
-            'document_type' => $validated['document_type'],
-            'purpose' => $validated['purpose'],
-            'period' => $validated['period'] ?? null,
-            'status' => DocumentRequest::STATUS_PENDING,
-        ]);
-
-        Audit::record('document_requested', $documentRequest, [], $documentRequest->toArray());
-
-        // Alert the HR queue reviewers.
-        Notifier::send(Notifier::hrUsers(), new DocumentRequestSubmittedNotification($documentRequest));
 
         return redirect()->route('documents.requests')
-            ->with('success', 'Document request submitted for HR processing.');
+            ->with('success', $result->message);
     }
 
     public function cancel(DocumentRequest $documentRequest): RedirectResponse
@@ -102,19 +70,13 @@ class DocumentRequestController extends Controller
         $this->authorizeAccess($documentRequest);
         abort_unless($documentRequest->isPending(), 409, 'Only pending requests can be canceled.');
 
-        $documentRequest->update([
-            'status' => DocumentRequest::STATUS_CANCELED,
-            'processed_by' => auth()->id(),
-            'processed_at' => now(),
-        ]);
+        $result = (new CancelDocumentRequest)->handle($documentRequest);
 
-        Audit::record('document_request_canceled', $documentRequest, [], $documentRequest->toArray());
-
-        return back()->with('success', 'Request canceled.');
+        return back()->with('success', $result->message);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  HR queue                                                           */
+    /*  HR queue */
     /* ------------------------------------------------------------------ */
 
     public function queue(Request $request): View
@@ -139,90 +101,34 @@ class DocumentRequestController extends Controller
     }
 
     /**
-     * Issue the requested document: mint a reference number, render the PDF,
-     * record the issuance in `documents`, and mark the request issued.
+     * Issue the requested document — the reference minting, PDF render,
+     * `documents` ledger row and request update live in
+     * App\Actions\IssueDocumentRequest.
      */
     public function issue(DocumentRequest $documentRequest): RedirectResponse
     {
         abort_unless($documentRequest->isPending(), 409, 'This request was already processed.');
 
-        $employee = $documentRequest->employee;
-        $referenceNo = null;
-        $document = null;
+        $result = (new IssueDocumentRequest)->handle($documentRequest);
 
-        for ($attempt = 0; $attempt < 5; $attempt++) {
-            $referenceNo = DocumentIssuer::nextReferenceNo($documentRequest->prefix);
-            $this->renderPdf($documentRequest, $referenceNo);
-
-            try {
-                $document = Document::create([
-                    'employee_id' => $employee->id,
-                    'document_type' => $documentRequest->document_type,
-                    'reference_no' => $referenceNo,
-                    'remarks' => $documentRequest->type_label . ' — request #' . $documentRequest->id,
-                    'generated_by' => auth()->id(),
-                    'generated_at' => now(),
-                ]);
-                break;
-            } catch (QueryException $e) {
-                if ((int) $e->errorInfo[1] !== 1062) {
-                    throw $e;
-                }
-            }
+        if (! $result->success) {
+            abort(500, $result->message);
         }
 
-        // The ledger row is the proof of issuance — never mark the request
-        // issued without one (all reference numbers collided).
-        if (! $document) {
-            abort(500, 'Unable to issue this document at this time. Please try again.');
-        }
-
-        DB::transaction(function () use ($documentRequest, $referenceNo) {
-            $documentRequest->update([
-                'status' => DocumentRequest::STATUS_ISSUED,
-                'reference_no' => $referenceNo,
-                'processed_by' => auth()->id(),
-                'processed_at' => now(),
-            ]);
-        });
-
-        Audit::record('document_issued', $documentRequest, [], [
-            'document_type' => $documentRequest->document_type,
-            'reference_no' => $referenceNo,
-        ]);
-
-        // Notify the requesting employee (in-system + email + SMS when on file).
-        if ($employee->user) {
-            Notifier::send($employee->user, new DocumentRequestIssuedNotification($documentRequest));
-        }
-
-        return back()->with('success', $documentRequest->type_label . " issued — Ref. {$referenceNo}.");
+        return back()->with('success', $result->message);
     }
 
     public function reject(RejectDocumentRequestRequest $request, DocumentRequest $documentRequest): RedirectResponse
     {
         abort_unless($documentRequest->isPending(), 409, 'This request was already processed.');
 
-        $validated = $request->validated();
+        $result = (new RejectDocumentRequest)->handle($documentRequest, $request->validated()['rejection_reason']);
 
-        $documentRequest->update([
-            'status' => DocumentRequest::STATUS_REJECTED,
-            'processed_by' => auth()->id(),
-            'processed_at' => now(),
-            'rejection_reason' => $validated['rejection_reason'],
-        ]);
-
-        Audit::record('document_request_rejected', $documentRequest, [], $documentRequest->toArray());
-
-        if ($documentRequest->employee->user) {
-            Notifier::send($documentRequest->employee->user, new DocumentRequestRejectedNotification($documentRequest));
-        }
-
-        return back()->with('success', 'Document request rejected.');
+        return back()->with('success', $result->message);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Download                                                           */
+    /*  Download */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -233,67 +139,19 @@ class DocumentRequestController extends Controller
         $this->authorizeAccess($documentRequest);
         abort_unless($documentRequest->status === DocumentRequest::STATUS_ISSUED, 404, 'This request has not been issued yet.');
 
-        $pdfOutput = $this->renderPdf($documentRequest, $documentRequest->reference_no);
+        $pdfOutput = DocumentRenderer::render($documentRequest, $documentRequest->reference_no);
 
         $filename = str_replace(' ', '_', ucwords(str_replace('_', ' ', $documentRequest->document_type)))
-            . '_' . str_replace([' ', '.'], '_', $documentRequest->employee->full_name) . '.pdf';
+            .'_'.str_replace([' ', '.'], '_', $documentRequest->employee->full_name).'.pdf';
 
         return response($pdfOutput)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
-
-    /**
-     * Render the requested document to PDF bytes with the given reference.
-     */
-    private function renderPdf(DocumentRequest $documentRequest, string $referenceNo): string
-    {
-        $employee = $documentRequest->employee->load([
-            'position', 'division', 'employmentType', 'appointments.position', 'appointments.employmentType',
-        ]);
-
-        $view = match ($documentRequest->document_type) {
-            'certificate_of_employment' => 'documents.coe',
-            'service_record' => 'documents.service-record',
-            'leave_balances' => 'documents.leave-balances',
-            'no_pending_case' => 'documents.no-pending-case',
-            'dtr' => 'documents.dtr',
-            default => abort(422, 'Unsupported document type.'),
-        };
-
-        if ($documentRequest->document_type === 'dtr') {
-            [$year, $month] = array_map('intval', explode('-', $documentRequest->period ?? now()->format('Y-m')));
-
-            return Pdf::loadView($view, [
-                'dtr' => Dtr::build($employee, $month, $year),
-                'referenceNo' => $referenceNo,
-                'qrDataUri' => DocumentQr::dataUri($referenceNo),
-            ])->setPaper('a4', 'portrait')->output();
-        }
-
-        $data = [
-            'employee' => $employee,
-            'preparer' => DocumentIssuer::preparer(),
-            'certifier' => DocumentIssuer::certifier(),
-            'referenceNo' => $referenceNo,
-            'qrDataUri' => DocumentQr::dataUri($referenceNo),
-        ];
-
-        // The COE letter quotes the purpose the employee stated when requesting.
-        if ($documentRequest->document_type === 'certificate_of_employment') {
-            $data['purpose'] = $documentRequest->purpose;
-        }
-
-        if ($documentRequest->document_type === 'leave_balances') {
-            $data['asOf'] = now();
-        }
-
-        return Pdf::loadView($view, $data)->setPaper('a4', 'portrait')->output();
-    }
 
     /**
      * Admin/HR may view any request; the `employee` role only their own.

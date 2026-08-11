@@ -42,7 +42,7 @@ class CoeController extends Controller
 
         $employee->load(['employmentType', 'position', 'division', 'appointments']);
 
-        $filename = 'Certificate_of_Employment_' . str_replace([' ', '.'], '_', $employee->full_name) . '.pdf';
+        $filename = 'Certificate_of_Employment_'.str_replace([' ', '.'], '_', $employee->full_name).'.pdf';
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $referenceNo = DocumentIssuer::nextReferenceNo('COE');
@@ -70,12 +70,13 @@ class CoeController extends Controller
                 if ((int) $e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
+
                 continue;
             }
 
             return response($pdfOutput)
                 ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
         }
 
         abort(500, 'Unable to issue a Certificate of Employment at this time.');

@@ -10,17 +10,6 @@ use Tests\TestCase;
 
 class DocumentVerificationTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function adminUser(): User
     {
         return User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();
@@ -68,16 +57,24 @@ class DocumentVerificationTest extends TestCase
 
     public function test_public_verification_page_and_unknown_reference(): void
     {
-        // Guest (no auth) must be able to verify.
-        $document = Document::query()->firstOrFail();
+        // Guest (no auth) must be able to verify. Self-contained so it also
+        // works against a fresh (CI) database with no pre-existing documents.
+        $document = Document::factory()->create();
 
-        $this->get('/verify/' . $document->reference_no)
-            ->assertOk()
-            ->assertSee('DOCUMENT VERIFIED')
-            ->assertSee($document->reference_no);
+        try {
+            $this->get('/verify/'.$document->reference_no)
+                ->assertOk()
+                ->assertSee('DOCUMENT VERIFIED')
+                ->assertSee($document->reference_no);
 
-        $this->get('/verify/DOES-NOT-EXIST-0000')
-            ->assertNotFound();
+            $this->get('/verify/DOES-NOT-EXIST-0000')
+                ->assertNotFound();
+        } finally {
+            // Remove the factory-created fixture (document + its employee) so
+            // the shared dev DB doesn't accumulate stray rows per run.
+            $document->forceDelete();
+            $document->employee?->forceDelete();
+        }
     }
 
     public function test_issued_coe_pdf_has_qr_and_verifies_end_to_end(): void
@@ -97,7 +94,7 @@ class DocumentVerificationTest extends TestCase
 
         $this->assertNotNull($document, 'COE issuance should be recorded in the ledger.');
 
-        $this->get('/verify/' . $document->reference_no)
+        $this->get('/verify/'.$document->reference_no)
             ->assertOk()
             ->assertSee('DOCUMENT VERIFIED')
             ->assertSee($document->reference_no);

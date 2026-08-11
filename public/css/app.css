@@ -136,14 +136,14 @@ a:hover { text-decoration: underline; }
 .brand {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 18px 16px;
+    gap: 9px;
+    padding: 14px 12px;
     border-bottom: 1px solid rgba(148, 163, 184, .15);
 }
 
 .brand-mark {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
     border-radius: var(--radius-control);
     background: var(--brand-600);
@@ -151,16 +151,31 @@ a:hover { text-decoration: underline; }
     color: #fff;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 22px;
+    font-size: 19px;
     display: grid;
     place-items: center;
 }
 
-.brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
-.brand-text strong { color: #f8fafc; font-size: 14.5px; font-weight: 600; letter-spacing: .2px; white-space: nowrap; }
-.brand-text span { font-size: 10.5px; color: #8ea2c4; letter-spacing: .3px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; overflow: hidden; }
+.brand-text strong {
+    color: #f8fafc;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.brand-text span {
+    font-size: 10px;
+    color: #8ea2c4;
+    letter-spacing: .3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-.nav { flex: 1; padding: 12px 10px 16px; overflow-y: auto; }
+.nav { flex: 1; padding: 14px 10px 18px; overflow-y: auto; }
 
 .nav-section {
     font-size: 10px;
@@ -172,15 +187,15 @@ a:hover { text-decoration: underline; }
 }
 
 /* ---------- Collapsible nav groups ---------- */
-.nav-group { margin-bottom: 4px; }
+.nav-group { margin-bottom: 2px; }
 .nav-group-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     width: 100%;
-    padding: 8px 12px 6px;
-    margin-top: 10px;
+    padding: 9px 12px 8px;
+    margin-top: 12px;
     background: none;
     border: 0;
     border-radius: var(--radius-control);
@@ -211,12 +226,12 @@ a:hover { text-decoration: underline; }
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 9px 12px;
+    padding: 10px 12px;
     border-radius: var(--radius-control);
     border-left: 3px solid transparent;
     color: #b6c2d8;
     font-size: 13.5px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     transition: background .12s, color .12s;
 }
 .nav-link:hover { background: var(--navy-900); color: #eef2f9; text-decoration: none; }
@@ -963,7 +978,29 @@ table.table { width: 100%; border-collapse: collapse; }
 }
 .btn-icon:hover { background: var(--paper-2); border-color: var(--brand-600); }
 .btn-icon-svg { width: 20px; height: 20px; }
-#sidebar-toggle { display: inline-flex; }
+
+/* ---------- Sidebar hamburger (main nav, desktop) ---------- */
+.sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 1px solid rgba(148, 163, 184, .25);
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: #a9b8d2;
+    cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+}
+.sidebar-toggle:hover { background: var(--navy-900); border-color: var(--brand-400); color: #eef2f9; }
+.sidebar-toggle:focus-visible { outline-color: var(--brand-400); }
+.sidebar-toggle .btn-icon-svg { width: 20px; height: 20px; }
+
+/* Topbar hamburger is mobile-only — on desktop the toggle lives in the
+   sidebar (main nav). */
+.topbar-toggle { display: none; }
 
 /* ---------- Collapsible app-drawer rail (desktop only) ----------
    Scoped to >= 1024px so the sidebar-collapsed class is inert on mobile
@@ -973,6 +1010,7 @@ table.table { width: 100%; border-collapse: collapse; }
 @media (min-width: 1024px) {
     body.sidebar-collapsed .sidebar { width: 76px; }
     body.sidebar-collapsed .brand { justify-content: center; padding: 18px 8px; }
+    body.sidebar-collapsed .brand-mark,
     body.sidebar-collapsed .brand-text,
     body.sidebar-collapsed .sidebar-user .sidebar-user-text,
     body.sidebar-collapsed .version { display: none; }
@@ -993,7 +1031,7 @@ table.table { width: 100%; border-collapse: collapse; }
 .sidebar-backdrop { display: none; }
 
 @media (max-width: 1023px) {
-    #sidebar-toggle { display: inline-flex; }
+    .topbar-toggle { display: inline-flex; }
     .topbar-title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .masthead-text.optional { display: none; }
     .sidebar {
@@ -1266,7 +1304,7 @@ table.table { width: 100%; border-collapse: collapse; }
 /* ---------- Print (201 files, records) ---------- */
 @media print {
     .masthead, .sidebar, .topbar, .filter-bar, .pagination,
-    .sidebar-backdrop, .skip-link, .btn-icon, .hero-banner { display: none !important; }
+    .sidebar-backdrop, .skip-link, .btn-icon, .sidebar-toggle, .hero-banner { display: none !important; }
     .layout { display: block; }
     .main, .content { display: block; max-width: 100%; padding: 0; }
     body { background: #fff; }

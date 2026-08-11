@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\AdjustPayrollItem;
+use App\Actions\FinalizePayroll;
+use App\Actions\GeneratePayrollItems;
+use App\Actions\MarkRemittanceRemitted;
 use App\Http\Requests\MarkRemittedRequest;
 use App\Http\Requests\PayrollAdjustmentRequest;
 use App\Http\Requests\StorePayrollPeriodRequest;
@@ -11,13 +15,10 @@ use App\Models\PayrollPeriod;
 use App\Models\Payslip;
 use App\Models\Remittance;
 use App\Support\Audit;
-use App\Support\Payroll;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -26,11 +27,13 @@ use Illuminate\View\View;
  *
  * Lifecycle: draft → generate items → finalize (locks period, issues
  * payslips + remittance summaries) → mark remittances remitted/verified.
+ * The business operations (generate, adjust, finalize, remit) live in
+ * App\Actions\*; this controller handles routing + flashes.
  */
 class PayrollController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  Periods                                                            */
+    /*  Periods */
     /* ------------------------------------------------------------------ */
 
     public function index(): View
@@ -76,7 +79,7 @@ class PayrollController extends Controller
 
         try {
             $period = PayrollPeriod::create($validated + [
-                'name' => $validated['period_from'] . ' to ' . $validated['period_to'],
+                'name' => $validated['period_from'].' to '.$validated['period_to'],
                 'status' => PayrollPeriod::STATUS_DRAFT,
             ]);
         } catch (QueryException $e) {
@@ -113,58 +116,24 @@ class PayrollController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Computation                                                        */
+    /*  Computation */
     /* ------------------------------------------------------------------ */
 
     /**
-     * Compute (or recompute) payroll items for a draft period. Each employee
-     * gets one item with the full computation trace persisted for audit.
+     * Compute (or recompute) payroll items for a draft period — the
+     * orchestration lives in App\Actions\GeneratePayrollItems.
      */
     public function generate(PayrollPeriod $period): RedirectResponse
     {
         abort_unless($period->isDraft(), 409, 'Only draft periods can be recomputed.');
 
-        $asOf = $period->period_from;
-        $count = 0;
+        $result = (new GeneratePayrollItems)->handle($period);
 
-        DB::transaction(function () use ($period, $asOf, &$count) {
-            // Preserve any manual per-item adjustments already entered so a
-            // recompute updates the statutory lines without wiping honoraria /
-            // overtime / LWOP entries.
-            $existing = PayrollItem::where('payroll_period_id', $period->id)
-                ->get(['employee_id', 'honoraria', 'overtime_pay', 'other_income', 'lwop_deduction', 'other_deductions'])
-                ->keyBy('employee_id');
-
-            PayrollItem::where('payroll_period_id', $period->id)->delete();
-
-            foreach (Payroll::eligibleEmployees() as $employee) {
-                $prev = $existing->get($employee->id);
-
-                $computed = Payroll::compute($employee, $asOf, [
-                    'honoraria' => (float) ($prev?->honoraria ?? 0),
-                    'overtime_pay' => (float) ($prev?->overtime_pay ?? 0),
-                    'other_income' => (float) ($prev?->other_income ?? 0),
-                    'lwop' => (float) ($prev?->lwop_deduction ?? 0),
-                    'other_deductions' => (float) ($prev?->other_deductions ?? 0),
-                ]);
-
-                $computed['payroll_period_id'] = $period->id;
-                $computed['employee_id'] = $employee->id;
-                $computed['status'] = PayrollItem::STATUS_DRAFT;
-                $computed['computation_json'] = $computed['trace'];
-
-                PayrollItem::create(collect($computed)->except(['trace', 'income_lines', 'deduction_lines'])->all());
-                $count++;
-            }
-        });
-
-        Audit::record('generated', $period, [], ['items' => $count]);
-
-        return back()->with('success', "Payroll computed for {$count} employee(s).");
+        return back()->with('success', $result->message);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Per-item adjustments (honoraria / overtime / LWOP)                 */
+    /*  Per-item adjustments (honoraria / overtime / LWOP) */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -182,133 +151,42 @@ class PayrollController extends Controller
     }
 
     /**
-     * Save adjustments for one item and recompute it with the new lines.
-     * The full computation trace (including the manual lines) is re-persisted,
-     * so the payslip stays auditable.
+     * Save adjustments for one item and recompute it with the new lines —
+     * handled by App\Actions\AdjustPayrollItem. The full computation trace
+     * (including the manual lines) is re-persisted, so the payslip stays
+     * auditable.
      */
     public function updateAdjustment(PayrollAdjustmentRequest $request, PayrollItem $item): RedirectResponse
     {
         abort_unless($item->period->isDraft(), 409, 'Only draft periods can be adjusted.');
 
-        $validated = $request->validated();
-
-        $old = $item->only(['honoraria', 'overtime_pay', 'other_income', 'lwop_deduction', 'other_deductions']);
-
-        $computed = Payroll::compute($item->employee, $item->period->period_from, [
-            'honoraria' => (float) ($validated['honoraria'] ?? 0),
-            'overtime_pay' => (float) ($validated['overtime_pay'] ?? 0),
-            'other_income' => (float) ($validated['other_income'] ?? 0),
-            'lwop' => (float) ($validated['lwop'] ?? 0),
-            'other_deductions' => (float) ($validated['other_deductions'] ?? 0),
-        ]);
-
-        $item->update([
-            'honoraria' => $computed['honoraria'],
-            'overtime_pay' => $computed['overtime_pay'],
-            'other_income' => $computed['other_income'],
-            'lwop_deduction' => $computed['lwop_deduction'],
-            'other_deductions' => $computed['other_deductions'],
-            'gross_amount' => $computed['gross_amount'],
-            'gsis_employee_share' => $computed['gsis_employee_share'],
-            'philhealth_employee_share' => $computed['philhealth_employee_share'],
-            'pagibig_employee_share' => $computed['pagibig_employee_share'],
-            'withholding_tax' => $computed['withholding_tax'],
-            'total_deductions' => $computed['total_deductions'],
-            'net_amount' => $computed['net_amount'],
-            'computation_json' => $computed['trace'],
-        ]);
-
-        Audit::record('adjusted', $item, $old, $item->only([
-            'honoraria', 'overtime_pay', 'other_income',
-            'lwop_deduction', 'other_deductions', 'gross_amount',
-            'total_deductions', 'net_amount',
-        ]));
+        $result = (new AdjustPayrollItem)->handle($item, $request->validated());
 
         return redirect()->route('payroll.show', $item->period)
-            ->with('success', 'Adjustments saved for ' . $item->employee->full_name . ' — item recomputed.');
+            ->with('success', $result->message);
     }
 
     /**
      * Finalize a draft period: lock items, issue one payslip per item and
-     * aggregate remittance summaries per agency. Irreversible (corrections go
-     * through a reversal/adjustment period).
+     * aggregate remittance summaries per agency — handled by
+     * App\Actions\FinalizePayroll. Irreversible (corrections go through a
+     * reversal/adjustment period).
      */
     public function finalize(PayrollPeriod $period): RedirectResponse
     {
         abort_unless($period->isDraft(), 409, 'This period is already locked.');
 
-        $period->load('items');
-        if ($period->items->isEmpty()) {
-            return back()->withErrors(['items' => 'Compute the payroll before finalizing.']);
+        $result = (new FinalizePayroll)->handle($period);
+
+        if (! $result->success) {
+            return back()->withErrors($result->errors);
         }
 
-        DB::transaction(function () use ($period) {
-            $employerTotals = ['GSIS' => 0.0, 'PHILHEALTH' => 0.0, 'PAGIBIG' => 0.0];
-
-            foreach ($period->items as $item) {
-                $item->update(['status' => PayrollItem::STATUS_FINALIZED]);
-
-                $trace = $item->computation_json ?? [];
-                $summary = $trace['summary'] ?? [];
-                $employerTotals['GSIS'] += (float) ($summary['gsis_er'] ?? 0);
-                $employerTotals['PHILHEALTH'] += (float) ($summary['philhealth_er'] ?? 0);
-                $employerTotals['PAGIBIG'] += (float) ($summary['pagibig_er'] ?? 0);
-
-                for ($attempt = 0; $attempt < 5; $attempt++) {
-                    $ref = Payroll::nextPayslipRef();
-                    try {
-                        Payslip::create([
-                            'payroll_item_id' => $item->id,
-                            'reference_no' => $ref,
-                            'generated_by' => auth()->id(),
-                            'generated_at' => now(),
-                        ]);
-                        break;
-                    } catch (QueryException $e) {
-                        if ((int) $e->errorInfo[1] !== 1062) {
-                            throw $e;
-                        }
-                    }
-                }
-            }
-
-            // Aggregate remittance summaries per agency.
-            $from = $period->period_from->toDateString();
-            $to = $period->period_to->toDateString();
-            $remittanceRows = [
-                'GSIS' => (object) ['ee' => $period->items->sum(fn ($i) => (float) $i->gsis_employee_share), 'er' => $employerTotals['GSIS']],
-                'PHILHEALTH' => (object) ['ee' => $period->items->sum(fn ($i) => (float) $i->philhealth_employee_share), 'er' => $employerTotals['PHILHEALTH']],
-                'PAGIBIG' => (object) ['ee' => $period->items->sum(fn ($i) => (float) $i->pagibig_employee_share), 'er' => $employerTotals['PAGIBIG']],
-                'BIR' => (object) ['ee' => $period->items->sum(fn ($i) => (float) $i->withholding_tax), 'er' => 0.0],
-            ];
-
-            foreach ($remittanceRows as $agency => $row) {
-                Remittance::updateOrCreate(
-                    ['agency' => $agency, 'period_from' => $from, 'period_to' => $to],
-                    [
-                        'employee_share_total' => $row->ee,
-                        'employer_share_total' => $row->er,
-                        'grand_total' => $row->ee + $row->er,
-                        'status' => Remittance::STATUS_PENDING,
-                        'remarks' => 'Generated on payroll finalization',
-                    ]
-                );
-            }
-
-            $period->update([
-                'status' => PayrollPeriod::STATUS_FINALIZED,
-                'finalized_by' => auth()->id(),
-                'finalized_at' => now(),
-            ]);
-        });
-
-        Audit::record('finalized', $period, [], ['status' => PayrollPeriod::STATUS_FINALIZED]);
-
-        return back()->with('success', 'Period finalized — payslips and remittance summaries issued.');
+        return back()->with('success', $result->message);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Payslips                                                           */
+    /*  Payslips */
     /* ------------------------------------------------------------------ */
 
     public function payslipPdf(Payslip $payslip): Response
@@ -317,18 +195,18 @@ class PayrollController extends Controller
 
         $payslip->load(['item.period', 'item.employee.position', 'item.employee.employmentType', 'generator']);
 
-        $filename = 'Payslip_' . str_replace([' ', '.'], '_', $payslip->item->employee->full_name) . '_' . $payslip->reference_no . '.pdf';
+        $filename = 'Payslip_'.str_replace([' ', '.'], '_', $payslip->item->employee->full_name).'_'.$payslip->reference_no.'.pdf';
 
         $pdf = Pdf::loadView('payroll.payslip', ['payslip' => $payslip])
             ->setPaper('a4', 'portrait');
 
         return response($pdf->output())
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Remittances                                                        */
+    /*  Remittances */
     /* ------------------------------------------------------------------ */
 
     public function remittances(): View
@@ -343,22 +221,13 @@ class PayrollController extends Controller
 
     public function markRemitted(MarkRemittedRequest $request, Remittance $remittance): RedirectResponse
     {
-        $validated = $request->validated();
+        $result = (new MarkRemittanceRemitted)->handle($remittance, $request->validated());
 
-        $remittance->update([
-            'status' => Remittance::STATUS_REMITTED,
-            'reference_no' => $validated['reference_no'] ?? null,
-            'remarks' => $validated['remarks'] ?? $remittance->remarks,
-            'remitted_at' => now(),
-        ]);
-
-        Audit::record('remitted', $remittance, [], $remittance->only(['status', 'reference_no']));
-
-        return back()->with('success', "{$remittance->agency} remittance marked as remitted.");
+        return back()->with('success', $result->message);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Access                                                             */
+    /*  Access */
     /* ------------------------------------------------------------------ */
 
     private function authorizeAccess(Payslip $payslip): void

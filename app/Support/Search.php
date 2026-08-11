@@ -29,6 +29,6 @@ class Search
      */
     public static function contains(string $value): string
     {
-        return '%' . self::escape($value) . '%';
+        return '%'.self::escape($value).'%';
     }
 }

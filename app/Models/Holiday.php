@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,7 +44,7 @@ class Holiday extends Model
      * Does this holiday occur on the given date? Repeating holidays match by
      * month/day so a seeded Dec 25 applies to every year.
      */
-    public function occursOn(\Carbon\CarbonInterface $date): bool
+    public function occursOn(CarbonInterface $date): bool
     {
         if ($this->is_repeating) {
             return $this->date->month === $date->month && $this->date->day === $date->day;

@@ -186,9 +186,9 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Rec | Effort | Impact | Status |
 |-----|--------|--------|--------|
 | ~~Extract Form Request classes for all POST routes~~ | 1d | Cleaner validation, reusable rules | ✅ Done (26 classes) |
-| Create action/service classes for business operations | 2d | Testability, separation of concerns | Pending |
+| ~~Create action/service classes for business operations~~ | 2d | Testability, separation of concerns | ✅ Done (16 classes: ApproveLeave, FileLeaveApplication, RejectLeave, CancelLeaveApplication, ProcessMonetization, SubmitDocumentRequest, IssueDocumentRequest, RejectDocumentRequest, CancelDocumentRequest, GeneratePayrollItems, AdjustPayrollItem, FinalizePayroll, MarkRemittanceRemitted, ImportEmployees, ImportAttendance + ActionResult). ImportController (the last fat controller, ~470 lines) slimmed to 233 — its preview/commit logic now lives in the two import actions with shared parsing in App\Support\ImportParser. |
 | ~~Use PHP enums for all status fields~~ | 4h | Eliminates magic strings, typo-proof | ✅ Done (3 enums) |
-| ~~Set up CI pipeline (GitHub Actions: lint + test)~~ | 4h | Automated quality gate | ✅ Done |
+| ~~Set up CI pipeline (GitHub Actions: lint + test)~~ | 4h | Automated quality gate | ✅ Done — validated end-to-end: restored `artisan` + 3 scaffold migrations, made tests env-driven (`tests/TestCase.php`), CI now migrates+seeds+accrues the MySQL service, and the full suite passes twice against a fresh scratch DB |
 | ~~Add database factories for all models~~ | 1d | Faster, more reliable test setup | ✅ Done (17 factories) |
 | ~~Add rate limiting to sensitive POST routes~~ | 2h | Abuse prevention | ✅ Done |
 | ~~Add password complexity policy~~ | 2h | Security hardening | ✅ Done |

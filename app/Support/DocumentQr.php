@@ -31,6 +31,6 @@ class DocumentQr
             'margin' => 2,
         ]);
 
-        return (new QRCode($options))->render(url('/verify/' . rawurlencode($referenceNo)));
+        return (new QRCode($options))->render(url('/verify/'.rawurlencode($referenceNo)));
     }
 }

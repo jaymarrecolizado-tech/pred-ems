@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\User;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -30,9 +31,9 @@ class Notifier
      * The users who review queues (admin + HR) — recipients for
      * "new submission" alerts.
      *
-     * @return \Illuminate\Support\Collection<int, User>
+     * @return Collection<int, User>
      */
-    public static function hrUsers(): \Illuminate\Support\Collection
+    public static function hrUsers(): Collection
     {
         return User::query()
             ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'hr']))

@@ -71,7 +71,7 @@ class ContributionRateSeeder extends Seeder
                         ['min' => 400000,     'max' => 800000,  'base' => 22500,  'rate' => 20],
                         ['min' => 800000,     'max' => 2000000, 'base' => 102500, 'rate' => 25],
                         ['min' => 2000000,    'max' => 8000000, 'base' => 402500, 'rate' => 30],
-                        ['min' => 8000000,    'max' => null,    'base' => 2202500,'rate' => 35],
+                        ['min' => 8000000,    'max' => null,    'base' => 2202500, 'rate' => 35],
                     ],
                 ]),
                 'effective_from' => '2023-01-01',

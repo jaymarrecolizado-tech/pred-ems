@@ -7,7 +7,7 @@ use App\Models\EmploymentType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Employee>
+ * @extends Factory<Employee>
  */
 class EmployeeFactory extends Factory
 {
@@ -16,7 +16,7 @@ class EmployeeFactory extends Factory
         $gender = fake()->randomElement(['Male', 'Female']);
 
         return [
-            'employee_number' => 'RO2-' . str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
+            'employee_number' => 'RO2-'.str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'first_name' => fake()->firstName($gender),
             'middle_name' => fake()->lastName(),
             'last_name' => fake()->lastName(),
@@ -25,9 +25,9 @@ class EmployeeFactory extends Factory
             'gender' => $gender,
             'civil_status' => fake()->randomElement(['Single', 'Married', 'Widowed']),
             'citizenship' => 'Filipino',
-            'contact_number' => '09' . fake()->numberBetween(10, 99) . '-' . fake()->numberBetween(100, 999) . '-' . fake()->numberBetween(1000, 9999),
+            'contact_number' => '09'.fake()->numberBetween(10, 99).'-'.fake()->numberBetween(100, 999).'-'.fake()->numberBetween(1000, 9999),
             'personal_email' => fake()->safeEmail(),
-            'gov_email' => fake()->userName() . '@dict.gov.ph',
+            'gov_email' => fake()->userName().'@dict.gov.ph',
             'employment_type_id' => EmploymentType::factory(),
             'salary_grade' => fake()->numberBetween(1, 33),
             'step' => fake()->numberBetween(1, 8),

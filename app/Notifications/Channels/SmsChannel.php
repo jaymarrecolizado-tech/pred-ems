@@ -3,7 +3,6 @@
 namespace App\Notifications\Channels;
 
 use App\Models\Setting;
-use App\Notifications\HrisNotification;
 use App\Support\Sms;
 use Illuminate\Notifications\Notification;
 

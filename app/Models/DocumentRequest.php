@@ -12,8 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DocumentRequest extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_ISSUED = 'issued';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_CANCELED = 'canceled';
 
     /**

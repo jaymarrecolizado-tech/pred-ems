@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Adds DB-level CHECK constraints on critical status/enum columns.
@@ -29,8 +27,9 @@ return new class extends Migration
         // Attendance log punch types
         DB::statement("ALTER TABLE attendance_logs ADD CONSTRAINT chk_punch_type CHECK (punch_type IN ('am_in', 'am_out', 'pm_in', 'pm_out'))");
 
-        // Attendance log source
-        DB::statement("ALTER TABLE attendance_logs ADD CONSTRAINT chk_log_source CHECK (source IN ('geofence', 'hr_manual'))");
+        // Attendance log source (geofence punch, HR manual entry, or a log
+        // produced by an approved correction request)
+        DB::statement("ALTER TABLE attendance_logs ADD CONSTRAINT chk_log_source CHECK (source IN ('geofence', 'hr_manual', 'hr_correction'))");
 
         // Attendance correction status
         DB::statement("ALTER TABLE attendance_corrections ADD CONSTRAINT chk_correction_status CHECK (status IN ('pending', 'approved', 'rejected'))");

@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Appointment;
 use App\Models\Employee;
 use App\Models\Position;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Appointment>
+ * @extends Factory<Appointment>
  */
 class AppointmentFactory extends Factory
 {

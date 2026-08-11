@@ -2,32 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ApproveLeave;
+use App\Actions\CancelLeaveApplication;
+use App\Actions\FileLeaveApplication;
+use App\Actions\RejectLeave;
 use App\Http\Requests\RejectLeaveRequest;
 use App\Http\Requests\StoreLeaveRequest;
-use App\Models\Employee;
 use App\Models\LeaveApplication;
-use App\Models\LeaveCreditLedger;
 use App\Models\LeaveMonetization;
 use App\Models\LeaveType;
-use App\Notifications\LeaveApprovedNotification;
-use App\Notifications\LeaveFiledNotification;
-use App\Notifications\LeaveRejectedNotification;
-use App\Support\Audit;
-use App\Support\Search;
 use App\Support\DocumentIssuer;
-use App\Support\Notifier;
+use App\Support\Search;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class LeaveController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  Self-service                                                       */
+    /*  Self-service */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -68,49 +63,15 @@ class LeaveController extends Controller
         $employee = auth()->user()->employee;
         abort_if(! $employee, 403, 'No 201-file record is linked to your account. Contact HR.');
 
-        $validated = $request->validated();
+        $result = (new FileLeaveApplication)->handle($employee, $request->validated());
 
-        $from = Carbon::parse($validated['date_from']);
-        $to = Carbon::parse($validated['date_to']);
-        $days = $this->workingDays($from, $to);
-
-        $type = LeaveType::findOrFail($validated['leave_type_id']);
-        if (! $type->is_active) {
-            return back()->with('error', 'This leave type is not available.')->withInput();
+        if (! $result->success) {
+            return back()->with('error', $result->message)->withInput();
         }
-
-        // Ledger-managed leaves (monthly accrual like VL/SL, or annual grants
-        // like SLP) require a sufficient credit balance. Statutory leaves
-        // (maternity, paternity, …) are granted per occurrence and skip this.
-        if ($type->accrual_per_month > 0 || $type->annual_grant) {
-            $balance = $this->balanceFor($employee, $type);
-            if ($balance < $days) {
-                return back()
-                    ->with('error', "Insufficient {$type->code} balance: you have {$this->fmt($balance)} day(s) but filed {$this->fmt($days)}.")
-                    ->withInput();
-            }
-        }
-
-        $application = LeaveApplication::create([
-            'employee_id' => $employee->id,
-            'leave_type_id' => $type->id,
-            'date_from' => $from->toDateString(),
-            'date_to' => $to->toDateString(),
-            'days_applied' => $days,
-            'reason' => $validated['reason'],
-            'contact_during_leave' => $validated['contact_during_leave'] ?? null,
-            'commutation_requested' => $validated['commutation_requested'] ?? false,
-            'status' => 'pending',
-        ]);
-
-        Audit::record('created', $application, [], $application->toArray());
-
-        // Alert the approval reviewers.
-        Notifier::send(Notifier::hrUsers(), new LeaveFiledNotification($application));
 
         return redirect()
             ->route('leave.index')
-            ->with('success', "Leave application filed: {$this->fmt($days)} day(s) of {$type->name} ({$from->format('M d')} – {$to->format('M d, Y')}).");
+            ->with('success', $result->message);
     }
 
     /**
@@ -121,11 +82,9 @@ class LeaveController extends Controller
         abort_if($application->employee_id !== auth()->user()->employee?->id, 403);
         abort_unless($application->isPending(), 403, 'Only pending applications can be cancelled.');
 
-        $old = $application->toArray();
-        $application->update(['status' => 'cancelled']);
-        Audit::record('updated', $application, $old, $application->toArray());
+        $result = (new CancelLeaveApplication)->handle($application);
 
-        return redirect()->route('leave.index')->with('success', 'Leave application cancelled.');
+        return redirect()->route('leave.index')->with('success', $result->message);
     }
 
     /**
@@ -158,7 +117,7 @@ class LeaveController extends Controller
         $vlType = LeaveType::where('code', 'VL')->first();
         $slType = LeaveType::where('code', 'SL')->first();
 
-        $filename = 'CSC_Form_6_' . str_replace([' ', '.'], '_', $application->employee->full_name) . '.pdf';
+        $filename = 'CSC_Form_6_'.str_replace([' ', '.'], '_', $application->employee->full_name).'.pdf';
 
         return Pdf::loadView('leave.form6', [
             'application' => $application,
@@ -174,7 +133,7 @@ class LeaveController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Approvals (admin / HR)                                             */
+    /*  Approvals (admin / HR) */
     /* ------------------------------------------------------------------ */
 
     public function approvals(Request $request): View
@@ -201,111 +160,29 @@ class LeaveController extends Controller
     }
 
     /**
-     * Approve → deduct the leave credit from the append-only ledger.
-     *
-     * Re-checks the credit balance so an approval made after the balance was
-     * consumed by another application can never push the ledger negative.
+     * Approve → deduct the leave credit from the append-only ledger. The
+     * business rules (balance re-check, ledger debit, audit, notification)
+     * live in App\Actions\ApproveLeave.
      */
     public function approve(LeaveApplication $application): RedirectResponse
     {
         abort_unless($application->isPending(), 403, 'This application is no longer pending.');
 
-        $type = $application->leaveType;
-        if ($type->accrual_per_month > 0 || $type->annual_grant) {
-            $balance = $application->employee->leaveBalanceFor($type);
-            if ($balance < (float) $application->days_applied) {
-                return back()->with('error', "Cannot approve: only {$this->fmt($balance)} {$type->code} day(s) remain for {$application->employee->full_name}.");
-            }
+        $result = (new ApproveLeave)->handle($application);
+
+        if (! $result->success) {
+            return back()->with('error', $result->message);
         }
 
-        $old = $application->toArray();
-
-        DB::transaction(function () use ($application) {
-            $application->update([
-                'status' => 'approved',
-                'approver_id' => auth()->id(),
-                'approved_at' => now(),
-            ]);
-
-            $this->debitLedger($application, 'Leave application approved');
-        });
-
-        Audit::record('approved', $application, $old, $application->toArray());
-
-        if ($application->employee->user) {
-            Notifier::send($application->employee->user, new LeaveApprovedNotification($application));
-        }
-
-        return back()->with('success', "Leave approved for {$application->employee->full_name}.");
+        return back()->with('success', $result->message);
     }
 
     public function reject(RejectLeaveRequest $request, LeaveApplication $application): RedirectResponse
     {
         abort_unless($application->isPending(), 403, 'This application is no longer pending.');
 
-        $validated = $request->validated();
+        $result = (new RejectLeave)->handle($application, $request->validated()['denial_reason']);
 
-        $old = $application->toArray();
-        $application->update([
-            'status' => 'rejected',
-            'approver_id' => auth()->id(),
-            'denial_reason' => $validated['denial_reason'],
-        ]);
-
-        Audit::record('rejected', $application, $old, $application->toArray());
-
-        if ($application->employee->user) {
-            Notifier::send($application->employee->user, new LeaveRejectedNotification($application));
-        }
-
-        return back()->with('success', "Leave application rejected for {$application->employee->full_name}.");
-    }
-
-    /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
-    /* ------------------------------------------------------------------ */
-
-    /**
-     * Working days (Mon–Fri) between two dates, inclusive.
-     */
-    private function workingDays(Carbon $from, Carbon $to): float
-    {
-        $days = 0;
-        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
-            if ($d->isWeekday()) {
-                $days++;
-            }
-        }
-
-        return $days;
-    }
-
-    private function balanceFor(Employee $employee, LeaveType $type): float
-    {
-        return $employee->leaveBalanceFor($type);
-    }
-
-    private function debitLedger(LeaveApplication $application, string $remarks): void
-    {
-        $balance = $this->balanceFor($application->employee, $application->leaveType);
-
-        LeaveCreditLedger::create([
-            'employee_id' => $application->employee_id,
-            'leave_type_id' => $application->leave_type_id,
-            'transaction_date' => $application->date_from,
-            'movement' => 'used',
-            'credit' => 0,
-            'debit' => $application->days_applied,
-            'balance_after' => $balance - (float) $application->days_applied,
-            'source_id' => $application->id,
-            'source_type' => LeaveApplication::class,
-            'remarks' => $remarks,
-            'created_by' => auth()->id(),
-        ]);
-    }
-
-    private function fmt(float $value): string
-    {
-        return number_format($value, $value == (int) $value ? 0 : 2);
+        return back()->with('success', $result->message);
     }
 }

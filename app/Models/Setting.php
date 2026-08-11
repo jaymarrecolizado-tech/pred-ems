@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Support\Sms;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
     protected $primaryKey = 'key';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = ['key', 'value'];
@@ -84,7 +87,7 @@ class Setting extends Model
             return self::asBool($stored, false);
         }
 
-        return \App\Support\Sms::enabled();
+        return Sms::enabled();
     }
 
     /**

@@ -13,7 +13,6 @@ use App\Models\AttendanceLog;
 use App\Models\Document;
 use App\Models\Employee;
 use App\Models\Holiday;
-use App\Models\Setting;
 use App\Models\WorkSchedule;
 use App\Support\Audit;
 use App\Support\DocumentIssuer;
@@ -37,7 +36,7 @@ use Illuminate\View\View;
 class AttendanceAdminController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  Checkpoints                                                        */
+    /*  Checkpoints */
     /* ------------------------------------------------------------------ */
 
     public function checkpoints(): View
@@ -93,7 +92,7 @@ class AttendanceAdminController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Correction requests                                                */
+    /*  Correction requests */
     /* ------------------------------------------------------------------ */
 
     public function corrections(Request $request): View
@@ -128,9 +127,9 @@ class AttendanceAdminController extends Controller
             'employee_id' => $correction->employee_id,
             'log_date' => $logDate,
             'punch_type' => $correction->punch_type,
-            'punched_at' => $logDate . ' ' . $correction->requested_time->format('H:i:s'),
+            'punched_at' => $logDate.' '.$correction->requested_time->format('H:i:s'),
             'source' => 'hr_correction',
-            'remarks' => 'Corrected via request #' . $correction->id . ' — ' . $correction->reason,
+            'remarks' => 'Corrected via request #'.$correction->id.' — '.$correction->reason,
         ];
 
         // updateOrCreate handles both the fresh-insert and the existing-row
@@ -175,7 +174,7 @@ class AttendanceAdminController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Timelog browser + manual HR entry                                  */
+    /*  Timelog browser + manual HR entry */
     /* ------------------------------------------------------------------ */
 
     public function logs(Request $request): View
@@ -213,9 +212,9 @@ class AttendanceAdminController extends Controller
             'employee_id' => $validated['employee_id'],
             'log_date' => $logDate,
             'punch_type' => $validated['punch_type'],
-            'punched_at' => $logDate . ' ' . $validated['time'] . ':00',
+            'punched_at' => $logDate.' '.$validated['time'].':00',
             'source' => 'hr_manual',
-            'remarks' => 'HR entry — ' . $validated['remarks'],
+            'remarks' => 'HR entry — '.$validated['remarks'],
         ];
 
         // updateOrCreate handles both the fresh-insert and the existing-row
@@ -231,7 +230,7 @@ class AttendanceAdminController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Per-employee DTR                                                   */
+    /*  Per-employee DTR */
     /* ------------------------------------------------------------------ */
 
     public function employeeDtr(Request $request, Employee $employee): View
@@ -271,7 +270,7 @@ class AttendanceAdminController extends Controller
                     'employee_id' => $employee->id,
                     'document_type' => 'dtr',
                     'reference_no' => $referenceNo,
-                    'remarks' => 'Daily Time Record — ' . $dtr['monthLabel'],
+                    'remarks' => 'Daily Time Record — '.$dtr['monthLabel'],
                     'generated_by' => auth()->id(),
                     'generated_at' => now(),
                 ]);
@@ -280,19 +279,20 @@ class AttendanceAdminController extends Controller
                 if ((int) $e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
+
                 continue;
             }
         }
 
-        $filename = 'DTR_' . str_replace([' ', '.'], '_', $employee->full_name) . '_' . $dtr['monthLabel'] . '.pdf';
+        $filename = 'DTR_'.str_replace([' ', '.'], '_', $employee->full_name).'_'.$dtr['monthLabel'].'.pdf';
 
         return response($pdfOutput)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Work schedules + holidays (AOM 2026-020 flexible scheduling)       */
+    /*  Work schedules + holidays (AOM 2026-020 flexible scheduling) */
     /* ------------------------------------------------------------------ */
 
     public function settings(): View
@@ -391,7 +391,7 @@ class AttendanceAdminController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Holidays                                                           */
+    /*  Holidays */
     /* ------------------------------------------------------------------ */
 
     public function storeHoliday(HolidayRequest $request): RedirectResponse

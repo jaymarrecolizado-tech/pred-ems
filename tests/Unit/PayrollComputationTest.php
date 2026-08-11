@@ -24,21 +24,10 @@ use Tests\TestCase;
  */
 class PayrollComputationTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function makeEmployee(float $salary, string $number = 'RO2-UNIT-TEST'): Employee
     {
         return Employee::create([
-            'employee_number' => $number . '-' . substr((string) time(), -6) . '-' . random_int(1, 999),
+            'employee_number' => $number.'-'.substr((string) time(), -6).'-'.random_int(1, 999),
             'first_name' => 'Unit',
             'last_name' => 'Test',
             'status' => 'active',
@@ -56,7 +45,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  GSIS                                                               */
+    /*  GSIS */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -82,7 +71,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  PhilHealth                                                         */
+    /*  PhilHealth */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -106,7 +95,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  PAG-IBIG                                                           */
+    /*  PAG-IBIG */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -130,7 +119,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  BIR Withholding                                                    */
+    /*  BIR Withholding */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -174,7 +163,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Extras: honoraria, overtime, other income, LWOP                    */
+    /*  Extras: honoraria, overtime, other income, LWOP */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -217,7 +206,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Negative guards                                                    */
+    /*  Negative guards */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -245,7 +234,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Trace / audit structure                                            */
+    /*  Trace / audit structure */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -277,7 +266,7 @@ class PayrollComputationTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Net pay consistency                                                */
+    /*  Net pay consistency */
     /* ------------------------------------------------------------------ */
 
     #[Test]
@@ -327,11 +316,11 @@ class PayrollComputationTest extends TestCase
     public static function salaryProvider(): array
     {
         return [
-            'minimum'    => [5000.00],
-            'low'        => [15000.00],
-            'medium'     => [35000.00],
-            'high'       => [80000.00],
-            'very high'  => [250000.00],
+            'minimum' => [5000.00],
+            'low' => [15000.00],
+            'medium' => [35000.00],
+            'high' => [80000.00],
+            'very high' => [250000.00],
         ];
     }
 }

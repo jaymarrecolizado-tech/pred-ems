@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Employee extends Model
 {
@@ -20,8 +21,8 @@ class Employee extends Model
         'employment_type_id', 'division_id', 'position_id',
         'plantilla_item_no', 'bp_number', 'source_of_fund',
         'salary_grade', 'step', 'monthly_salary',
-    'date_original_appointment', 'date_last_promotion',
-    'status', 'remarks',
+        'date_original_appointment', 'date_last_promotion',
+        'status', 'remarks',
     ];
 
     protected function casts(): array
@@ -37,7 +38,7 @@ class Employee extends Model
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Relations                                                          */
+    /*  Relations */
     /* ------------------------------------------------------------------ */
 
     public function user()
@@ -86,14 +87,14 @@ class Employee extends Model
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     public function getFullNameAttribute(): string
     {
         return trim(implode(' ', array_filter([
             $this->first_name,
-            $this->middle_name ? mb_substr($this->middle_name, 0, 1) . '.' : null,
+            $this->middle_name ? mb_substr($this->middle_name, 0, 1).'.' : null,
             $this->last_name,
             $this->suffix,
         ])));
@@ -101,7 +102,7 @@ class Employee extends Model
 
     public function getInitialsAttribute(): string
     {
-        $initials = mb_substr($this->first_name, 0, 1) . mb_substr($this->last_name, 0, 1);
+        $initials = mb_substr($this->first_name, 0, 1).mb_substr($this->last_name, 0, 1);
 
         return strtoupper($initials);
     }
@@ -115,7 +116,7 @@ class Employee extends Model
             return null;
         }
 
-        return asset('storage/' . ltrim($this->profile_photo_path, '/'));
+        return asset('storage/'.ltrim($this->profile_photo_path, '/'));
     }
 
     public function getStatusLabelAttribute(): string
@@ -141,10 +142,10 @@ class Employee extends Model
 
         $parts = [];
         if ($diff->y > 0) {
-            $parts[] = $diff->y . ' yr' . ($diff->y > 1 ? 's' : '');
+            $parts[] = $diff->y.' yr'.($diff->y > 1 ? 's' : '');
         }
         if ($diff->m > 0) {
-            $parts[] = $diff->m . ' mo' . ($diff->m > 1 ? 's' : '');
+            $parts[] = $diff->m.' mo'.($diff->m > 1 ? 's' : '');
         }
 
         return implode(' ', $parts) ?: '—';
@@ -176,9 +177,9 @@ class Employee extends Model
     /**
      * Leave balances per leave type, derived from the append-only ledger.
      *
-     * @return \Illuminate\Support\Collection<LeaveType, float>
+     * @return Collection<LeaveType, float>
      */
-    public function leaveBalances(): \Illuminate\Support\Collection
+    public function leaveBalances(): Collection
     {
         $leaveTypes = LeaveType::query()->orderBy('code')->get();
 

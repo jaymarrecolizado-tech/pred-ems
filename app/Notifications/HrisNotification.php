@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Setting;
 use App\Notifications\Channels\SmsChannel;
+use App\Support\Sms;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -50,8 +51,8 @@ abstract class HrisNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('DICT RO2 HRIS — ' . $this->title)
-            ->greeting('Hello ' . ($notifiable->name ?? 'there') . ',')
+            ->subject('DICT RO2 HRIS — '.$this->title)
+            ->greeting('Hello '.($notifiable->name ?? 'there').',')
             ->line($this->body);
 
         if ($this->url) {
@@ -64,7 +65,7 @@ abstract class HrisNotification extends Notification
     public function toSms($notifiable): ?string
     {
         return $this->smsText
-            ? mb_substr('DICT RO2 HRIS: ' . $this->smsText, 0, \App\Support\Sms::maxMessageLength())
+            ? mb_substr('DICT RO2 HRIS: '.$this->smsText, 0, Sms::maxMessageLength())
             : null;
     }
 }

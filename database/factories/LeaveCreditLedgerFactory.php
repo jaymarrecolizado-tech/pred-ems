@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\LeaveCreditLedger;
 use App\Models\LeaveType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LeaveCreditLedger>
+ * @extends Factory<LeaveCreditLedger>
  */
 class LeaveCreditLedgerFactory extends Factory
 {

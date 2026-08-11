@@ -19,8 +19,10 @@
     </style>
 </head>
 <body>
+    @include('partials.letterhead', ['mb' => 14, 'subtitle' => 'Department of Information and Communications Technology · Regional Office 2'])
+
     <div class="masthead">
-        <h1>DICT Regional Office 2 — {{ $title }}</h1>
+        <h1>{{ $title }}</h1>
         <div class="sub">{{ $subtitle ?? 'Official HRIS report' }} · Generated {{ now()->format('F j, Y · g:i A') }} by {{ auth()->user()?->name ?? '—' }}</div>
     </div>
 

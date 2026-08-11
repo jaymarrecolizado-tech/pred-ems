@@ -5,10 +5,13 @@
 /public/storage
 /storage/*.key
 /storage/payroll
+/storage/fonts/*
+/storage/app/private/imports/*
 /storage/framework/cache/data/*
 /storage/framework/sessions/*
 /storage/framework/views/*
 /storage/logs/*
+/bootstrap/cache/*
 .env
 .env.backup
 .env.production

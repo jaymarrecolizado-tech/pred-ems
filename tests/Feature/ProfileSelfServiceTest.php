@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
 use App\Models\Employee;
+use App\Models\EmploymentType;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -15,13 +15,6 @@ class ProfileSelfServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
         Storage::fake('public');
     }
 
@@ -171,8 +164,8 @@ class ProfileSelfServiceTest extends TestCase
     public function test_employee_crud_creates_audit_entries(): void
     {
         $admin = User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();
-        $type = \App\Models\EmploymentType::firstOrFail();
-        $employeeNumber = 'RO2-' . substr((string) time(), -5);
+        $type = EmploymentType::firstOrFail();
+        $employeeNumber = 'RO2-'.substr((string) time(), -5);
 
         try {
             $this->actingAs($admin)->post('/employees', [

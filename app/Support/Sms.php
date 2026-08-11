@@ -64,20 +64,20 @@ class Sms
 
         // Already E.164 with a leading +.
         if (str_starts_with(trim($phone), '+')) {
-            return '+' . $digits;
+            return '+'.$digits;
         }
 
         // Local leading zero, e.g. 0917… → +63 917…
         if (str_starts_with($digits, '0')) {
-            return '+' . $countryCode . substr($digits, 1);
+            return '+'.$countryCode.substr($digits, 1);
         }
 
         // Bare country code, e.g. 63917… → +63917…
         if (str_starts_with($digits, (string) $countryCode)) {
-            return '+' . $digits;
+            return '+'.$digits;
         }
 
-        return '+' . $countryCode . $digits;
+        return '+'.$countryCode.$digits;
     }
 
     /**
@@ -111,7 +111,7 @@ class Sms
                 ->timeout($timeout)
                 ->acceptJson()
                 ->asJson()
-                ->post(self::gatewayUrl() . self::apiPath(), [
+                ->post(self::gatewayUrl().self::apiPath(), [
                     'textMessage' => ['text' => $job->message],
                     'phoneNumbers' => [$job->phone],
                 ]);
@@ -127,7 +127,7 @@ class Sms
 
             $job->update([
                 'status' => SmsQueue::STATUS_FAILED,
-                'error' => 'HTTP ' . $response->status() . ': ' . mb_substr($response->body(), 0, 200),
+                'error' => 'HTTP '.$response->status().': '.mb_substr($response->body(), 0, 200),
             ]);
         } catch (\Throwable $e) {
             Log::warning('SMS gateway unreachable', ['job' => $job->id, 'error' => $e->getMessage()]);

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\ContributionRate;
 use App\Models\Employee;
-use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
 use App\Models\Payslip;
 use App\Models\Remittance;
@@ -15,18 +14,6 @@ use Tests\TestCase;
 
 class PayrollTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function admin(): User
     {
         return User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();
@@ -49,7 +36,7 @@ class PayrollTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Calculator                                                         */
+    /*  Calculator */
     /* ------------------------------------------------------------------ */
 
     public function test_calculator_gsis_philhealth_pagibig_bir(): void
@@ -142,7 +129,7 @@ class PayrollTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Period lifecycle                                                   */
+    /*  Period lifecycle */
     /* ------------------------------------------------------------------ */
 
     public function test_period_flow_generate_finalize_payslips_remittances(): void
@@ -238,7 +225,7 @@ class PayrollTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  RBAC                                                               */
+    /*  RBAC */
     /* ------------------------------------------------------------------ */
 
     public function test_payroll_pages_require_admin_hr_or_payroll(): void

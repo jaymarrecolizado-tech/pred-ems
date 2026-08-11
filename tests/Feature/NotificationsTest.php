@@ -12,6 +12,9 @@ use App\Models\Setting;
 use App\Models\SmsQueue;
 use App\Models\User;
 use App\Notifications\DocumentRequestIssuedNotification;
+use App\Notifications\DocumentRequestRejectedNotification;
+use App\Notifications\DocumentRequestSubmittedNotification;
+use App\Notifications\LeaveApprovedNotification;
 use App\Support\Notifier;
 use App\Support\Sms;
 use Illuminate\Support\Facades\DB;
@@ -22,13 +25,6 @@ class NotificationsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
 
         // CAUTION: these tables are wiped — safe only because notifications,
         // sms_queue and document_requests hold purely test-generated rows in
@@ -67,7 +63,7 @@ class NotificationsTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  SMS helpers                                                        */
+    /*  SMS helpers */
     /* ------------------------------------------------------------------ */
 
     public function test_phone_normalization_to_e164(): void
@@ -142,7 +138,7 @@ class NotificationsTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Admin channel switches                                             */
+    /*  Admin channel switches */
     /* ------------------------------------------------------------------ */
 
     public function test_admin_can_toggle_email_and_sms_channels(): void
@@ -242,7 +238,7 @@ class NotificationsTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  In-system notifications                                            */
+    /*  In-system notifications */
     /* ------------------------------------------------------------------ */
 
     public function test_document_request_issued_notifies_employee(): void
@@ -294,7 +290,7 @@ class NotificationsTest extends TestCase
             ])->assertRedirect();
 
             $notification = $user->notifications()
-                ->where('type', \App\Notifications\DocumentRequestRejectedNotification::class)
+                ->where('type', DocumentRequestRejectedNotification::class)
                 ->latest()->first();
             $this->assertNotNull($notification);
             $this->assertSame('Document request rejected', $notification->data['title']);
@@ -318,7 +314,7 @@ class NotificationsTest extends TestCase
             ])->assertRedirect();
 
             $notification = $admin->notifications()
-                ->where('type', \App\Notifications\DocumentRequestSubmittedNotification::class)
+                ->where('type', DocumentRequestSubmittedNotification::class)
                 ->latest()->first();
             $this->assertNotNull($notification);
             $this->assertSame('New document request', $notification->data['title']);
@@ -352,7 +348,7 @@ class NotificationsTest extends TestCase
             $this->actingAs($admin)->post("/leave/{$application->id}/approve")->assertRedirect();
 
             $notification = $user->notifications()
-                ->where('type', \App\Notifications\LeaveApprovedNotification::class)
+                ->where('type', LeaveApprovedNotification::class)
                 ->latest()->first();
             $this->assertNotNull($notification);
             $this->assertSame('Leave approved', $notification->data['title']);

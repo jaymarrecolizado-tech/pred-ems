@@ -7,21 +7,28 @@
     'use strict';
 
     var body = document.body;
-    var toggle = document.getElementById('sidebar-toggle');
+    // Both toggles (sidebar hamburger on desktop + topbar hamburger on
+    // mobile) share the .js-sidebar-toggle class so one handler drives the
+    // rail collapse and the mobile drawer.
+    var toggles = Array.prototype.slice.call(document.querySelectorAll('.js-sidebar-toggle'));
     var backdrop = document.getElementById('sidebar-backdrop');
     var nav = document.querySelector('.nav');
     var COLLAPSE_KEY = 'hris-nav:sidebar-collapsed';
+
+    function setToggleExpanded(expanded) {
+        toggles.forEach(function (t) { t.setAttribute('aria-expanded', String(expanded)); });
+    }
 
     /* ---------------- Sidebar drawer (mobile) ---------------- */
 
     function openSidebar() {
         body.classList.add('sidebar-open');
-        if (toggle) toggle.setAttribute('aria-expanded', 'true');
+        setToggleExpanded(true);
     }
 
     function closeSidebar() {
         body.classList.remove('sidebar-open');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        setToggleExpanded(false);
     }
 
     /* ---------------- App-drawer rail (desktop) ---------------- */
@@ -31,7 +38,7 @@
     function setCollapsed(collapsed) {
         body.classList.toggle('sidebar-collapsed', collapsed);
         try { localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) { /* storage unavailable */ }
-        if (toggle) toggle.setAttribute('aria-expanded', String(!collapsed));
+        setToggleExpanded(!collapsed);
     }
 
     function toggleSidebar() {
@@ -44,9 +51,7 @@
         }
     }
 
-    if (toggle) {
-        toggle.addEventListener('click', toggleSidebar);
-    }
+    toggles.forEach(function (t) { t.addEventListener('click', toggleSidebar); });
 
     if (backdrop) {
         backdrop.addEventListener('click', closeSidebar);
@@ -79,14 +84,14 @@
         if (window.innerWidth >= 1024) closeSidebar();
     });
 
-    // Restore the persisted desktop rail state and keep the hamburger's
+    // Restore the persisted desktop rail state and keep both hamburgers'
     // aria-expanded truthful (collapsed rail => 'false', else 'true').
     if (isDesktop()) {
         var savedCollapsed = null;
         try { savedCollapsed = localStorage.getItem(COLLAPSE_KEY); } catch (e) { /* ignore */ }
         var collapsed = savedCollapsed === '1';
         body.classList.toggle('sidebar-collapsed', collapsed);
-        if (toggle) toggle.setAttribute('aria-expanded', String(!collapsed));
+        setToggleExpanded(!collapsed);
     }
 
     /* ---------------- Collapsible nav groups ----------------

@@ -30,7 +30,7 @@ class Dtr
             ->where('employee_id', $employee->id)
             ->whereBetween('log_date', [$start->toDateString(), $end->toDateString()])
             ->get()
-            ->keyBy(fn ($log) => $log->log_date->format('j') . ':' . $log->punch_type);
+            ->keyBy(fn ($log) => $log->log_date->format('j').':'.$log->punch_type);
 
         // Holidays are few — load once and reuse for every day of the month
         // instead of re-querying per row.
@@ -52,7 +52,7 @@ class Dtr
             $pmStart = $date->copy()->setTimeFromTimeString($daySchedule['pm_start']);
             $pmEnd = $date->copy()->setTimeFromTimeString($daySchedule['pm_end']);
 
-            $get = fn (string $type) => $logs->get($day . ':' . $type);
+            $get = fn (string $type) => $logs->get($day.':'.$type);
 
             $amIn = $get('am_in');
             $amOut = $get('am_out');

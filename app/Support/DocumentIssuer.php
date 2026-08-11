@@ -20,14 +20,14 @@ class DocumentIssuer
     public static function nextReferenceNo(string $prefix): string
     {
         $prefix = strtoupper($prefix);
-        $yearPrefix = $prefix . '-' . now()->format('Y') . '-';
-        $last = Document::where('reference_no', 'like', $yearPrefix . '%')
+        $yearPrefix = $prefix.'-'.now()->format('Y').'-';
+        $last = Document::where('reference_no', 'like', $yearPrefix.'%')
             ->orderByDesc('reference_no')
             ->value('reference_no');
 
         $next = $last ? ((int) substr($last, -4)) + 1 : 1;
 
-        return $yearPrefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $yearPrefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -76,10 +76,10 @@ class DocumentIssuer
             $centavos = 0;
         }
 
-        $result = self::numberToWords($pesos) . ($pesos === 1 ? ' Peso' : ' Pesos');
+        $result = self::numberToWords($pesos).($pesos === 1 ? ' Peso' : ' Pesos');
 
         if ($centavos > 0) {
-            $result .= ' and ' . self::numberToWords($centavos) . ($centavos === 1 ? ' Centavo' : ' Centavos');
+            $result .= ' and '.self::numberToWords($centavos).($centavos === 1 ? ' Centavo' : ' Centavos');
         } else {
             $result .= ' Only';
         }
@@ -93,10 +93,10 @@ class DocumentIssuer
     public static function ordinalSuffix(int $number): string
     {
         if (in_array($number % 100, [11, 12, 13], true)) {
-            return $number . 'th';
+            return $number.'th';
         }
 
-        return $number . match ($number % 10) {
+        return $number.match ($number % 10) {
             1 => 'st',
             2 => 'nd',
             3 => 'rd',
@@ -122,19 +122,19 @@ class DocumentIssuer
         }
 
         if ($number < 100) {
-            return $tens[intdiv($number, 10)] . ($number % 10 ? '-' . $ones[$number % 10] : '');
+            return $tens[intdiv($number, 10)].($number % 10 ? '-'.$ones[$number % 10] : '');
         }
 
         if ($number < 1000) {
-            return $ones[intdiv($number, 100)] . ' Hundred' . ($number % 100 ? ' ' . self::numberToWords($number % 100) : '');
+            return $ones[intdiv($number, 100)].' Hundred'.($number % 100 ? ' '.self::numberToWords($number % 100) : '');
         }
 
         if ($number < 1000000) {
-            return self::numberToWords(intdiv($number, 1000)) . ' Thousand' . ($number % 1000 ? ' ' . self::numberToWords($number % 1000) : '');
+            return self::numberToWords(intdiv($number, 1000)).' Thousand'.($number % 1000 ? ' '.self::numberToWords($number % 1000) : '');
         }
 
         if ($number < 1000000000) {
-            return self::numberToWords(intdiv($number, 1000000)) . ' Million' . ($number % 1000000 ? ' ' . self::numberToWords($number % 1000000) : '');
+            return self::numberToWords(intdiv($number, 1000000)).' Million'.($number % 1000000 ? ' '.self::numberToWords($number % 1000000) : '');
         }
 
         return (string) $number;

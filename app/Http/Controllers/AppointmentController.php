@@ -10,8 +10,6 @@ use App\Models\EmploymentType;
 use App\Models\Position;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -82,7 +80,7 @@ class AppointmentController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     private function formOptions(): array

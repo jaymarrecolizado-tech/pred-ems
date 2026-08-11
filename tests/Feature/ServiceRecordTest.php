@@ -12,14 +12,6 @@ class ServiceRecordTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-
         $this->testStartedAt = now();
     }
 

@@ -14,14 +14,6 @@ class AppointmentAndCoeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-
         $this->testStartedAt = now();
     }
 
@@ -52,7 +44,7 @@ class AppointmentAndCoeTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Appointment Manager                                                */
+    /*  Appointment Manager */
     /* ------------------------------------------------------------------ */
 
     public function test_hr_can_add_appointment_and_syncs_snapshot(): void
@@ -98,7 +90,7 @@ class AppointmentAndCoeTest extends TestCase
     public function test_deleting_last_appointment_reverts_snapshot(): void
     {
         $employee = Employee::create([
-            'employee_number' => 'RO2-TEST-' . now()->timestamp,
+            'employee_number' => 'RO2-TEST-'.now()->timestamp,
             'first_name' => 'Snapshot',
             'last_name' => 'Test',
             'employment_type_id' => 1,
@@ -205,7 +197,7 @@ class AppointmentAndCoeTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Certificate of Employment                                          */
+    /*  Certificate of Employment */
     /* ------------------------------------------------------------------ */
 
     public function test_hr_can_view_coe_and_download_pdf(): void

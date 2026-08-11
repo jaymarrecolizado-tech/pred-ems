@@ -32,7 +32,7 @@ class User extends Authenticatable
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Relations                                                          */
+    /*  Relations */
     /* ------------------------------------------------------------------ */
 
     public function roles()
@@ -46,7 +46,7 @@ class User extends Authenticatable
     }
 
     /* ------------------------------------------------------------------ */
-    /*  RBAC helpers                                                       */
+    /*  RBAC helpers */
     /* ------------------------------------------------------------------ */
 
     public function hasRole(string $role): bool

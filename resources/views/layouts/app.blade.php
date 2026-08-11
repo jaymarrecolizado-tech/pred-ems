@@ -24,6 +24,11 @@
     <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
     <aside id="sidebar" class="sidebar">
         <div class="brand">
+            <button type="button" id="sidebar-toggle" class="sidebar-toggle js-sidebar-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar" title="Collapse menu">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
             <div class="brand-mark">D</div>
             <div class="brand-text">
                 <strong>DICT Regional Office 2</strong>
@@ -40,7 +45,7 @@
             {{-- Overview --}}
             <div class="nav-group" data-nav-group="overview">
                 <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-overview" title="Overview">
-                    @include('partials.icon', ['name' => 'dashboard'])
+                    @include('partials.icon', ['name' => 'home'])
                     <span>Overview</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
@@ -54,7 +59,7 @@
                         <span>My Profile</span>
                     </a>
                     <a href="{{ route('payroll.my') }}" class="nav-link {{ request()->routeIs('payroll.my') ? 'active' : '' }}" title="My Payslips" {!! request()->routeIs('payroll.my') ? 'aria-current="page"' : '' !!}>
-                        @include('partials.icon', ['name' => 'payroll'])
+                        @include('partials.icon', ['name' => 'file-text'])
                         <span>My Payslips</span>
                     </a>
                     @if ($myEmployee)
@@ -70,7 +75,7 @@
                 {{-- Staffing --}}
                 <div class="nav-group" data-nav-group="staffing">
                     <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-staffing" title="Staffing">
-                        @include('partials.icon', ['name' => 'employees'])
+                        @include('partials.icon', ['name' => 'briefcase'])
                         <span>Staffing</span>
                         @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                     </button>
@@ -83,10 +88,9 @@
                 </div>
             @endif
 
-            {{-- Leave --}}
-            <div class="nav-group" data-nav-group="leave">
-                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-leave" title="Leave">
-                    @include('partials.icon', ['name' => 'leave'])
+            {{-- Leave --}}                <div class="nav-group" data-nav-group="leave">
+                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-leave" title="Leave">
+                        @include('partials.icon', ['name' => 'calendar-check'])
                     <span>Leave</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
@@ -97,21 +101,20 @@
                     </a>
                     @if (auth()->user()->hasAnyRole(['admin', 'hr']))
                         <a href="{{ route('leave.approvals') }}" class="nav-link {{ request()->routeIs('leave.approvals') ? 'active' : '' }}" title="Leave Approvals" {!! request()->routeIs('leave.approvals') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'audit'])
+                            @include('partials.icon', ['name' => 'check-circle'])
                             <span>Leave Approvals</span>
                         </a>
                         <a href="{{ route('leave.monetization') }}" class="nav-link {{ request()->routeIs('leave.monetization') ? 'active' : '' }}" title="VL Monetization" {!! request()->routeIs('leave.monetization') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'payroll'])
+                            @include('partials.icon', ['name' => 'dollar-sign'])
                             <span>VL Monetization</span>
                         </a>
                     @endif
                 </div>
             </div>
 
-            {{-- Attendance --}}
-            <div class="nav-group" data-nav-group="attendance">
-                <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-attendance" title="Attendance">
-                    @include('partials.icon', ['name' => 'clock'])
+            {{-- Attendance --}}                <div class="nav-group" data-nav-group="attendance">
+                    <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-attendance" title="Attendance">
+                        @include('partials.icon', ['name' => 'activity'])
                     <span>Attendance</span>
                     @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                 </button>
@@ -126,15 +129,15 @@
                             <span>Checkpoints</span>
                         </a>
                         <a href="{{ route('attendance.corrections') }}" class="nav-link {{ request()->routeIs('attendance.corrections') ? 'active' : '' }}" title="Correction Requests" {!! request()->routeIs('attendance.corrections') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'audit'])
+                            @include('partials.icon', ['name' => 'edit'])
                             <span>Correction Requests</span>
                         </a>
                         <a href="{{ route('attendance.logs') }}" class="nav-link {{ request()->routeIs('attendance.logs') ? 'active' : '' }}" title="Timelogs" {!! request()->routeIs('attendance.logs') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'documents'])
+                            @include('partials.icon', ['name' => 'list'])
                             <span>Timelogs</span>
                         </a>
                         <a href="{{ route('attendance.settings') }}" class="nav-link {{ request()->routeIs('attendance.settings') ? 'active' : '' }}" title="Office Hours" {!! request()->routeIs('attendance.settings') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'audit'])
+                            @include('partials.icon', ['name' => 'sliders'])
                             <span>Office Hours</span>
                         </a>
                     @endif
@@ -145,14 +148,14 @@
                 {{-- Administration --}}
                 <div class="nav-group" data-nav-group="admin">
                     <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-group-admin" title="Administration">
-                        @include('partials.icon', ['name' => 'audit'])
+                        @include('partials.icon', ['name' => 'shield'])
                         <span>Administration</span>
                         @include('partials.icon', ['name' => 'chevron', 'class' => 'nav-group-chevron'])
                     </button>
                     <div class="nav-group-panel" id="nav-group-admin">
                         @if (auth()->user()->hasAnyRole(['admin', 'hr']))
                         <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" title="Audit Trail" {!! request()->routeIs('audit-logs.*') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'audit'])
+                            @include('partials.icon', ['name' => 'search'])
                             <span>Audit Trail</span>
                         </a>
                         <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" title="Reports" {!! request()->routeIs('reports.*') ? 'aria-current="page"' : '' !!}>
@@ -160,11 +163,11 @@
                             <span>Reports</span>
                         </a>
                         <a href="{{ route('documents.requests.queue') }}" class="nav-link {{ request()->routeIs('documents.requests.queue') ? 'active' : '' }}" title="Document Requests" {!! request()->routeIs('documents.requests.queue') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'documents'])
+                            @include('partials.icon', ['name' => 'inbox'])
                             <span>Document Requests</span>
                         </a>
                         <a href="{{ route('imports.index') }}" class="nav-link {{ request()->routeIs('imports.*') ? 'active' : '' }}" title="Data Imports" {!! request()->routeIs('imports.*') ? 'aria-current="page"' : '' !!}>
-                            @include('partials.icon', ['name' => 'documents'])
+                            @include('partials.icon', ['name' => 'upload'])
                             <span>Data Imports</span>
                         </a>
                         @endif
@@ -173,7 +176,7 @@
                         </a>
                         @if (auth()->user()->hasAnyRole(['admin']))
                             <a href="{{ route('notifications.settings') }}" class="nav-link {{ request()->routeIs('notifications.settings*') ? 'active' : '' }}" title="Notification Settings" {!! request()->routeIs('notifications.settings*') ? 'aria-current="page"' : '' !!}>
-                                @include('partials.icon', ['name' => 'clock'])
+                                @include('partials.icon', ['name' => 'bell'])
                                 <span>Notification Settings</span>
                             </a>
                         @endif
@@ -197,7 +200,7 @@
     <main class="main">
         <header class="topbar">
             <div class="topbar-title">
-                <button type="button" id="sidebar-toggle" class="btn-icon" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+                <button type="button" class="btn-icon topbar-toggle js-sidebar-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar" title="Open menu">
                     <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                         <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>

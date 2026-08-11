@@ -58,6 +58,24 @@ jobs:
       - name: Execute syntax checks
         run: find app -name "*.php" -print0 | xargs -0 -n1 php -l
 
+      # The test suite is MySQL smoke tests (see Tests\TestCase) — the scratch
+      # database must be migrated and seeded before the tests run. Dev seeders
+      # are skipped in production only, and this CI env is `local`, so the
+      # demo accounts (admin@dictro2.gov.ph, …) the tests log in as are
+      # created here. The real personnel directory is self-skipping when
+      # employees_directory.json is absent (not committed).
+      - name: Prepare test database (migrate + seed + leave accrual)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: hris_test
+          DB_USERNAME: hris
+          DB_PASSWORD: secret
+        run: |
+          php artisan migrate --seed --force
+          php artisan leave:accrue
+
       - name: Execute tests (Unit)
         env:
           DB_CONNECTION: mysql

@@ -11,18 +11,6 @@ use Tests\TestCase;
 
 class PayrollAdjustmentTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function admin(): User
     {
         return User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();
@@ -30,7 +18,8 @@ class PayrollAdjustmentTest extends TestCase
 
     private function employeeUser(): User
     {
-        return User::where('email', 'roland.hubalde@dict.gov.ph')->firstOrFail();
+        // Dev-seeded employee account (also exists in the real-directory seed).
+        return User::where('email', 'juan@dictro2.gov.ph')->firstOrFail();
     }
 
     /**
@@ -65,7 +54,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_adjust_page_renders_for_draft_item(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p1' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p1'.substr((string) time(), -5));
 
         try {
             $this->actingAs($this->admin())
@@ -80,7 +69,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_adjustments_recompute_item_and_update_totals(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p2' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p2'.substr((string) time(), -5));
 
         try {
             $beforeGross = (float) $item->gross_amount;
@@ -128,7 +117,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_recompute_preserves_manual_adjustments(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p3' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p3'.substr((string) time(), -5));
 
         try {
             $this->actingAs($this->admin())->post("/payroll/items/{$item->id}/adjust", [
@@ -157,7 +146,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_validation_rejects_negative_amounts(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p4' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p4'.substr((string) time(), -5));
 
         try {
             $this->actingAs($this->admin())
@@ -175,7 +164,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_locked_period_cannot_be_adjusted(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p5' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p5'.substr((string) time(), -5));
 
         try {
             $this->actingAs($this->admin())->post("/payroll/{$period->id}/finalize")->assertRedirect();
@@ -199,7 +188,7 @@ class PayrollAdjustmentTest extends TestCase
 
     public function test_employee_role_cannot_access_adjustment_ui(): void
     {
-        [$period, $item] = $this->draftPeriodWithItems('p6' . substr((string) time(), -5));
+        [$period, $item] = $this->draftPeriodWithItems('p6'.substr((string) time(), -5));
 
         try {
             $this->actingAs($this->employeeUser())

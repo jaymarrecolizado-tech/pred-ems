@@ -8,7 +8,7 @@ class LeaveApprovedNotification extends HrisNotification
 {
     public function __construct(LeaveApplication $application)
     {
-        $dates = $application->date_from->format('M d') . ' – ' . $application->date_to->format('M d, Y');
+        $dates = $application->date_from->format('M d').' – '.$application->date_to->format('M d, Y');
 
         parent::__construct(
             title: 'Leave approved',

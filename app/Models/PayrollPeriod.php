@@ -12,8 +12,11 @@ class PayrollPeriod extends Model
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_FINALIZED = 'finalized';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_VOIDED = 'voided';
 
     protected $fillable = [

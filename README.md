@@ -32,8 +32,9 @@ data/cleanup_directory.py               ← dedupe + email hygiene pass on the J
 app/Models/                             ← 30 Eloquent models (User, Role, Employee, …) + RBAC helpers
 app/Http/Controllers/Auth/              ← custom session login/logout (no Breeze dependency)
 app/Http/Controllers/                   ← 18 controllers (Dashboard, Employee, Leave, Payroll, Attendance, Documents, Reports)
+app/Actions/                            ← business operations (ApproveLeave, IssueDocumentRequest, FinalizePayroll, …)
 app/Http/Middleware/RoleMiddleware.php  ← role-guard middleware
-app/Support/                            ← 10 service classes (Payroll engine, Audit, DTR, SMS, Notifier, …)
+app/Support/                            ← service classes (Payroll engine, Audit, DTR, SMS, Notifier, DocumentRenderer, …)
 routes/web.php · bootstrap/app.php      ← full route definitions + role middleware alias
 resources/views/                        ← 75 Blade templates across all modules
 public/css/app.css                      ← zero-build-step stylesheet

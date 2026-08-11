@@ -8,18 +8,6 @@ use Tests\TestCase;
 
 class ErrorPagesTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-    }
-
     private function admin(): User
     {
         return User::where('email', 'admin@dictro2.gov.ph')->firstOrFail();

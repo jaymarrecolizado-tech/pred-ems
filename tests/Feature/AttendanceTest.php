@@ -8,11 +8,11 @@ use App\Models\AttendanceLog;
 use App\Models\Document;
 use App\Models\Employee;
 use App\Models\Holiday;
-use App\Models\Setting;
 use App\Models\User;
 use App\Models\WorkSchedule;
 use App\Support\Dtr;
 use App\Support\Schedule;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AttendanceTest extends TestCase
@@ -20,14 +20,6 @@ class AttendanceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Smoke-test against the real (seeded) MySQL database, not :memory:.
-        config(['database.default' => 'mysql']);
-        config([
-            'database.connections.mysql.database' => 'hris',
-            'database.connections.mysql.username' => 'root',
-            'database.connections.mysql.password' => '',
-        ]);
-
         $this->testStartedAt = now();
     }
 
@@ -59,8 +51,11 @@ class AttendanceTest extends TestCase
     }
 
     private \DateTimeInterface $testStartedAt;
+
     private array $createdLogIds = [];
+
     private array $createdCorrectionIds = [];
+
     private array $createdHolidayIds = [];
 
     private function adminUser(): User
@@ -81,7 +76,7 @@ class AttendanceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Geofence                                                           */
+    /*  Geofence */
     /* ------------------------------------------------------------------ */
 
     public function test_punch_within_radius_is_accepted(): void
@@ -143,7 +138,7 @@ class AttendanceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Corrections                                                        */
+    /*  Corrections */
     /* ------------------------------------------------------------------ */
 
     public function test_employee_can_request_correction_and_hr_approves(): void
@@ -263,7 +258,7 @@ class AttendanceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  DTR                                                                */
+    /*  DTR */
     /* ------------------------------------------------------------------ */
 
     public function test_employee_can_view_own_attendance_and_dtr(): void
@@ -325,7 +320,7 @@ class AttendanceTest extends TestCase
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Work schedules + holidays (AOM 2026-020)                           */
+    /*  Work schedules + holidays (AOM 2026-020) */
     /* ------------------------------------------------------------------ */
 
     public function test_admin_manages_work_schedule(): void
@@ -395,8 +390,8 @@ class AttendanceTest extends TestCase
         ]);
 
         // Aug 3 onward → the CWW (Mon–Thu) applies.
-        $mon = \Illuminate\Support\Carbon::parse('2026-08-03'); // Monday
-        $fri = \Illuminate\Support\Carbon::parse('2026-08-07');
+        $mon = Carbon::parse('2026-08-03'); // Monday
+        $fri = Carbon::parse('2026-08-07');
 
         $this->assertTrue(Schedule::day($mon)['work']);
         $this->assertSame('07:00', Schedule::day($mon)['am_start']);
@@ -415,8 +410,8 @@ class AttendanceTest extends TestCase
             'type' => 'regular_holiday',
         ]);
 
-        $monday = \Illuminate\Support\Carbon::parse('2026-08-10');
-        $friday = \Illuminate\Support\Carbon::parse('2026-08-14');
+        $monday = Carbon::parse('2026-08-10');
+        $friday = Carbon::parse('2026-08-14');
 
         // The whole week reverts to standard: Friday is now a working day…
         $this->assertTrue(Schedule::day($friday)['work']);
@@ -440,8 +435,8 @@ class AttendanceTest extends TestCase
         ]);
         $this->createdHolidayIds[] = $holiday->id;
 
-        $monday = \Illuminate\Support\Carbon::parse('2026-08-10');
-        $tuesday = \Illuminate\Support\Carbon::parse('2026-08-11');
+        $monday = Carbon::parse('2026-08-10');
+        $tuesday = Carbon::parse('2026-08-11');
 
         // Monday stays on the CWW (7AM start, no revert), Tuesday not reverted.
         $this->assertSame('07:00', Schedule::day($monday)['am_start']);
@@ -458,7 +453,7 @@ class AttendanceTest extends TestCase
             'type' => 'special_nonworking',
         ]);
 
-        $tuesday = \Illuminate\Support\Carbon::parse('2026-08-11');
+        $tuesday = Carbon::parse('2026-08-11');
         $this->assertTrue(Schedule::day($tuesday)['work']);
         $this->assertSame('07:00', Schedule::day($tuesday)['am_start']);
         $this->assertSame('Test Holiday (Tue)', Schedule::day($tuesday)['holiday_name']);
@@ -483,7 +478,7 @@ class AttendanceTest extends TestCase
         $this->assertSame('special_nonworking', $holiday->type);
 
         // A repeating Dec 24 matches any year.
-        $this->assertTrue($holiday->occursOn(\Illuminate\Support\Carbon::parse('2030-12-24')));
+        $this->assertTrue($holiday->occursOn(Carbon::parse('2030-12-24')));
 
         $holiday->delete();
     }
@@ -501,7 +496,7 @@ class AttendanceTest extends TestCase
                 'employee_id' => $employee->id,
                 'log_date' => $sat,
                 'punch_type' => $type,
-                'punched_at' => $sat . ' ' . $time,
+                'punched_at' => $sat.' '.$time,
                 'source' => 'geofence',
             ]);
             $this->createdLogIds[] = AttendanceLog::where('employee_id', $employee->id)

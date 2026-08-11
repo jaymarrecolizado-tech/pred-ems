@@ -86,8 +86,8 @@ class WorkSchedule extends Model
             $label = $isoNames[$i];
 
             if (! empty($cfg['work'])) {
-                $working[] = $label . ' ' . ($cfg['am_start'] ?? '—') . '–' . ($cfg['am_end'] ?? '—')
-                    . ' / ' . ($cfg['pm_start'] ?? '—') . '–' . ($cfg['pm_end'] ?? '—');
+                $working[] = $label.' '.($cfg['am_start'] ?? '—').'–'.($cfg['am_end'] ?? '—')
+                    .' / '.($cfg['pm_start'] ?? '—').'–'.($cfg['pm_end'] ?? '—');
             } else {
                 $rest[] = $label;
             }
@@ -97,7 +97,7 @@ class WorkSchedule extends Model
             $parts[] = implode(', ', $working);
         }
         if ($rest) {
-            $parts[] = implode('–', $rest) . ' rest';
+            $parts[] = implode('–', $rest).' rest';
         }
 
         return implode(' · ', $parts) ?: 'No working days configured';

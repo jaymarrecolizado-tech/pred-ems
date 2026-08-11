@@ -4,7 +4,9 @@ namespace App\Support;
 
 use App\Models\ContributionRate;
 use App\Models\Employee;
+use App\Models\Payslip;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 
 /**
  * Statutory payroll computation engine (GSIS, PhilHealth, PAG-IBIG, BIR).
@@ -51,14 +53,14 @@ class Payroll
             $trace['lines'][] = array_filter([
                 'label' => $label,
                 'base' => $base > 0 ? round($base, 2) : null,
-                'rate' => $rate !== null ? $rate . '%' : null,
+                'rate' => $rate !== null ? $rate.'%' : null,
                 'amount' => round($amount, 2),
                 'note' => $note ?: null,
             ], fn ($value) => $value !== null);
         };
 
         /* ---------------------------------------------------------------- */
-        /*  Income                                                           */
+        /*  Income */
         /* ---------------------------------------------------------------- */
 
         $basicSalary = max(0, (float) $employee->monthly_salary);
@@ -80,7 +82,7 @@ class Payroll
             }
             if (strtoupper((string) $allowance->code) === 'PERA') {
                 $pera += (float) $empAllowance->amount;
-                $peraLines[] = "{$allowance->name}: " . number_format((float) $empAllowance->amount, 2);
+                $peraLines[] = "{$allowance->name}: ".number_format((float) $empAllowance->amount, 2);
             }
         }
         if ($peraLines) {
@@ -102,7 +104,7 @@ class Payroll
         $gross = round($basicSalary + $pera + $honoraria + $overtimePay + $otherIncome, 2);
 
         /* ---------------------------------------------------------------- */
-        /*  GSIS — premium on basic salary only                             */
+        /*  GSIS — premium on basic salary only */
         /* ---------------------------------------------------------------- */
 
         $gsis = ContributionRate::effectiveOn('GSIS', $asOf);
@@ -112,7 +114,7 @@ class Payroll
         $traceLine('GSIS (employee)', $basicSalary, (float) $gsisCfg['employee_rate'], $gsisEe, $gsis?->name ?? 'Default 9%');
 
         /* ---------------------------------------------------------------- */
-        /*  PhilHealth — 5% premium, floor/ceiling, split 50/50             */
+        /*  PhilHealth — 5% premium, floor/ceiling, split 50/50 */
         /* ---------------------------------------------------------------- */
 
         $ph = ContributionRate::effectiveOn('PHILHEALTH', $asOf);
@@ -121,10 +123,10 @@ class Payroll
         $phPremium = max((float) ($phCfg['min_premium'] ?? 0), min((float) ($phCfg['max_premium'] ?? PHP_FLOAT_MAX), $phPremium));
         $phEe = round($phPremium * ((float) ($phCfg['employee_share'] ?? 2.5) / (float) $phCfg['rate']), 2);
         $phEr = round($phPremium * ((float) ($phCfg['employer_share'] ?? 2.5) / (float) $phCfg['rate']), 2);
-        $traceLine('PhilHealth (employee)', $basicSalary, (float) $phCfg['employee_share'], $phEe, 'Premium ₱' . number_format($phPremium, 2) . ' (' . $ph?->name ?? 'Default 5%' . ')');
+        $traceLine('PhilHealth (employee)', $basicSalary, (float) $phCfg['employee_share'], $phEe, 'Premium ₱'.number_format($phPremium, 2).' ('.$ph?->name ?? 'Default 5%'.')');
 
         /* ---------------------------------------------------------------- */
-        /*  PAG-IBIG — % of monthly compensation, employee capped            */
+        /*  PAG-IBIG — % of monthly compensation, employee capped */
         /* ---------------------------------------------------------------- */
 
         $pagibig = ContributionRate::effectiveOn('PAGIBIG', $asOf);
@@ -140,10 +142,10 @@ class Payroll
         $piBase = min($monthlyComp, (float) ($piCfg['cap_base'] ?? 10000));
         $piEe = round(min($piBase * ($piEePct / 100), (float) ($piCfg['cap_employee'] ?? 200)), 2);
         $piEr = round(min($piBase * ($piErPct / 100), (float) ($piCfg['cap_employer'] ?? 200)), 2);
-        $traceLine('PAG-IBIG (employee)', $piBase, $piEePct, $piEe, 'Monthly compensation ₱' . number_format($monthlyComp, 2));
+        $traceLine('PAG-IBIG (employee)', $piBase, $piEePct, $piEe, 'Monthly compensation ₱'.number_format($monthlyComp, 2));
 
         /* ---------------------------------------------------------------- */
-        /*  BIR withholding — TRAIN brackets, annualized                     */
+        /*  BIR withholding — TRAIN brackets, annualized */
         /* ---------------------------------------------------------------- */
 
         // PERA is exempt from income tax (BIR exemption); honoraria, overtime
@@ -173,10 +175,10 @@ class Payroll
         }
         $monthlyWithholding = round($annualTax / 12, 2);
         $traceLine('BIR withholding tax', $taxableMonthly, $appliedBracket ? (float) $appliedBracket['rate'] : 0, $monthlyWithholding,
-            'Annualized ₱' . number_format($annualTaxable, 2) . ' → annual tax ₱' . number_format($annualTax, 2) . ' (' . ($bir?->name ?? 'TRAIN') . ')');
+            'Annualized ₱'.number_format($annualTaxable, 2).' → annual tax ₱'.number_format($annualTax, 2).' ('.($bir?->name ?? 'TRAIN').')');
 
         /* ---------------------------------------------------------------- */
-        /*  Other deductions (LWOP, manual lines)                            */
+        /*  Other deductions (LWOP, manual lines) */
         /* ---------------------------------------------------------------- */
 
         $lwop = max(0, (float) ($extras['lwop'] ?? 0));
@@ -189,7 +191,7 @@ class Payroll
         }
 
         /* ---------------------------------------------------------------- */
-        /*  Totals                                                           */
+        /*  Totals */
         /* ---------------------------------------------------------------- */
 
         $eeShares = $gsisEe + $phEe + $piEe;
@@ -234,7 +236,7 @@ class Payroll
     /**
      * Employees eligible for a payroll run: active status with a salary on file.
      */
-    public static function eligibleEmployees(): \Illuminate\Support\Collection
+    public static function eligibleEmployees(): Collection
     {
         return Employee::query()
             ->with(['allowances.allowance', 'position', 'employmentType'])
@@ -250,12 +252,12 @@ class Payroll
      */
     public static function nextPayslipRef(): string
     {
-        $prefix = 'PS-' . now()->format('Y') . '-';
-        $last = \App\Models\Payslip::where('reference_no', 'like', $prefix . '%')
+        $prefix = 'PS-'.now()->format('Y').'-';
+        $last = Payslip::where('reference_no', 'like', $prefix.'%')
             ->orderByDesc('reference_no')
             ->value('reference_no');
         $next = $last ? ((int) substr($last, -4)) + 1 : 1;
 
-        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 }

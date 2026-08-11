@@ -18,6 +18,7 @@ class DevEmployeeSeeder extends Seeder
     {
         if (app()->environment('production')) {
             $this->command?->warn('DevEmployeeSeeder skipped in production environment.');
+
             return;
         }
 
@@ -44,7 +45,7 @@ class DevEmployeeSeeder extends Seeder
             ['juan',  'RO2-0001', 'Juan',   'Dela Cruz', 'Male',   'PERMANENT',          18, 3, 67400.00, '2015-06-01'],
             ['maria', 'RO2-0002', 'Maria',  'Santos',    'Female', 'CONTRACTUAL',        15, 1, 48000.00, '2023-03-16'],
             ['pedro', 'RO2-0003', 'Pedro',  'Reyes',     'Male',   'JOB_ORDER',          10, 1, 15000.00, '2024-07-01'],
-            [null,    'RO2-0004', 'Ana',    'Garcia',    'Female', 'CONTRACT_OF_SERVICE',12, 1, 25000.00, '2024-11-04'],
+            [null,    'RO2-0004', 'Ana',    'Garcia',    'Female', 'CONTRACT_OF_SERVICE', 12, 1, 25000.00, '2024-11-04'],
             [null,    'RO2-0005', 'Luis',   'Torres',    'Male',   'GIP',                8,  1, 12000.00, '2025-06-02'],
             [null,    'RO2-0006', 'Carmen', 'Bautista',  'Female', 'CASUAL',             11, 2, 36400.00, '2019-01-02'],
         ];
@@ -64,7 +65,7 @@ class DevEmployeeSeeder extends Seeder
         }
 
         foreach ($employeeSeed as [$userKey, $empNo, $first, $last, $gender, $typeCode, $grade, $step, $salary, $dateOrig]) {
-            $userId = $userKey ? DB::table('users')->where('email', $userKey . '@dictro2.gov.ph')->value('id') : null;
+            $userId = $userKey ? DB::table('users')->where('email', $userKey.'@dictro2.gov.ph')->value('id') : null;
 
             DB::table('employees')->updateOrInsert(
                 ['employee_number' => $empNo],

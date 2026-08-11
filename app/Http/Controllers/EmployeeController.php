@@ -129,7 +129,7 @@ class EmployeeController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helpers                                                            */
+    /*  Helpers */
     /* ------------------------------------------------------------------ */
 
     private function formOptions(): array
@@ -169,6 +169,6 @@ class EmployeeController extends Controller
 
         $next = $last ? ((int) substr($last, 4)) + 1 : 1;
 
-        return 'RO2-' . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return 'RO2-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 }
