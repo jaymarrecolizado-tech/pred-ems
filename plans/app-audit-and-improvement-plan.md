@@ -224,8 +224,8 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Add soft cascade delete policies | 1d | Referential integrity |
 | Add database CHECK constraints | 2h | DB-level validation |
 | Split `docs/PLAN.md` into focused docs | 4h | Navigability |
-| Add CHANGELOG.md | Ongoing | Change tracking |
-| Add account lockout policy | 4h | Brute force protection |
+| Add CHANGELOG.md | Ongoing | Change tracking | ✅ Done |
+| ~~Add account lockout policy~~ | 4h | Brute force protection | ✅ Done (5 attempts / 15 min lockout) |
 | Escape LIKE wildcards in search queries | 1h | Query accuracy | ✅ Done (Search::escape) |
 
 ---
