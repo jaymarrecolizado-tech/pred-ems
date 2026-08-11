@@ -198,18 +198,18 @@ tests/Feature/            16 feature tests (smoke/integration level)
 
 ### Priority 3: Medium (Address in Next Quarter)
 
-| Rec | Effort | Impact |
-|-----|--------|--------|
-| Introduce Vite for frontend asset building | 1d | Minification, autoprefixing, purging |
-| Split monolithic CSS into component files | 1d | Maintainability |
-| Extract inline SVGs into reusable Blade components | 4h | DRY, consistency |
-| Self-host Google Fonts | 1h | Offline/intranet readiness |
-| Add Larastan static analysis | 4h | Type safety, early bug detection |
-| Update README to reflect actual state | 2h | Accurate documentation |
-| Add data retention / right-to-erasure mechanisms | 2d | DPA compliance |
-| Add security headers middleware | 2h | Hardening |
-| Add session security config | 1h | Hardening |
-| Document backup and deployment procedures | 4h | Operational readiness |
+| Rec | Effort | Impact | Status |
+|-----|--------|--------|--------|
+| Introduce Vite for frontend asset building | 1d | Minification, autoprefixing, purging | Pending |
+| Split monolithic CSS into component files | 1d | Maintainability | Pending |
+| Extract inline SVGs into reusable Blade components | 4h | DRY, consistency | Pending |
+| ~~Self-host Google Fonts~~ | 1h | Offline/intranet readiness | ✅ Done (11 TTF files) |
+| Add Larastan static analysis | 4h | Type safety, early bug detection | Pending |
+| Update README to reflect actual state | 2h | Accurate documentation | Pending |
+| Add data retention / right-to-erasure mechanisms | 2d | DPA compliance | Pending |
+| ~~Add security headers middleware~~ | 2h | Hardening | ✅ Done (SecurityHeaders) |
+| ~~Add session security config~~ | 1h | Hardening | ✅ Done (secure, httponly, samesite) |
+| Document backup and deployment procedures | 4h | Operational readiness | Pending |
 
 ### Priority 4: Low (Backlog / Nice to Have)
 
@@ -226,7 +226,7 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Split `docs/PLAN.md` into focused docs | 4h | Navigability |
 | Add CHANGELOG.md | Ongoing | Change tracking |
 | Add account lockout policy | 4h | Brute force protection |
-| Escape LIKE wildcards in search queries | 1h | Query accuracy |
+| Escape LIKE wildcards in search queries | 1h | Query accuracy | ✅ Done (Search::escape) |
 
 ---
 
