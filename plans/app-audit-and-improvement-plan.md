@@ -209,7 +209,7 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Add data retention / right-to-erasure mechanisms | 2d | DPA compliance | Pending |
 | ~~Add security headers middleware~~ | 2h | Hardening | ✅ Done (SecurityHeaders) |
 | ~~Add session security config~~ | 1h | Hardening | ✅ Done (secure, httponly, samesite) |
-| Document backup and deployment procedures | 4h | Operational readiness | Pending |
+| ~~Document backup and deployment procedures~~ | 4h | Operational readiness | ✅ Done (docs/BACKUP_AND_DEPLOYMENT.md) |
 
 ### Priority 4: Low (Backlog / Nice to Have)
 
@@ -222,7 +222,7 @@ tests/Feature/            16 feature tests (smoke/integration level)
 | Add Docker/compose for dev environment | 1d | Consistent dev environments |
 | Add Laravel Horizon for queue monitoring | 4h | SMS queue observability |
 | Add soft cascade delete policies | 1d | Referential integrity |
-| Add database CHECK constraints | 2h | DB-level validation |
+| Add database CHECK constraints | 2h | DB-level validation | ✅ Done (11 constraints) |
 | Split `docs/PLAN.md` into focused docs | 4h | Navigability |
 | Add CHANGELOG.md | Ongoing | Change tracking | ✅ Done |
 | ~~Add account lockout policy~~ | 4h | Brute force protection | ✅ Done (5 attempts / 15 min lockout) |
