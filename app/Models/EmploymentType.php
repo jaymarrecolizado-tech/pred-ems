@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class EmploymentType extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'has_leave_credits', 'has_gsis', 'has_philhealth',
         'has_pagibig', 'has_withholding_tax', 'requires_20pct_premium',

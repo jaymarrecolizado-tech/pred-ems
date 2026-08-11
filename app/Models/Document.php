@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'employee_id', 'document_type', 'reference_no', 'file_path',
         'remarks', 'generated_by', 'generated_at',

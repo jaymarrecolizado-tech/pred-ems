@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LeaveApplication extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'employee_id', 'leave_type_id', 'date_from', 'date_to', 'days_applied',
         'reason', 'contact_during_leave', 'commutation_requested',

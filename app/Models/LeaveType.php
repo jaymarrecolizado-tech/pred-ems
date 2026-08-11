@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LeaveType extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'accrual_per_month', 'annual_max_credit', 'annual_grant',
         'is_cumulative', 'is_commutable', 'requires_approval', 'is_active', 'notes',

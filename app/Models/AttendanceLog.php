@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AttendanceLog extends Model
 {
+    use HasFactory;
+
     public const PUNCH_TYPES = ['am_in', 'am_out', 'pm_in', 'pm_out'];
 
     protected $fillable = [
