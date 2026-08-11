@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\MarkRemittedRequest;
+use App\Http\Requests\PayrollAdjustmentRequest;
+use App\Http\Requests\StorePayrollPeriodRequest;
 use App\Models\ContributionRate;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
@@ -67,14 +70,9 @@ class PayrollController extends Controller
         return view('payroll.my', compact('payslips'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StorePayrollPeriodRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'period_from' => ['required', 'date'],
-            'period_to' => ['required', 'date', 'after_or_equal:period_from'],
-            'payroll_date' => ['required', 'date'],
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         try {
             $period = PayrollPeriod::create($validated + [
@@ -188,17 +186,11 @@ class PayrollController extends Controller
      * The full computation trace (including the manual lines) is re-persisted,
      * so the payslip stays auditable.
      */
-    public function updateAdjustment(Request $request, PayrollItem $item): RedirectResponse
+    public function updateAdjustment(PayrollAdjustmentRequest $request, PayrollItem $item): RedirectResponse
     {
         abort_unless($item->period->isDraft(), 409, 'Only draft periods can be adjusted.');
 
-        $validated = $request->validate([
-            'honoraria' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'overtime_pay' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'other_income' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'lwop' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'other_deductions' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-        ]);
+        $validated = $request->validated();
 
         $old = $item->only(['honoraria', 'overtime_pay', 'other_income', 'lwop_deduction', 'other_deductions']);
 
@@ -349,12 +341,9 @@ class PayrollController extends Controller
         return view('payroll.remittances', compact('remittances'));
     }
 
-    public function markRemitted(Request $request, Remittance $remittance): RedirectResponse
+    public function markRemitted(MarkRemittedRequest $request, Remittance $remittance): RedirectResponse
     {
-        $validated = $request->validate([
-            'reference_no' => ['nullable', 'string', 'max:60'],
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $remittance->update([
             'status' => Remittance::STATUS_REMITTED,

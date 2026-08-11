@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMonetizationRequest;
 use App\Models\Employee;
 use App\Models\LeaveCreditLedger;
 use App\Models\LeaveMonetization;
@@ -65,14 +66,9 @@ class MonetizationController extends Controller
      * Process a VL monetization: validate the CSC rules against the live
      * ledger, then (atomically) create the record and debit the ledger.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreMonetizationRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
-            'year' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'days' => ['required', 'numeric', 'min:0.5', 'max:30'],
-            'remarks' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $vl = LeaveType::where('code', 'VL')->firstOrFail();
         $employee = Employee::with('employmentType')->findOrFail($validated['employee_id']);

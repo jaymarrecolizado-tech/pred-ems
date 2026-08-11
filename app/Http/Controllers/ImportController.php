@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImportAttendanceCommitRequest;
+use App\Http\Requests\ImportAttendancePreviewRequest;
+use App\Http\Requests\ImportCommitRequest;
+use App\Http\Requests\ImportEmployeesPreviewRequest;
 use App\Models\AttendanceLog;
 use App\Models\Division;
 use App\Models\Employee;
@@ -50,12 +54,9 @@ class ImportController extends Controller
         return view('imports.employees', $this->employeeFormData());
     }
 
-    public function previewEmployees(Request $request): View|RedirectResponse
+    public function previewEmployees(ImportEmployeesPreviewRequest $request): View|RedirectResponse
     {
-        $request->validate([
-            'file' => ['required', 'file', 'max:5120', 'mimes:csv,xls,xlsx,txt'],
-            'mode' => ['required', 'in:create,update,upsert'],
-        ]);
+        $request->validated();
 
         $stored = $this->storeUpload($request);
 
@@ -84,12 +85,9 @@ class ImportController extends Controller
         ]));
     }
 
-    public function commitEmployees(Request $request): RedirectResponse
+    public function commitEmployees(ImportCommitRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'token' => ['required', 'string'],
-            'mode' => ['required', 'in:create,update,upsert'],
-        ]);
+        $validated = $request->validated();
 
         $path = $this->resolveUpload($validated['token']);
         $rows = ImportReader::rows($path, basename($path));
@@ -152,11 +150,9 @@ class ImportController extends Controller
         return view('imports.attendance');
     }
 
-    public function previewAttendance(Request $request): View|RedirectResponse
+    public function previewAttendance(ImportAttendancePreviewRequest $request): View|RedirectResponse
     {
-        $request->validate([
-            'file' => ['required', 'file', 'max:5120', 'mimes:csv,xls,xlsx,txt'],
-        ]);
+        $request->validated();
 
         $stored = $this->storeUpload($request);
 
@@ -184,11 +180,9 @@ class ImportController extends Controller
         ]);
     }
 
-    public function commitAttendance(Request $request): RedirectResponse
+    public function commitAttendance(ImportAttendanceCommitRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'token' => ['required', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $path = $this->resolveUpload($validated['token']);
         $rows = ImportReader::rows($path, basename($path));

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectLeaveRequest;
+use App\Http\Requests\StoreLeaveRequest;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCreditLedger;
@@ -60,19 +62,12 @@ class LeaveController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreLeaveRequest $request): RedirectResponse
     {
         $employee = auth()->user()->employee;
         abort_if(! $employee, 403, 'No 201-file record is linked to your account. Contact HR.');
 
-        $validated = $request->validate([
-            'leave_type_id' => ['required', 'exists:leave_types,id'],
-            'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
-            'reason' => ['required', 'string', 'max:255'],
-            'contact_during_leave' => ['nullable', 'string', 'max:100'],
-            'commutation_requested' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $from = Carbon::parse($validated['date_from']);
         $to = Carbon::parse($validated['date_to']);
@@ -243,13 +238,11 @@ class LeaveController extends Controller
         return back()->with('success', "Leave approved for {$application->employee->full_name}.");
     }
 
-    public function reject(Request $request, LeaveApplication $application): RedirectResponse
+    public function reject(RejectLeaveRequest $request, LeaveApplication $application): RedirectResponse
     {
         abort_unless($application->isPending(), 403, 'This application is no longer pending.');
 
-        $validated = $request->validate([
-            'denial_reason' => ['required', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $old = $application->toArray();
         $application->update([

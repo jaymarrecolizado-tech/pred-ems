@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PasswordUpdateRequest;
+use App\Http\Requests\ProfilePhotoRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Employee;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
@@ -54,11 +57,11 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $employee = $this->ownEmployee();
 
-        $data = $request->validate($this->rules());
+        $data = $request->validated();
 
         $old = collect(self::SELF_EDITABLE_FIELDS)
             ->mapWithKeys(fn ($f) => [$f => $employee->getRawOriginal($f)])
@@ -74,13 +77,9 @@ class ProfileController extends Controller
             ->with('success', 'Your personal information has been updated.');
     }
 
-    public function uploadPhoto(Request $request): RedirectResponse
+    public function uploadPhoto(ProfilePhotoRequest $request): RedirectResponse
     {
         $employee = $this->ownEmployee();
-
-        $request->validate([
-            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
 
         $oldPath = $employee->profile_photo_path;
 
@@ -119,12 +118,8 @@ class ProfileController extends Controller
         return view('profile.password');
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
     {
-        $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
-        ]);
 
         $user = auth()->user();
         $user->update(['password' => Hash::make($request->password)]);

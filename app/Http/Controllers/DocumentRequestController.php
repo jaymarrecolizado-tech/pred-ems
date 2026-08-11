@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectDocumentRequestRequest;
+use App\Http\Requests\StoreDocumentRequestRequest;
 use App\Models\Document;
 use App\Models\DocumentRequest;
 use App\Notifications\DocumentRequestIssuedNotification;
@@ -54,16 +56,12 @@ class DocumentRequestController extends Controller
         return view('documents.requests.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDocumentRequestRequest $request): RedirectResponse
     {
         $employee = auth()->user()->employee;
         abort_unless($employee, 403, 'No employee 201-file record linked to this account.');
 
-        $validated = $request->validate([
-            'document_type' => ['required', Rule::in(array_keys(DocumentRequest::TYPES))],
-            'purpose' => ['required', 'string', 'max:2000'],
-            'period' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
-        ]);
+        $validated = $request->validated();
 
         if ($validated['document_type'] === 'dtr' && empty($validated['period'])) {
             return back()->withErrors(['period' => 'Choose the month for the Daily Time Record.'])
@@ -201,13 +199,11 @@ class DocumentRequestController extends Controller
         return back()->with('success', $documentRequest->type_label . " issued — Ref. {$referenceNo}.");
     }
 
-    public function reject(Request $request, DocumentRequest $documentRequest): RedirectResponse
+    public function reject(RejectDocumentRequestRequest $request, DocumentRequest $documentRequest): RedirectResponse
     {
         abort_unless($documentRequest->isPending(), 409, 'This request was already processed.');
 
-        $validated = $request->validate([
-            'rejection_reason' => ['required', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $documentRequest->update([
             'status' => DocumentRequest::STATUS_REJECTED,

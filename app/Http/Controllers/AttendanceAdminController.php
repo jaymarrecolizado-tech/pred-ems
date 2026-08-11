@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckpointRequest;
+use App\Http\Requests\HolidayRequest;
+use App\Http\Requests\ManualPunchRequest;
+use App\Http\Requests\RejectCorrectionRequest;
+use App\Http\Requests\WorkScheduleRequest;
 use App\Models\AttendanceCheckpoint;
 use App\Models\AttendanceCorrection;
 use App\Models\AttendanceLog;
@@ -52,17 +57,9 @@ class AttendanceAdminController extends Controller
         ]);
     }
 
-    public function storeCheckpoint(Request $request): RedirectResponse
+    public function storeCheckpoint(CheckpointRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'radius_meters' => ['required', 'integer', 'min:10', 'max:5000'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $checkpoint = AttendanceCheckpoint::create([
             ...$validated,
@@ -75,17 +72,9 @@ class AttendanceAdminController extends Controller
         return back()->with('success', "Checkpoint \"{$checkpoint->name}\" created.");
     }
 
-    public function updateCheckpoint(Request $request, AttendanceCheckpoint $checkpoint): RedirectResponse
+    public function updateCheckpoint(CheckpointRequest $request, AttendanceCheckpoint $checkpoint): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'radius_meters' => ['required', 'integer', 'min:10', 'max:5000'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $old = $checkpoint->toArray();
         $checkpoint->update([...$validated, 'is_active' => $request->boolean('is_active')]);
@@ -167,13 +156,11 @@ class AttendanceAdminController extends Controller
         return back()->with('success', 'Correction approved and applied to the timelog.');
     }
 
-    public function rejectCorrection(Request $request, AttendanceCorrection $correction): RedirectResponse
+    public function rejectCorrection(RejectCorrectionRequest $request, AttendanceCorrection $correction): RedirectResponse
     {
         abort_unless($correction->isPending(), 409, 'This request was already reviewed.');
 
-        $validated = $request->validate([
-            'denial_reason' => ['required', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $correction->update([
             'status' => 'rejected',
@@ -216,15 +203,9 @@ class AttendanceAdminController extends Controller
      * Manual HR punch (override) — used when an employee was outside the
      * geofence (field duty, forgotten punch, etc.). Audited.
      */
-    public function storeManualPunch(Request $request): RedirectResponse
+    public function storeManualPunch(ManualPunchRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
-            'log_date' => ['required', 'date'],
-            'punch_type' => ['required', 'in:am_in,am_out,pm_in,pm_out'],
-            'time' => ['required', 'date_format:H:i'],
-            'remarks' => ['required', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $logDate = $validated['log_date'];
 
@@ -332,22 +313,9 @@ class AttendanceAdminController extends Controller
         ]);
     }
 
-    private function validateSchedule(Request $request): array
+    private function validateSchedule(WorkScheduleRequest $request): array
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'starts_on' => ['nullable', 'date'],
-            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-            'is_active' => ['nullable', 'boolean'],
-            'revert_schedule_id' => ['nullable', 'exists:work_schedules,id'],
-            'days' => ['required', 'array'],
-            'days.*.work' => ['nullable', 'boolean'],
-            'days.*.am_start' => ['nullable', 'date_format:H:i'],
-            'days.*.am_end' => ['nullable', 'date_format:H:i'],
-            'days.*.pm_start' => ['nullable', 'date_format:H:i'],
-            'days.*.pm_end' => ['nullable', 'date_format:H:i'],
-        ]);
+        $data = $request->validated();
 
         // Normalise the per-day-of-week JSON (1 = Mon … 7 = Sun).
         $days = [];
@@ -381,7 +349,7 @@ class AttendanceAdminController extends Controller
         ];
     }
 
-    public function storeSchedule(Request $request): RedirectResponse
+    public function storeSchedule(WorkScheduleRequest $request): RedirectResponse
     {
         $data = $this->validateSchedule($request);
 
@@ -396,7 +364,7 @@ class AttendanceAdminController extends Controller
             ->with('success', "Work schedule \"{$schedule->name}\" created.");
     }
 
-    public function updateSchedule(Request $request, WorkSchedule $schedule): RedirectResponse
+    public function updateSchedule(WorkScheduleRequest $request, WorkSchedule $schedule): RedirectResponse
     {
         $data = $this->validateSchedule($request);
 
@@ -426,14 +394,9 @@ class AttendanceAdminController extends Controller
     /*  Holidays                                                           */
     /* ------------------------------------------------------------------ */
 
-    public function storeHoliday(Request $request): RedirectResponse
+    public function storeHoliday(HolidayRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:200'],
-            'date' => ['required', 'date'],
-            'type' => ['required', 'in:regular_holiday,special_nonworking,work_suspension'],
-            'is_repeating' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $holiday = Holiday::create([
             'name' => $validated['name'],

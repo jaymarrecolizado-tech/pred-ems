@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EmployeeRequest;
 use App\Models\Division;
 use App\Models\Employee;
 use App\Models\EmploymentType;
@@ -10,7 +11,6 @@ use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EmployeeController extends Controller
@@ -55,9 +55,9 @@ class EmployeeController extends Controller
         return view('employees.create', $this->formOptions());
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(EmployeeRequest $request): RedirectResponse
     {
-        $data = $this->validateEmployee($request);
+        $data = $request->validated();
 
         $data['employee_number'] = $data['employee_number'] ?: $this->nextEmployeeNumber();
 
@@ -93,9 +93,9 @@ class EmployeeController extends Controller
         return view('employees.edit', array_merge(['employee' => $employee], $this->formOptions()));
     }
 
-    public function update(Request $request, Employee $employee): RedirectResponse
+    public function update(EmployeeRequest $request, Employee $employee): RedirectResponse
     {
-        $data = $this->validateEmployee($request, $employee);
+        $data = $request->validated();
 
         $old = $employee->toArray();
         $employee->update($data);
@@ -139,51 +139,6 @@ class EmployeeController extends Controller
             'positions' => Position::orderBy('title')->get(),
             'statuses' => ['active' => 'Active', 'on_leave' => 'On Leave', 'separated' => 'Separated', 'resigned' => 'Resigned', 'retired' => 'Retired'],
         ];
-    }
-
-    private function validateEmployee(Request $request, ?Employee $employee = null): array
-    {
-        $uniqueRule = Rule::unique('employees', 'employee_number')
-            ->ignore($employee?->id);
-
-        $validated = $request->validate([
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'employee_number' => ['nullable', 'string', 'max:30', $uniqueRule],
-            'first_name' => ['required', 'string', 'max:100'],
-            'middle_name' => ['nullable', 'string', 'max:100'],
-            'maiden_name' => ['nullable', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'suffix' => ['nullable', 'string', 'max:20'],
-            'birth_date' => ['nullable', 'date'],
-            'gender' => ['nullable', 'in:Male,Female'],
-            'civil_status' => ['nullable', 'string', 'max:20'],
-            'citizenship' => ['nullable', 'string', 'max:50'],
-            'blood_type' => ['nullable', 'string', 'max:5'],
-            'residential_address' => ['nullable', 'string', 'max:255'],
-            'contact_number' => ['nullable', 'string', 'max:30'],
-            'personal_email' => ['nullable', 'email', 'max:150'],
-            'gov_email' => ['nullable', 'email', 'max:150'],
-            'gsis_no' => ['nullable', 'string', 'max:30'],
-            'philhealth_no' => ['nullable', 'string', 'max:30'],
-            'pagibig_no' => ['nullable', 'string', 'max:30'],
-            'tin_no' => ['nullable', 'string', 'max:30'],
-            'sss_no' => ['nullable', 'string', 'max:30'],
-            'employment_type_id' => ['required', 'exists:employment_types,id'],
-            'division_id' => ['nullable', 'exists:divisions,id'],
-            'position_id' => ['nullable', 'exists:positions,id'],
-            'plantilla_item_no' => ['nullable', 'string', 'max:100'],
-            'bp_number' => ['nullable', 'string', 'max:50'],
-            'source_of_fund' => ['nullable', 'string', 'max:80'],
-            'salary_grade' => ['nullable', 'integer', 'min:1', 'max:33'],
-            'step' => ['nullable', 'integer', 'min:1', 'max:8'],
-            'monthly_salary' => ['nullable', 'numeric', 'min:0'],
-            'date_original_appointment' => ['nullable', 'date'],
-            'date_last_promotion' => ['nullable', 'date'],
-            'status' => ['required', 'in:active,on_leave,separated,resigned,retired'],
-            'remarks' => ['nullable', 'string'],
-        ]);
-
-        return $validated;
     }
 
     /**

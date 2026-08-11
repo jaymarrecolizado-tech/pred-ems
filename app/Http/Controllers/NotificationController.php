@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NotificationSettingsRequest;
 use App\Models\Setting;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
@@ -62,12 +63,9 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function updateSettings(Request $request): RedirectResponse
+    public function updateSettings(NotificationSettingsRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'email' => ['sometimes', 'boolean'],
-            'sms' => ['sometimes', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $old = Setting::notificationChannels();
         $new = [

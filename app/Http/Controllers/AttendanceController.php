@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CorrectionRequest;
+use App\Http\Requests\PunchRequest;
 use App\Models\AttendanceCheckpoint;
 use App\Models\AttendanceCorrection;
 use App\Models\AttendanceLog;
@@ -65,16 +67,13 @@ class AttendanceController extends Controller
      * Geofenced punch. Validates the GPS position against the nearest active
      * checkpoint before recording an AM/PM in/out entry.
      */
-    public function punch(Request $request): JsonResponse
+    public function punch(PunchRequest $request): JsonResponse
     {
         $employee = auth()->user()->employee;
 
         abort_if(! $employee, 403, 'No employee 201-file record linked to this account.');
 
-        $validated = $request->validate([
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-        ]);
+        $validated = $request->validated();
 
         $lat = (float) $validated['latitude'];
         $lng = (float) $validated['longitude'];
@@ -159,18 +158,13 @@ class AttendanceController extends Controller
      * Employee requests an alteration to a recorded punch — goes to HR for
      * approval; logs are never edited in place.
      */
-    public function requestCorrection(Request $request): JsonResponse
+    public function requestCorrection(CorrectionRequest $request): JsonResponse
     {
         $employee = auth()->user()->employee;
 
         abort_if(! $employee, 403, 'No employee 201-file record linked to this account.');
 
-        $validated = $request->validate([
-            'log_date' => ['required', 'date', 'before_or_equal:today'],
-            'punch_type' => ['required', 'in:am_in,am_out,pm_in,pm_out'],
-            'requested_time' => ['required', 'date_format:H:i'],
-            'reason' => ['required', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         // One pending request per (employee, date, punch) — otherwise two
         // requests for the same punch could both be approved and silently
